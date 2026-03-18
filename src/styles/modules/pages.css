@@ -473,6 +473,19 @@
   height: 0.375rem;
 }
 
+/* Sync row */
+.sync-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sync-time {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
 /* Sync icon */
 .sync-icon {
   width: 0.75rem;

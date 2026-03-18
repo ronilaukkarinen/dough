@@ -8,6 +8,7 @@ import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { CashFlowChart } from "@/components/dashboard/cash-flow";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { AiSummary } from "@/components/dashboard/ai-summary";
+import { NetWorth } from "@/components/dashboard/net-worth";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -125,18 +126,17 @@ export default function DashboardPage() {
   return (
     <div className="page-stack">
       <div className="page-header-row">
-        <div>
-          <h1 className="page-heading">{t.dashboard.title}</h1>
+        <h1 className="page-heading">{t.dashboard.title}</h1>
+        <div className="sync-row">
           {data?.syncedAt && (
-            <p className="page-subtitle">
+            <span className="sync-time">
               {formatDistanceToNow(new Date(data.syncedAt), { addSuffix: true, locale: locale === "fi" ? fiFns : enUS })}
-            </p>
+            </span>
           )}
+          <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
+            <RefreshCw className={loading ? "icon-sm animate-spin" : "icon-sm"} />
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
-          <RefreshCw className={loading ? "icon-sm animate-spin" : "icon-sm"} />
-          {t.common.sync}
-        </Button>
       </div>
 
       <AiSummary />
@@ -162,6 +162,8 @@ export default function DashboardPage() {
         <CashFlowChart data={cashFlowData} />
         <RecentTransactions transactions={recentTransactions} />
       </div>
+
+      <NetWorth accounts={data.summary.accounts} />
     </div>
   );
 }

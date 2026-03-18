@@ -65,6 +65,9 @@ export const en = {
     income: "Income",
     expenses: "Expenses",
     net: "Net",
+    netWorth: "Net worth",
+    accounts: "Accounts",
+    investments: "Investments",
   },
   chat: {
     title: "AI advisor",

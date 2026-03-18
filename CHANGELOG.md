@@ -27,7 +27,11 @@
 * Fix NaN% in debts progress when no debts exist
 * Sync debts from YNAB otherDebt type accounts automatically
 * Add sync button and relative last sync time to dashboard header
-* Make pie chart larger (260px, radii 70/110)
+* Make pie chart fill container (320px max, radii 85/140)
+* Move sync time next to button in compact format
+* Add net worth section to dashboard with investments, accounts and debts breakdown
+* Add investment account list from YNAB otherAsset accounts
+* Add netWorth, accounts, investments i18n keys for EN and FI
 
 ### 0.2.0: 2026-03-18
 

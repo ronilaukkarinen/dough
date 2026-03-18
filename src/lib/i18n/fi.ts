@@ -65,6 +65,9 @@ export const fi = {
     income: "Tulot",
     expenses: "Menot",
     net: "Netto",
+    netWorth: "Nettovarallisuus",
+    accounts: "Tilit",
+    investments: "Sijoitukset",
   },
   chat: {
     title: "AI-neuvoja",
