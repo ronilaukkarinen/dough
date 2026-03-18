@@ -69,7 +69,7 @@ export function AiSummary() {
     fetchSummary(true);
   };
 
-  if (loading && !summary && !refreshing) return null;
+  if (!loading && !summary && !refreshing) return null;
 
   return (
     <Card className="ai-summary-card">
@@ -97,9 +97,11 @@ export function AiSummary() {
           </button>
         </div>
       </div>
-      {refreshing ? (
-        <div className="typing-dots">
-          <span /><span /><span />
+      {refreshing || (loading && !summary) ? (
+        <div className="skeleton-lines">
+          <div className="skeleton-line" style={{ width: "92%" }} />
+          <div className="skeleton-line" style={{ width: "78%" }} />
+          <div className="skeleton-line" style={{ width: "85%" }} />
         </div>
       ) : summary ? (
         <p className="ai-summary-text">{summary}</p>
