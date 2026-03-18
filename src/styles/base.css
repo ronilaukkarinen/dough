@@ -64,6 +64,22 @@ button {
   cursor: pointer;
 }
 
+/* Global focus reset — never white */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Remove focus ring on non-keyboard interactions */
+:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
 img, video {
   max-width: 100%;
   height: auto;

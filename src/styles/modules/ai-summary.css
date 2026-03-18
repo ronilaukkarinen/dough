@@ -43,14 +43,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 0.25rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
   background: none;
   border: none;
   color: var(--muted-foreground);
   cursor: pointer;
   transition: color 150ms;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ai-summary-refresh:hover {

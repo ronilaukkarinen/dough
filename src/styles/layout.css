@@ -194,6 +194,11 @@
   color: var(--foreground);
 }
 
+.l-sidebar-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
 .l-sidebar-link.is-active {
   background-color: color-mix(in srgb, var(--primary) 10%, transparent);
   color: var(--primary);
