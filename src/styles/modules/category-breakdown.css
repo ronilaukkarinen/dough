@@ -16,8 +16,15 @@
 .category-breakdown-body {
   margin-top: 1rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .category-breakdown-body {
+    flex-direction: row;
+  }
 }
 
 .category-breakdown-donut {

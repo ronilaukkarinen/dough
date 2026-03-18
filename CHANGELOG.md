@@ -15,6 +15,11 @@
 * Fix login form on Safari iOS by using uncontrolled inputs with FormData to handle autofill
 * Fix Safari iOS login redirect by using window.location instead of router.push
 * Fix Safari iOS cookie not persisting by removing Secure flag (HTTPS handled by Cloudflare tunnel)
+* Add mobile responsive layout with hamburger menu and off-canvas sidebar
+* Make all page grids, dashboard cards, lists, and charts stack on mobile
+* Reduce padding and hide list icons on small screens for better space usage
+* Make category breakdown legend stack below donut on mobile
+* Add iOS safe area viewport-fit and tap highlight removal
 
 ### 0.1.0: 2026-03-18
 

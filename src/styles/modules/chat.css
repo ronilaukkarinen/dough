@@ -2,16 +2,28 @@
 
 .chat-container {
   display: flex;
-  height: calc(100vh - 10rem);
+  height: calc(100vh - 9rem);
   flex-direction: column;
   border-radius: 0.75rem;
   border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
   background-color: color-mix(in srgb, var(--card) 80%, transparent);
 }
 
+@media (min-width: 768px) {
+  .chat-container {
+    height: calc(100vh - 10rem);
+  }
+}
+
 .chat-messages {
   flex: 1;
-  padding: 1.5rem;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .chat-messages {
+    padding: 1.5rem;
+  }
 }
 
 .chat-messages-list {

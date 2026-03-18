@@ -13,6 +13,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -28,7 +29,12 @@ const navKeys = [
   { href: "/debts", icon: TrendingDown, key: "debts" },
 ] as const;
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
@@ -39,9 +45,13 @@ export function Sidebar() {
     router.push("/login");
   };
 
+  const handleNavClick = () => {
+    onClose();
+  };
+
   return (
     <aside
-      className="l-sidebar"
+      className={cn("l-sidebar", isOpen && "is-open")}
       data-collapsed={collapsed || undefined}
     >
       {/* Logo */}
@@ -59,6 +69,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={handleNavClick}
               className={cn(
                 "l-sidebar-link",
                 isActive && "is-active"
@@ -75,6 +86,7 @@ export function Sidebar() {
       <div className="l-sidebar-bottom">
         <Link
           href="/settings"
+          onClick={handleNavClick}
           className={cn(
             "l-sidebar-link",
             pathname === "/settings" && "is-active"
