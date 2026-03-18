@@ -1,5 +1,7 @@
 ### 0.1.0: 2026-03-18
 
+* Fix better-sqlite3 Node version mismatch by pinning systemd service to nvm Node v22
+* Add better-sqlite3 to serverExternalPackages in next.config.ts
 * Add Outfit font for headings, Inter for body text
 * Add favicon with white $ on midnight blue background
 * Use stronger generated passwords for users
