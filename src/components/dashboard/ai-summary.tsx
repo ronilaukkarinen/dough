@@ -14,8 +14,12 @@ export function AiSummary() {
 
   const fetchSummary = async (refresh = false) => {
     console.debug("[ai-summary] Fetching summary, refresh:", refresh);
-    if (refresh) setRefreshing(true);
-    else setLoading(true);
+    if (refresh) {
+      setRefreshing(true);
+      setSummary(null);
+    } else {
+      setLoading(true);
+    }
 
     try {
       const params = new URLSearchParams({ locale });
@@ -39,8 +43,7 @@ export function AiSummary() {
     fetchSummary();
   }, [locale]);
 
-  if (loading && !summary) return null;
-  if (!summary) return null;
+  if (loading && !summary && !refreshing) return null;
 
   return (
     <Card className="ai-summary-card">
@@ -49,19 +52,21 @@ export function AiSummary() {
           <Sparkles />
         </div>
         <div className="ai-summary-actions">
-          <button
-            className="ai-summary-refresh"
-            onClick={() => {
-              if (summary) {
-                navigator.clipboard.writeText(summary);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }
-            }}
-            aria-label="Copy summary"
-          >
-            {copied ? <Check /> : <Copy />}
-          </button>
+          {summary && (
+            <button
+              className="ai-summary-refresh"
+              onClick={() => {
+                if (summary) {
+                  navigator.clipboard.writeText(summary);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }
+              }}
+              aria-label="Copy summary"
+            >
+              {copied ? <Check /> : <Copy />}
+            </button>
+          )}
           <button
             className="ai-summary-refresh"
             onClick={() => fetchSummary(true)}
@@ -72,7 +77,13 @@ export function AiSummary() {
           </button>
         </div>
       </div>
-      <p className="ai-summary-text">{summary}</p>
+      {refreshing ? (
+        <div className="typing-dots">
+          <span /><span /><span />
+        </div>
+      ) : summary ? (
+        <p className="ai-summary-text">{summary}</p>
+      ) : null}
     </Card>
   );
 }
