@@ -1,5 +1,6 @@
 ### 0.1.0: 2026-03-18
 
+* Switch AI chat from Anthropic API to claude CLI for Claude Max usage
 * Initial release of Dough personal finance app
 * Add dashboard with daily budget, spending chart, category breakdown, cash flow and recent transactions
 * Add AI financial advisor chat powered by Claude API

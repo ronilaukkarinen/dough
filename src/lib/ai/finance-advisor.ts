@@ -1,8 +1,7 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { execFile } from "child_process";
+import { promisify } from "util";
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const execFileAsync = promisify(execFile);
 
 interface FinancialContext {
   totalBalance: number;
@@ -26,20 +25,20 @@ function buildSystemPrompt(ctx: FinancialContext): string {
 ${lang}
 
 Current financial snapshot:
-- Total balance across all accounts: €${ctx.totalBalance.toLocaleString()}
-- Daily budget (safe to spend per day): €${ctx.dailyBudget}
+- Total balance across all accounts: ${ctx.totalBalance} euros
+- Daily budget (safe to spend per day): ${ctx.dailyBudget} euros
 - Days until next income: ${ctx.daysUntilNextIncome}
-- Monthly income: €${ctx.monthlyIncome.toLocaleString()}
-- Monthly expenses so far: €${ctx.monthlyExpenses.toLocaleString()}
+- Monthly income: ${ctx.monthlyIncome} euros
+- Monthly expenses so far: ${ctx.monthlyExpenses} euros
 
 Upcoming bills this month:
-${ctx.upcomingBills.map(b => `- ${b.name}: €${b.amount} (due ${b.dueDay}th)`).join("\n")}
+${ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th)`).join("\n")}
 
 Recent transactions (last 10):
-${ctx.recentTransactions.slice(0, 10).map(t => `- ${t.date}: ${t.payee} — €${Math.abs(t.amount)} (${t.category})`).join("\n")}
+${ctx.recentTransactions.slice(0, 10).map(t => `- ${t.date}: ${t.payee} - ${Math.abs(t.amount)} euros (${t.category})`).join("\n")}
 
 Debts:
-${ctx.debts.map(d => `- ${d.name}: €${d.remaining.toLocaleString()} remaining (${d.rate}% APR)`).join("\n")}
+${ctx.debts.map(d => `- ${d.name}: ${d.remaining} euros remaining (${d.rate}% APR)`).join("\n")}
 
 Guidelines:
 - Be direct and honest about their financial situation
@@ -47,25 +46,47 @@ Guidelines:
 - Give specific numbers, not vague advice
 - If things are tight, say so clearly but without being preachy
 - Suggest specific actionable steps when relevant
-- Keep responses concise — 2-4 sentences for simple questions, more for complex analysis
-- Use € for all amounts
-- Remember this is a household with two people — spending decisions affect both`;
+- Keep responses concise - 2-4 sentences for simple questions, more for complex analysis
+- Use euro sign for all amounts
+- Remember this is a household with two people - spending decisions affect both`;
+}
+
+function buildPrompt(
+  messages: { role: "user" | "assistant"; content: string }[],
+  context: FinancialContext
+): string {
+  const systemPrompt = buildSystemPrompt(context);
+  const conversation = messages
+    .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
+    .join("\n\n");
+
+  return `${systemPrompt}\n\nConversation so far:\n${conversation}\n\nRespond as the assistant:`;
 }
 
 export async function getFinancialAdvice(
   messages: { role: "user" | "assistant"; content: string }[],
   context: FinancialContext
 ): Promise<string> {
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 1024,
-    system: buildSystemPrompt(context),
-    messages: messages.map((m) => ({
-      role: m.role,
-      content: m.content,
-    })),
-  });
+  const prompt = buildPrompt(messages, context);
 
-  const textBlock = response.content.find((b) => b.type === "text");
-  return textBlock?.text || "I couldn't generate a response. Please try again.";
+  try {
+    console.info("[ai] Calling claude CLI for financial advice");
+    const { stdout } = await execFileAsync("claude", ["-p", prompt, "--no-input"], {
+      timeout: 60000,
+      maxBuffer: 1024 * 1024,
+      env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "cli" },
+    });
+
+    const response = stdout.trim();
+    if (!response) {
+      console.warn("[ai] Empty response from claude CLI");
+      return "Sorry, I could not generate a response. Please try again.";
+    }
+
+    console.info("[ai] Got response from claude CLI, length:", response.length);
+    return response;
+  } catch (error) {
+    console.error("[ai] Claude CLI error:", error);
+    return "Sorry, something went wrong with the AI advisor. Please try again.";
+  }
 }
