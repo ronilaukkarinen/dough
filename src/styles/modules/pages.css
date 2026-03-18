@@ -135,7 +135,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   transition: background-color 150ms;
 }
 
@@ -151,17 +151,19 @@
 }
 
 .list-item-icon {
-  display: none;
-  width: 2.5rem;
-  height: 2.5rem;
+  display: flex;
+  width: 2rem;
+  height: 2rem;
   align-items: center;
   justify-content: center;
   border-radius: 0.5rem;
+  flex-shrink: 0;
 }
 
 @media (min-width: 640px) {
   .list-item-icon {
-    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
   }
 }
 

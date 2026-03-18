@@ -3,7 +3,7 @@
 .card.spending-chart-card {
   border-color: color-mix(in srgb, var(--border) 50%, transparent);
   background-color: color-mix(in srgb, var(--card) 80%, transparent);
-  padding: 1rem;
+  padding: 1.25rem;
   gap: 0.5rem;
 }
 
