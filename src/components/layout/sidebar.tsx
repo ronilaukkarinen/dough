@@ -41,20 +41,18 @@ export function Sidebar() {
 
   return (
     <aside
-      className={cn(
-        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-border bg-sidebar transition-all duration-300",
-        collapsed ? "w-[68px]" : "w-[240px]"
-      )}
+      className="l-sidebar"
+      data-collapsed={collapsed || undefined}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-border px-4">
-        <span className="text-lg font-semibold tracking-tight text-foreground">
+      <div className="l-sidebar-logo">
+        <span className="l-sidebar-logo-text">
           {collapsed ? "D" : "Dough"}
         </span>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-3">
+      <nav className="l-sidebar-nav">
         {navKeys.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
@@ -62,13 +60,11 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                "l-sidebar-link",
+                isActive && "is-active"
               )}
             >
-              <item.icon className="h-5 w-5 shrink-0" />
+              <item.icon className="l-sidebar-link-icon" />
               {!collapsed && <span>{t.nav[item.key]}</span>}
             </Link>
           );
@@ -76,31 +72,29 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom actions */}
-      <div className="border-t border-border p-3 space-y-1">
+      <div className="l-sidebar-bottom">
         <Link
           href="/settings"
           className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-            pathname === "/settings"
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:bg-accent hover:text-foreground"
+            "l-sidebar-link",
+            pathname === "/settings" && "is-active"
           )}
         >
-          <Settings className="h-5 w-5 shrink-0" />
+          <Settings className="l-sidebar-link-icon" />
           {!collapsed && <span>{t.common.settings}</span>}
         </Link>
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="l-sidebar-link"
         >
-          <LogOut className="h-5 w-5 shrink-0" />
+          <LogOut className="l-sidebar-link-icon" />
           {!collapsed && <span>{t.common.logout}</span>}
         </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="l-sidebar-collapse-btn"
         >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          {collapsed ? <ChevronRight className="l-sidebar-collapse-icon" /> : <ChevronLeft className="l-sidebar-collapse-icon" />}
         </button>
       </div>
     </aside>
