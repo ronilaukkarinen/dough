@@ -1,13 +1,13 @@
 /* Module: input */
 
 .input {
-  height: 2rem;
+  height: 2.25rem;
   width: 100%;
   min-width: 0;
   border-radius: 0.5rem;
   border: 1px solid var(--input);
   background-color: transparent;
-  padding: 0.25rem 0.625rem;
+  padding: 0.25rem 0.75rem;
   font-size: 1rem;
   line-height: 1.5rem;
   transition: color 150ms, border-color 150ms, box-shadow 150ms;

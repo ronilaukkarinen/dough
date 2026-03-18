@@ -176,8 +176,8 @@
 }
 
 .metric-card-value {
-  font-size: 1.5rem;
-  line-height: 2rem;
+  font-size: 1.75rem;
+  line-height: 2.25rem;
   font-weight: 700;
   letter-spacing: -0.025em;
   color: var(--foreground);

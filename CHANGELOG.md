@@ -30,6 +30,10 @@
 * Fix mobile proportions: increase card padding, hero text size, list item spacing, show list icons on mobile
 * Complete Finnish translations for all page components, dashboard, chat, settings, and UI labels
 * Add ~60 new translation keys covering bills, income, debts, settings, chat errors, and dashboard labels
+* Add proper CSS reset for buttons, inputs, headings (missing from Tailwind Preflight replacement)
+* Increase button, input, and select sizes for better touch targets
+* Increase metric card value font size from 1.5rem to 1.75rem
+* Fix sidebar logout button rendering as white by resetting native button styles
 
 ### 0.1.0: 2026-03-18
 
