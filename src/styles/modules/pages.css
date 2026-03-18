@@ -440,6 +440,12 @@
   margin-top: 0.25rem;
 }
 
+/* Tab trigger icon — smaller than default */
+.tabs-trigger-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
 /* Standalone icon in summary cards */
 .metric-card-icon-standalone {
   width: 1.25rem;
@@ -456,6 +462,12 @@
 .progress.progress-thin {
   margin-top: 0.75rem;
   height: 0.375rem;
+}
+
+/* Sync icon */
+.sync-icon {
+  width: 0.75rem;
+  height: 0.75rem;
 }
 
 /* Text colors used across pages */

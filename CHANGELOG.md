@@ -25,7 +25,7 @@
 * Add disconnect YNAB button in settings
 * Add `ynab_budget_id` to session user profile
 * Fix update API to handle clearing YNAB token and budget ID
-* Remove inline style overrides, use proper CSS classes for summary card values
+* Remove all static inline styles, replace with CSS classes per CLAUDE.md rules
 
 ### 0.1.0: 2026-03-18
 

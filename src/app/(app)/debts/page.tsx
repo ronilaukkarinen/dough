@@ -237,11 +237,11 @@ export default function DebtsPage() {
         <Tabs defaultValue="snowball">
           <TabsList>
             <TabsTrigger value="snowball">
-              <Flame style={{ width: "0.875rem", height: "0.875rem" }} />
+              <Flame className="tabs-trigger-icon" />
               Snowball
             </TabsTrigger>
             <TabsTrigger value="avalanche">
-              <TrendingDown style={{ width: "0.875rem", height: "0.875rem" }} />
+              <TrendingDown className="tabs-trigger-icon" />
               Avalanche
             </TabsTrigger>
           </TabsList>

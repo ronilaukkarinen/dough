@@ -21,7 +21,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
     const data = payload[0].payload;
     return (
       <div className="chart-tooltip">
-        <p className="chart-tooltip-value" style={{ color: "var(--foreground)" }}>{data.name}</p>
+        <p className="chart-tooltip-value text-foreground">{data.name}</p>
         <p className="chart-tooltip-label">{data.amount} €</p>
       </div>
     );

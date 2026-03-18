@@ -19,7 +19,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Menu />
         </button>
         <span className="l-topbar-title">Dough</span>
-        <div style={{ width: "2.25rem" }} />
+        <div className="l-topbar-spacer" />
       </div>
 
       {/* Sidebar overlay for mobile */}

@@ -375,7 +375,7 @@ export default function SettingsPage() {
                     onClick={handleSync}
                     disabled={syncLoading}
                   >
-                    <RefreshCw className={syncLoading ? "animate-spin" : ""} style={{ width: "0.75rem", height: "0.75rem" }} />
+                    <RefreshCw className={`sync-icon ${syncLoading ? "animate-spin" : ""}`} />
                     {syncLoading ? "Syncing..." : "Sync now"}
                   </Button>
                   <span className="settings-sync-time">

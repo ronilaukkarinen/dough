@@ -59,6 +59,10 @@
   height: 1.25rem;
 }
 
+.l-topbar-spacer {
+  width: 2.25rem;
+}
+
 /* Sidebar overlay (mobile) */
 .l-sidebar-overlay {
   display: none;
