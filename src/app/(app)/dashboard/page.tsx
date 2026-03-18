@@ -8,14 +8,17 @@ import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { CashFlowChart } from "@/components/dashboard/cash-flow";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { AiSummary } from "@/components/dashboard/ai-summary";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, RefreshCw } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { fi as fiFns, enUS } from "date-fns/locale";
 
 // Chart colors for categories
 const CATEGORY_COLORS = ["#4d94ff", "#00e676", "#ffb74d", "#b388ff", "#ff80ab", "#7a8ba0"];
 
 export default function DashboardPage() {
-  const { t } = useLocale();
-  const { data, loading, connected } = useYnab();
+  const { t, locale } = useLocale();
+  const { data, loading, connected, sync } = useYnab();
 
   if (!connected) {
     return (
@@ -121,8 +124,19 @@ export default function DashboardPage() {
 
   return (
     <div className="page-stack">
-      <div>
-        <h1 className="page-heading">{t.dashboard.title}</h1>
+      <div className="page-header-row">
+        <div>
+          <h1 className="page-heading">{t.dashboard.title}</h1>
+          {data?.syncedAt && (
+            <p className="page-subtitle">
+              {formatDistanceToNow(new Date(data.syncedAt), { addSuffix: true, locale: locale === "fi" ? fiFns : enUS })}
+            </p>
+          )}
+        </div>
+        <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
+          <RefreshCw className={loading ? "icon-sm animate-spin" : "icon-sm"} />
+          {t.common.sync}
+        </Button>
       </div>
 
       <AiSummary />

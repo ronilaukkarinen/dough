@@ -26,6 +26,8 @@
 * Normalize all currency values to xxxxx.xx € format across all pages
 * Fix NaN% in debts progress when no debts exist
 * Sync debts from YNAB otherDebt type accounts automatically
+* Add sync button and relative last sync time to dashboard header
+* Make pie chart larger (260px, radii 70/110)
 
 ### 0.2.0: 2026-03-18
 
