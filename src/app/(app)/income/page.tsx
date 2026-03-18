@@ -93,10 +93,10 @@ export default function IncomePage() {
       <div className="page-grid-2-sm">
         <Card className="metric-card">
           <p className="metric-card-label">Expected monthly</p>
-          <p className="metric-card-value text-positive" style={{ fontSize: "1.875rem", lineHeight: "2.25rem", marginTop: "0.25rem" }}>
+          <p className="metric-card-value-3xl text-positive">
             {monthlyTotal} €
           </p>
-          <p className="metric-card-note" style={{ marginTop: "0.25rem" }}>
+          <p className="metric-card-note metric-card-note-mt">
             {incomes.filter((i) => i.isActive).length} sources
           </p>
         </Card>
@@ -104,14 +104,14 @@ export default function IncomePage() {
           <div className="page-header-row">
             <div>
               <p className="metric-card-label">Guaranteed recurring</p>
-              <p className="metric-card-value" style={{ fontSize: "1.875rem", lineHeight: "2.25rem", marginTop: "0.25rem" }}>
+              <p className="metric-card-value-3xl">
                 {recurringTotal} €
               </p>
-              <p className="metric-card-note" style={{ marginTop: "0.25rem" }}>
+              <p className="metric-card-note metric-card-note-mt">
                 Reliable monthly income
               </p>
             </div>
-            <TrendingUp style={{ width: "1.25rem", height: "1.25rem", color: "var(--positive)" }} />
+            <TrendingUp className="metric-card-icon-standalone text-positive" />
           </div>
         </Card>
       </div>

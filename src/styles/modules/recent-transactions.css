@@ -1,9 +1,16 @@
 /* Module: recent-transactions */
 
-.recent-transactions-card {
+.card.recent-transactions-card {
   border-color: color-mix(in srgb, var(--border) 50%, transparent);
   background-color: color-mix(in srgb, var(--card) 80%, transparent);
-  padding: 1.5rem;
+  padding: 1rem;
+  gap: 0;
+}
+
+@media (min-width: 768px) {
+  .card.recent-transactions-card {
+    padding: 1.5rem;
+  }
 }
 
 .recent-transactions-header {

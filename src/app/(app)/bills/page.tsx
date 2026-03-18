@@ -107,10 +107,10 @@ export default function BillsPage() {
       <div className="page-grid-2-sm">
         <Card className="metric-card">
           <p className="metric-card-label">Monthly total</p>
-          <p className="metric-card-value" style={{ fontSize: "1.875rem", lineHeight: "2.25rem", marginTop: "0.25rem" }}>
+          <p className="metric-card-value-3xl">
             {monthlyTotal.toFixed(2)} €
           </p>
-          <p className="metric-card-note" style={{ marginTop: "0.25rem" }}>
+          <p className="metric-card-note metric-card-note-mt">
             {bills.filter((b) => b.isActive).length} active bills
           </p>
         </Card>
@@ -118,14 +118,14 @@ export default function BillsPage() {
           <div className="page-header-row">
             <div>
               <p className="metric-card-label">Remaining this month</p>
-              <p className="metric-card-value text-negative" style={{ fontSize: "1.875rem", lineHeight: "2.25rem", marginTop: "0.25rem" }}>
+              <p className="metric-card-value-3xl text-negative">
                 {remainingThisMonth.toFixed(2)} €
               </p>
-              <p className="metric-card-note" style={{ marginTop: "0.25rem" }}>
+              <p className="metric-card-note metric-card-note-mt">
                 Still due before month end
               </p>
             </div>
-            <AlertCircle style={{ width: "1.25rem", height: "1.25rem", color: "var(--negative)" }} />
+            <AlertCircle className="metric-card-icon-standalone text-negative" />
           </div>
         </Card>
       </div>

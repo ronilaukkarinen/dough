@@ -20,6 +20,12 @@
 * Reduce padding and hide list icons on small screens for better space usage
 * Make category breakdown legend stack below donut on mobile
 * Add iOS safe area viewport-fit and tap highlight removal
+* Fix CSS specificity for card, badge, input, and button overrides using compound selectors
+* Fix YNAB settings to show budget ID field when connected
+* Add disconnect YNAB button in settings
+* Add `ynab_budget_id` to session user profile
+* Fix update API to handle clearing YNAB token and budget ID
+* Remove inline style overrides, use proper CSS classes for summary card values
 
 ### 0.1.0: 2026-03-18
 

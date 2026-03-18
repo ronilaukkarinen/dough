@@ -11,11 +11,6 @@ export async function middleware(request: NextRequest) {
   const isLoginPage = request.nextUrl.pathname.startsWith("/login");
   const isApiAuth = request.nextUrl.pathname.startsWith("/api/auth");
 
-  console.info("[middleware]", request.method, request.nextUrl.pathname, {
-    hasCookie: !!token,
-    cookieCount: request.cookies.getAll().length,
-    userAgent: request.headers.get("user-agent")?.substring(0, 80),
-  });
 
   // Allow auth API and static assets
   if (isApiAuth) {

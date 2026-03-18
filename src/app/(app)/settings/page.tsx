@@ -22,6 +22,7 @@ interface UserProfile {
   email: string;
   locale: string;
   ynab_connected: boolean;
+  ynab_budget_id: string | null;
   last_ynab_sync: string | null;
 }
 
@@ -47,6 +48,9 @@ export default function SettingsPage() {
           console.info("[settings] Profile loaded for", data.user.email);
           setProfile(data.user);
           setLanguage(data.user.locale || "en");
+          if (data.user.ynab_budget_id) {
+            setYnabBudgetId(data.user.ynab_budget_id);
+          }
         }
       })
       .catch((err) => console.error("[settings] Failed to load profile:", err))
@@ -111,6 +115,49 @@ export default function SettingsPage() {
       console.error("[settings] YNAB connect error:", err);
     } finally {
       setYnabLoading(false);
+    }
+  };
+
+  const handleYnabDisconnect = async () => {
+    setYnabLoading(true);
+    console.info("[settings] Disconnecting YNAB");
+    try {
+      const res = await fetch("/api/auth/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ynab_access_token: "",
+          ynab_budget_id: "",
+        }),
+      });
+      if (res.ok) {
+        setProfile((prev) => prev ? { ...prev, ynab_connected: false, ynab_budget_id: null } : prev);
+        setYnabToken("");
+        setYnabBudgetId("");
+        console.info("[settings] YNAB disconnected");
+      }
+    } catch (err) {
+      console.error("[settings] YNAB disconnect error:", err);
+    } finally {
+      setYnabLoading(false);
+    }
+  };
+
+  const handleBudgetIdSave = async () => {
+    if (!ynabBudgetId.trim()) return;
+    console.info("[settings] Saving budget ID");
+    try {
+      const res = await fetch("/api/auth/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ynab_budget_id: ynabBudgetId.trim() }),
+      });
+      if (res.ok) {
+        setProfile((prev) => prev ? { ...prev, ynab_budget_id: ynabBudgetId.trim() } : prev);
+        console.info("[settings] Budget ID saved");
+      }
+    } catch (err) {
+      console.error("[settings] Budget ID save error:", err);
     }
   };
 
@@ -206,7 +253,7 @@ export default function SettingsPage() {
               )}
             </div>
 
-            {!profile?.ynab_connected && (
+            {!profile?.ynab_connected ? (
               <div className="form-stack">
                 <p className="page-subtitle">
                   Connect your YNAB account to sync transactions, budgets, and account balances.
@@ -242,24 +289,47 @@ export default function SettingsPage() {
                   {ynabLoading ? "Connecting..." : "Connect"}
                 </Button>
               </div>
-            )}
-
-            {profile?.ynab_connected && (
-              <div className="settings-row">
+            ) : (
+              <div className="form-stack">
+                <div className="form-field">
+                  <Label>YNAB budget ID</Label>
+                  <div className="settings-row">
+                    <Input
+                      type="text"
+                      placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                      value={ynabBudgetId}
+                      onChange={(e) => setYnabBudgetId(e.target.value)}
+                      className="settings-input"
+                    />
+                    <Button size="sm" variant="outline" onClick={handleBudgetIdSave}>
+                      Save
+                    </Button>
+                  </div>
+                </div>
+                <div className="settings-row">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSync}
+                    disabled={syncLoading}
+                  >
+                    <RefreshCw className={syncLoading ? "animate-spin" : ""} style={{ width: "0.75rem", height: "0.75rem" }} />
+                    {syncLoading ? "Syncing..." : "Sync now"}
+                  </Button>
+                  <span className="settings-sync-time">
+                    {syncResult || (profile.last_ynab_sync
+                      ? `Last sync: ${new Date(profile.last_ynab_sync).toLocaleDateString("fi-FI")}`
+                      : "Never synced")}
+                  </span>
+                </div>
                 <Button
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
-                  onClick={handleSync}
-                  disabled={syncLoading}
+                  onClick={handleYnabDisconnect}
+                  disabled={ynabLoading}
                 >
-                  <RefreshCw className={syncLoading ? "animate-spin" : ""} style={{ width: "0.75rem", height: "0.75rem" }} />
-                  {syncLoading ? "Syncing..." : "Sync now"}
+                  {ynabLoading ? "Disconnecting..." : "Disconnect YNAB"}
                 </Button>
-                <span className="settings-sync-time">
-                  {syncResult || (profile.last_ynab_sync
-                    ? `Last sync: ${new Date(profile.last_ynab_sync).toLocaleDateString("fi-FI")}`
-                    : "Never synced")}
-                </span>
               </div>
             )}
           </CardContent>

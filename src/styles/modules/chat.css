@@ -120,17 +120,17 @@
   gap: 0.75rem;
 }
 
-.chat-input {
+.input.chat-input {
   flex: 1;
   height: 2.75rem;
 }
 
-.chat-send-button {
+.button.chat-send-button {
   height: 2.75rem;
   width: 2.75rem;
 }
 
-.chat-send-button svg {
+.button.chat-send-button svg {
   width: 1rem;
   height: 1rem;
 }

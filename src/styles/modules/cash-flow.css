@@ -1,9 +1,16 @@
 /* Module: cash-flow */
 
-.cash-flow-card {
+.card.cash-flow-card {
   border-color: color-mix(in srgb, var(--border) 50%, transparent);
   background-color: color-mix(in srgb, var(--card) 80%, transparent);
-  padding: 1.5rem;
+  padding: 1rem;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .card.cash-flow-card {
+    padding: 1.5rem;
+  }
 }
 
 .cash-flow-title {

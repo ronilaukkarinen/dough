@@ -180,7 +180,7 @@ export default function DebtsPage() {
               <p className="metric-card-value">{progress.toFixed(0)}%</p>
             </div>
           </div>
-          <Progress value={progress} style={{ marginTop: "0.75rem", height: "0.5rem" }} />
+          <Progress value={progress} className="progress-thick" />
         </Card>
         <Card className="metric-card">
           <div className="metric-card-row">
@@ -213,7 +213,7 @@ export default function DebtsPage() {
                   <p className="debt-item-total">of {debt.totalAmount} €</p>
                 </div>
               </div>
-              <Progress value={pct} style={{ marginTop: "0.75rem", height: "0.375rem" }} />
+              <Progress value={pct} className="progress-thin" />
             </div>
           );
         })}

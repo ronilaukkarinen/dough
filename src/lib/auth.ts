@@ -14,6 +14,7 @@ export interface SessionUser {
   display_name: string;
   locale: string;
   ynab_connected: boolean;
+  ynab_budget_id: string | null;
   last_ynab_sync: string | null;
 }
 
@@ -38,7 +39,7 @@ export async function getSession(): Promise<SessionUser | null> {
 
     const db = getDb();
     const row = db
-      .prepare("SELECT id, email, display_name, locale, ynab_access_token, last_ynab_sync FROM users WHERE id = ?")
+      .prepare("SELECT id, email, display_name, locale, ynab_access_token, ynab_budget_id, last_ynab_sync FROM users WHERE id = ?")
       .get(userId) as (SessionUser & { ynab_access_token: string | null }) | undefined;
 
     if (!row) return null;
@@ -49,6 +50,7 @@ export async function getSession(): Promise<SessionUser | null> {
       display_name: row.display_name,
       locale: row.locale,
       ynab_connected: !!row.ynab_access_token,
+      ynab_budget_id: row.ynab_budget_id,
       last_ynab_sync: row.last_ynab_sync,
     };
   } catch (error) {
@@ -63,7 +65,7 @@ export async function login(
 ): Promise<{ user: SessionUser; token: string } | null> {
   const db = getDb();
   const dbRow = db
-    .prepare("SELECT id, email, display_name, locale, password_hash, ynab_access_token, last_ynab_sync FROM users WHERE email = ?")
+    .prepare("SELECT id, email, display_name, locale, password_hash, ynab_access_token, ynab_budget_id, last_ynab_sync FROM users WHERE email = ?")
     .get(email) as (SessionUser & { password_hash: string; ynab_access_token: string | null }) | undefined;
 
   if (!dbRow) {
@@ -87,6 +89,7 @@ export async function login(
       display_name: dbRow.display_name,
       locale: dbRow.locale,
       ynab_connected: !!dbRow.ynab_access_token,
+      ynab_budget_id: dbRow.ynab_budget_id,
       last_ynab_sync: dbRow.last_ynab_sync,
     },
     token,
