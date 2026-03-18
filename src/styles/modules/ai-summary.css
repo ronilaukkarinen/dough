@@ -33,6 +33,12 @@
   height: 0.875rem;
 }
 
+.ai-summary-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 .ai-summary-refresh {
   display: flex;
   align-items: center;

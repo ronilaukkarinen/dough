@@ -29,8 +29,6 @@ export function NetWorth({ accounts }: NetWorthProps) {
 
   return (
     <div className="net-worth-section">
-      <h3 className="net-worth-heading">{t.dashboard.netWorth}</h3>
-
       <div className="net-worth-grid">
         <Card className="net-worth-hero">
           <p className="net-worth-hero-label">{t.dashboard.netWorth}</p>

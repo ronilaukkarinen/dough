@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { RefreshCw, Sparkles } from "lucide-react";
+import { RefreshCw, Sparkles, Copy, Check } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 
 export function AiSummary() {
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [copied, setCopied] = useState(false);
   const { locale } = useLocale();
 
   const fetchSummary = async (refresh = false) => {
@@ -47,14 +48,29 @@ export function AiSummary() {
         <div className="ai-summary-icon">
           <Sparkles />
         </div>
-        <button
-          className="ai-summary-refresh"
-          onClick={() => fetchSummary(true)}
-          disabled={refreshing}
-          aria-label="Refresh summary"
-        >
-          <RefreshCw className={refreshing ? "animate-spin" : ""} />
-        </button>
+        <div className="ai-summary-actions">
+          <button
+            className="ai-summary-refresh"
+            onClick={() => {
+              if (summary) {
+                navigator.clipboard.writeText(summary);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }
+            }}
+            aria-label="Copy summary"
+          >
+            {copied ? <Check /> : <Copy />}
+          </button>
+          <button
+            className="ai-summary-refresh"
+            onClick={() => fetchSummary(true)}
+            disabled={refreshing}
+            aria-label="Refresh summary"
+          >
+            <RefreshCw className={refreshing ? "animate-spin" : ""} />
+          </button>
+        </div>
       </div>
       <p className="ai-summary-text">{summary}</p>
     </Card>

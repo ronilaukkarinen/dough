@@ -47,8 +47,12 @@ export default function DashboardPage() {
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysLeft = daysInMonth - now.getDate() + 1;
   const monthActivity = Math.abs(data.monthBudget.activity);
-  const monthIncome = data.monthBudget.income;
   const toBeBudgeted = data.monthBudget.toBeBudgeted;
+
+  // Real income = positive transactions excluding transfers
+  const realIncome = data.transactions
+    .filter((t) => t.amount > 0 && !t.payee.startsWith("Transfer"))
+    .reduce((s, t) => s + t.amount, 0);
 
   // Available = total checking + savings accounts
   const availableBalance = Math.round(
@@ -117,9 +121,9 @@ export default function DashboardPage() {
   const cashFlowData = [
     {
       month: new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString("en", { month: "short" }),
-      income: Math.round(monthIncome),
+      income: Math.round(realIncome),
       expenses: Math.round(monthActivity),
-      net: Math.round(monthIncome - monthActivity),
+      net: Math.round(realIncome - monthActivity),
     },
   ];
 

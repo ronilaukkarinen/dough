@@ -77,11 +77,13 @@ export async function GET(request: Request) {
 
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const daysLeft = daysInMonth - now.getDate() + 1;
-    const monthActivity = Math.abs(monthBudget.activity);
-    const monthIncome = monthBudget.income;
+    // Filter out transfers for accurate income/expense
+    const realExpenses = transactions.filter((t: any) => t.amount < 0 && !t.payee.startsWith("Transfer") && t.category !== "Uncategorized");
+    const realIncome = transactions.filter((t: any) => t.amount > 0 && !t.payee.startsWith("Transfer"));
+    const monthActivity = realExpenses.reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
+    const monthIncomeTotal = realIncome.reduce((s: number, t: any) => s + t.amount, 0);
 
-    const topExpenses = transactions
-      .filter((t: any) => t.amount < 0)
+    const topExpenses = realExpenses
       .sort((a: any, b: any) => a.amount - b.amount)
       .slice(0, 5)
       .map((t: any) => `${t.payee}: ${Math.abs(t.amount).toFixed(0)} euros`)
@@ -95,8 +97,8 @@ export async function GET(request: Request) {
 
 Data:
 - Checking+savings balance: ${Math.round(checkingSavings)} euros
-- This month's income so far: ${Math.round(monthIncome)} euros
-- This month's spending so far: ${Math.round(monthActivity)} euros
+- This month's real income (excluding transfers): ${Math.round(monthIncomeTotal)} euros
+- This month's real spending (excluding transfers): ${Math.round(monthActivity)} euros
 - Days left in month: ${daysLeft}
 - Daily budget if spread evenly: ${daysLeft > 0 ? Math.round(checkingSavings / daysLeft) : 0} euros/day
 - Top expenses: ${topExpenses}

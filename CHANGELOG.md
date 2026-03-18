@@ -56,6 +56,10 @@
 * Reduce all mobile card padding for tighter layout
 * Update page headings to be larger and bolder
 * Simplify button hover to subtle glow instead of complex inset shadows
+* Filter transfers from income calculations in dashboard, chat and AI summary
+* Add copy-to-clipboard button on AI summary card
+* Fix duplicate net worth heading, follow hero design pattern
+* Fix Finnish translation "Tulonlähteet"
 
 ### 0.2.0: 2026-03-18
 

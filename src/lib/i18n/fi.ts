@@ -115,7 +115,7 @@ Kokeile kysyä esimerkiksi:
     nextDue: "Seuraava eräpäivä",
   },
   income: {
-    title: "Tulolähteet",
+    title: "Tulonlähteet",
     subtitle: "Seuraa milloin rahaa tulee",
     addIncome: "Lisää tulo",
     addIncomeSource: "Lisää tulolähde",

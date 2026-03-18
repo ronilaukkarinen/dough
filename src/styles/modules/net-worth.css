@@ -47,7 +47,7 @@
 }
 
 .net-worth-hero-label {
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--muted-foreground);
   text-transform: uppercase;
@@ -55,11 +55,17 @@
 }
 
 .net-worth-hero-value {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.04em;
   color: var(--negative);
   font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 768px) {
+  .net-worth-hero-value {
+    font-size: 2.25rem;
+  }
 }
 
 .net-worth-hero-value[data-positive] {

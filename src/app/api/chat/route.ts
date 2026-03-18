@@ -55,15 +55,20 @@ export async function POST(request: Request) {
             .filter((a: any) => a.type === "otherDebt" && a.balance < 0)
             .map((a: any) => ({ name: a.name, remaining: Math.abs(a.balance), rate: 0 }));
 
+          // Filter transfers
+          const realIncomeTx = transactions.filter((t: any) => t.amount > 0 && !t.payee.startsWith("Transfer"));
+          const realExpenseTx = transactions.filter((t: any) => t.amount < 0 && !t.payee.startsWith("Transfer") && t.category !== "Uncategorized");
+
           const recentTx = [...transactions]
+            .filter((t: any) => !t.payee.startsWith("Transfer"))
             .sort((a: any, b: any) => b.date.localeCompare(a.date))
             .slice(0, 10)
             .map((t: any) => ({ date: t.date, payee: t.payee, amount: t.amount, category: t.category }));
 
           context = {
             totalBalance: Math.round(checkingSavings * 100) / 100,
-            monthlyIncome: Math.round(monthBudget.income * 100) / 100,
-            monthlyExpenses: Math.round(Math.abs(monthBudget.activity) * 100) / 100,
+            monthlyIncome: Math.round(realIncomeTx.reduce((s: number, t: any) => s + t.amount, 0) * 100) / 100,
+            monthlyExpenses: Math.round(realExpenseTx.reduce((s: number, t: any) => s + Math.abs(t.amount), 0) * 100) / 100,
             upcomingBills: [] as { name: string; amount: number; dueDay: number }[],
             recentTransactions: recentTx,
             debts,
