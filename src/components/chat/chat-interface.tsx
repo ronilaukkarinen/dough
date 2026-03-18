@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User, Loader2 } from "lucide-react";
+import { useLocale } from "@/lib/locale-context";
 
 interface Message {
   id: string;
@@ -13,20 +14,13 @@ interface Message {
   timestamp: Date;
 }
 
-const GREETING = `Hi! I'm your financial advisor. I can see your YNAB data and help you make better money decisions.
-
-Try asking me things like:
-• "Can we afford eating out tonight?"
-• "How much have we spent on groceries this month?"
-• "What subscriptions can I cut?"
-• "When will we be debt-free?"`;
-
 export function ChatInterface() {
+  const { t } = useLocale();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "greeting",
       role: "assistant",
-      content: GREETING,
+      content: t.chat.greeting,
       timestamp: new Date(),
     },
   ]);
@@ -75,7 +69,7 @@ export function ChatInterface() {
         {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: data.message || "Sorry, I couldn't process that. Try again.",
+          content: data.message || t.chat.errorProcess,
           timestamp: new Date(),
         },
       ]);
@@ -85,7 +79,7 @@ export function ChatInterface() {
         {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: "Sorry, something went wrong. Please try again.",
+          content: t.chat.errorGeneral,
           timestamp: new Date(),
         },
       ]);
@@ -97,38 +91,24 @@ export function ChatInterface() {
 
   return (
     <div className="chat-container">
-      {/* Messages */}
       <ScrollArea className="chat-messages" ref={scrollRef}>
         <div className="chat-messages-list">
           {messages.map((message) => (
-            <div
-              key={message.id}
-              className="chat-message"
-              data-role={message.role}
-            >
+            <div key={message.id} className="chat-message" data-role={message.role}>
               {message.role === "assistant" && (
-                <div className="chat-message-avatar" data-role="assistant">
-                  <Bot />
-                </div>
+                <div className="chat-message-avatar" data-role="assistant"><Bot /></div>
               )}
-              <div
-                className="chat-message-bubble"
-                data-role={message.role}
-              >
+              <div className="chat-message-bubble" data-role={message.role}>
                 <div className="chat-message-text">{message.content}</div>
               </div>
               {message.role === "user" && (
-                <div className="chat-message-avatar" data-role="user">
-                  <User />
-                </div>
+                <div className="chat-message-avatar" data-role="user"><User /></div>
               )}
             </div>
           ))}
           {loading && (
             <div className="chat-loading">
-              <div className="chat-message-avatar" data-role="assistant">
-                <Bot />
-              </div>
+              <div className="chat-message-avatar" data-role="assistant"><Bot /></div>
               <div className="chat-loading-bubble">
                 <Loader2 className="chat-loading-spinner animate-spin" />
               </div>
@@ -137,23 +117,17 @@ export function ChatInterface() {
         </div>
       </ScrollArea>
 
-      {/* Input */}
       <div className="chat-input-area">
         <form onSubmit={handleSubmit} className="chat-input-form">
           <Input
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about your finances..."
+            placeholder={t.chat.placeholder}
             className="chat-input"
             disabled={loading}
           />
-          <Button
-            type="submit"
-            size="icon"
-            className="chat-send-button"
-            disabled={!input.trim() || loading}
-          >
+          <Button type="submit" size="icon" className="chat-send-button" disabled={!input.trim() || loading}>
             <Send />
           </Button>
         </form>

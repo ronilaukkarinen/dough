@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { useLocale } from "@/lib/locale-context";
 import Link from "next/link";
 
 interface Transaction {
@@ -17,25 +18,19 @@ interface RecentTransactionsProps {
   currency?: string;
 }
 
-export function RecentTransactions({
-  transactions,
-  currency = "€",
-}: RecentTransactionsProps) {
+export function RecentTransactions({ transactions, currency = "\u20AC" }: RecentTransactionsProps) {
+  const { t } = useLocale();
+
   return (
     <Card className="recent-transactions-card">
       <div className="recent-transactions-header">
-        <h3 className="recent-transactions-title">Recent transactions</h3>
-        <Link href="/transactions" className="recent-transactions-link">
-          View all
-        </Link>
+        <h3 className="recent-transactions-title">{t.dashboard.recentTransactions}</h3>
+        <Link href="/transactions" className="recent-transactions-link">{t.common.viewAll}</Link>
       </div>
       <div className="recent-transactions-list">
         {transactions.map((tx) => (
           <div key={tx.id} className="recent-transactions-item">
-            <div
-              className="recent-transactions-icon"
-              data-type={tx.amount < 0 ? "expense" : "income"}
-            >
+            <div className="recent-transactions-icon" data-type={tx.amount < 0 ? "expense" : "income"}>
               {tx.amount < 0 ? <ArrowUpRight /> : <ArrowDownLeft />}
             </div>
             <div className="recent-transactions-info">
@@ -43,12 +38,8 @@ export function RecentTransactions({
               <p className="recent-transactions-category">{tx.category}</p>
             </div>
             <div className="recent-transactions-amount">
-              <p
-                className="recent-transactions-amount-value"
-                data-type={tx.amount < 0 ? "expense" : "income"}
-              >
-                {tx.amount < 0 ? "-" : "+"}
-                {Math.abs(tx.amount)} {currency}
+              <p className="recent-transactions-amount-value" data-type={tx.amount < 0 ? "expense" : "income"}>
+                {tx.amount < 0 ? "-" : "+"}{Math.abs(tx.amount)} {currency}
               </p>
               <p className="recent-transactions-date">{tx.date}</p>
             </div>

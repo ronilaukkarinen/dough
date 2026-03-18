@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { Sidebar } from "./sidebar";
 import { Menu } from "lucide-react";
+import { useLocale } from "@/lib/locale-context";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { t } = useLocale();
 
   return (
     <div className="l-app-shell">
@@ -14,7 +16,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <button
           className="l-topbar-btn"
           onClick={() => setSidebarOpen(true)}
-          aria-label="Open menu"
+          aria-label={t.common.openMenu}
         >
           <Menu />
         </button>

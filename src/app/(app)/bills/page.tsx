@@ -15,11 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Plus,
-  CalendarClock,
-  AlertCircle,
-} from "lucide-react";
+import { Plus, CalendarClock, AlertCircle } from "lucide-react";
 
 interface Bill {
   id: string;
@@ -65,72 +61,64 @@ export default function BillsPage() {
       <div className="page-header-row">
         <div>
           <h1 className="page-heading">{t.bills.title}</h1>
-          <p className="page-subtitle">Manage your monthly obligations</p>
+          <p className="page-subtitle">{t.bills.subtitle}</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={<Button size="sm" />}>
             <Plus className="icon-sm" />
-            Add bill
+            {t.bills.addBill}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add recurring bill</DialogTitle>
+              <DialogTitle>{t.bills.addRecurringBill}</DialogTitle>
             </DialogHeader>
             <form className="form-stack">
               <div className="form-field">
-                <Label>Name</Label>
-                <Input placeholder="e.g. Netflix" />
+                <Label>{t.bills.name}</Label>
+                <Input placeholder={t.bills.namePlaceholder} />
               </div>
               <div className="form-grid-2">
                 <div className="form-field">
-                  <Label>Amount (€)</Label>
+                  <Label>{t.bills.amountEur}</Label>
                   <Input type="number" step="0.01" placeholder="0.00" />
                 </div>
                 <div className="form-field">
-                  <Label>Due day</Label>
+                  <Label>{t.bills.dueDay}</Label>
                   <Input type="number" min="1" max="31" placeholder="1" />
                 </div>
               </div>
               <div className="form-field">
-                <Label>Category</Label>
-                <Input placeholder="e.g. Subscriptions" />
+                <Label>{t.bills.category}</Label>
+                <Input placeholder={t.bills.categoryPlaceholder} />
               </div>
               <Button type="submit" className="w-full" onClick={() => setDialogOpen(false)}>
-                Add bill
+                {t.bills.addBill}
               </Button>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Summary cards */}
       <div className="page-grid-2-sm">
         <Card className="metric-card">
-          <p className="metric-card-label">Monthly total</p>
-          <p className="metric-card-value-3xl">
-            {monthlyTotal.toFixed(2)} €
-          </p>
+          <p className="metric-card-label">{t.bills.monthlyTotal}</p>
+          <p className="metric-card-value-3xl">{monthlyTotal.toFixed(2)} {"\u20AC"}</p>
           <p className="metric-card-note metric-card-note-mt">
-            {bills.filter((b) => b.isActive).length} active bills
+            {bills.filter((b) => b.isActive).length} {t.common.activeBills}
           </p>
         </Card>
         <Card className="metric-card">
           <div className="page-header-row">
             <div>
-              <p className="metric-card-label">Remaining this month</p>
-              <p className="metric-card-value-3xl text-negative">
-                {remainingThisMonth.toFixed(2)} €
-              </p>
-              <p className="metric-card-note metric-card-note-mt">
-                Still due before month end
-              </p>
+              <p className="metric-card-label">{t.bills.remainingThisMonth}</p>
+              <p className="metric-card-value-3xl text-negative">{remainingThisMonth.toFixed(2)} {"\u20AC"}</p>
+              <p className="metric-card-note metric-card-note-mt">{t.bills.stillDueBeforeMonthEnd}</p>
             </div>
             <AlertCircle className="metric-card-icon-standalone text-negative" />
           </div>
         </Card>
       </div>
 
-      {/* Bills list */}
       <Card className="list-card list-card-divider">
         {bills
           .sort((a, b) => a.dueDay - b.dueDay)
@@ -141,25 +129,18 @@ export default function BillsPage() {
               </div>
               <div className="list-item-body">
                 <div className="list-item-name-row">
-                  <p className={`list-item-name ${!bill.isActive ? "is-inactive" : ""}`}>
-                    {bill.name}
-                  </p>
+                  <p className={`list-item-name ${!bill.isActive ? "is-inactive" : ""}`}>{bill.name}</p>
                   {bill.dueDay >= today && bill.dueDay <= today + 3 && bill.isActive && (
-                    <Badge variant="destructive">Due soon</Badge>
+                    <Badge variant="destructive">{t.bills.dueSoon}</Badge>
                   )}
                 </div>
                 <p className="list-item-meta">
-                  {bill.category} · Due on {bill.dueDay}th
+                  {bill.category} · {t.bills.dueOn} {bill.dueDay}.
                 </p>
               </div>
               <div className="list-item-actions">
-                <p className="list-item-amount-value">
-                  {bill.amount.toFixed(2)} €
-                </p>
-                <Switch
-                  checked={bill.isActive}
-                  onCheckedChange={() => toggleBill(bill.id)}
-                />
+                <p className="list-item-amount-value">{bill.amount.toFixed(2)} {"\u20AC"}</p>
+                <Switch checked={bill.isActive} onCheckedChange={() => toggleBill(bill.id)} />
               </div>
             </div>
           ))}

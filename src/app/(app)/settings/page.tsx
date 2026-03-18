@@ -39,7 +39,7 @@ export default function SettingsPage() {
   const [langSaved, setLangSaved] = useState(false);
   const [ynabBudgets, setYnabBudgets] = useState<{ id: string; name: string }[]>([]);
   const [budgetsLoading, setBudgetsLoading] = useState(false);
-  const { setLocale } = useLocale();
+  const { t, setLocale } = useLocale();
 
   useEffect(() => {
     console.debug("[settings] Loading user profile");
@@ -109,7 +109,7 @@ export default function SettingsPage() {
 
   const handleYnabConnect = async () => {
     if (!ynabToken.trim()) {
-      setYnabError("Token is required");
+      setYnabError("Token required");
       return;
     }
     setYnabLoading(true);
@@ -236,8 +236,8 @@ export default function SettingsPage() {
   return (
     <div className="page-stack">
       <div>
-        <h1 className="page-heading">Settings</h1>
-        <p className="page-subtitle">Manage your preferences</p>
+        <h1 className="page-heading">{t.settings.title}</h1>
+        <p className="page-subtitle">{t.settings.subtitle}</p>
       </div>
 
       <div className="settings-grid">
@@ -246,7 +246,7 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="settings-card-title">
               <Globe />
-              Language
+              {t.settings.language}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -261,7 +261,7 @@ export default function SettingsPage() {
                 </SelectContent>
               </Select>
               {langSaved && (
-                <span className="settings-saved">Saved</span>
+                <span className="settings-saved">{t.common.saved}</span>
               )}
             </div>
           </CardContent>
@@ -272,21 +272,21 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="settings-card-title">
               <Link />
-              YNAB integration
+              {t.settings.ynab}
             </CardTitle>
           </CardHeader>
           <CardContent className="form-stack">
             <div className="settings-row">
-              <span className="settings-status">Status:</span>
+              <span className="settings-status">{t.common.status}:</span>
               {profile?.ynab_connected ? (
                 <Badge className="badge-connected">
                   <CheckCircle2 />
-                  Connected
+                  {t.settings.ynabConnected}
                 </Badge>
               ) : (
                 <Badge variant="secondary">
                   <XCircle />
-                  Not connected
+                  {t.settings.ynabDisconnected}
                 </Badge>
               )}
             </div>
@@ -294,43 +294,43 @@ export default function SettingsPage() {
             {!profile?.ynab_connected ? (
               <div className="form-stack">
                 <p className="page-subtitle">
-                  Connect your YNAB account to sync transactions, budgets, and account balances.
+                  {t.settings.ynabDescription}
                 </p>
                 <div className="form-field">
-                  <Label>YNAB personal access token</Label>
+                  <Label>{t.settings.ynabToken}</Label>
                   <Input
                     type="password"
-                    placeholder="Paste your token here"
+                    placeholder={t.settings.ynabTokenPlaceholder}
                     value={ynabToken}
                     onChange={(e) => setYnabToken(e.target.value)}
                     className="settings-input"
                   />
                   <p className="settings-help">
-                    Get your token from YNAB settings, developer settings
+                    {t.settings.ynabTokenHelp}
                   </p>
                 </div>
                 <div className="form-field">
-                  <Label>YNAB budget ID</Label>
+                  <Label>{t.settings.ynabBudgetId}</Label>
                   <Input
                     type="text"
-                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                    placeholder={t.settings.ynabBudgetIdPlaceholder}
                     value={ynabBudgetId}
                     onChange={(e) => setYnabBudgetId(e.target.value)}
                     className="settings-input"
                   />
                   <p className="settings-help">
-                    The UUID from your YNAB URL when viewing the budget
+                    {t.settings.ynabBudgetIdHelp}
                   </p>
                 </div>
                 {ynabError && <p className="settings-error">{ynabError}</p>}
                 <Button size="sm" onClick={handleYnabConnect} disabled={ynabLoading}>
-                  {ynabLoading ? "Connecting..." : "Connect"}
+                  {ynabLoading ? t.common.connecting : t.common.connect}
                 </Button>
               </div>
             ) : (
               <div className="form-stack">
                 <div className="form-field">
-                  <Label>Budget</Label>
+                  <Label>{t.settings.budget}</Label>
                   {ynabBudgets.length > 0 ? (
                     <Select
                       value={ynabBudgetId}
@@ -342,7 +342,7 @@ export default function SettingsPage() {
                       }}
                     >
                       <SelectTrigger className="settings-input">
-                        <SelectValue placeholder="Select a budget" />
+                        <SelectValue placeholder={t.settings.selectBudget} />
                       </SelectTrigger>
                       <SelectContent>
                         {ynabBudgets.map((b) => (
@@ -354,16 +354,16 @@ export default function SettingsPage() {
                     <div className="settings-row">
                       <Input
                         type="text"
-                        placeholder="Budget ID"
+                        placeholder={t.settings.budgetId}
                         value={ynabBudgetId}
                         onChange={(e) => setYnabBudgetId(e.target.value)}
                         className="settings-input"
                       />
                       <Button size="sm" variant="outline" onClick={() => handleBudgetIdSave()}>
-                        Save
+                        {t.common.save}
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => fetchBudgets()} disabled={budgetsLoading}>
-                        {budgetsLoading ? "Loading..." : "Fetch"}
+                        {budgetsLoading ? t.common.loading : t.settings.fetch}
                       </Button>
                     </div>
                   )}
@@ -376,12 +376,12 @@ export default function SettingsPage() {
                     disabled={syncLoading}
                   >
                     <RefreshCw className={`sync-icon ${syncLoading ? "animate-spin" : ""}`} />
-                    {syncLoading ? "Syncing..." : "Sync now"}
+                    {syncLoading ? t.settings.syncing : t.settings.syncNow}
                   </Button>
                   <span className="settings-sync-time">
                     {syncResult || (profile.last_ynab_sync
-                      ? `Last sync: ${new Date(profile.last_ynab_sync).toLocaleDateString("fi-FI")}`
-                      : "Never synced")}
+                      ? `${t.settings.lastSync}: ${new Date(profile.last_ynab_sync).toLocaleDateString("fi-FI")}`
+                      : t.common.neverSynced)}
                   </span>
                 </div>
                 <Button
@@ -390,7 +390,7 @@ export default function SettingsPage() {
                   onClick={handleYnabDisconnect}
                   disabled={ynabLoading}
                 >
-                  {ynabLoading ? "Disconnecting..." : "Disconnect YNAB"}
+                  {ynabLoading ? t.common.disconnecting : t.settings.disconnectYnab}
                 </Button>
               </div>
             )}

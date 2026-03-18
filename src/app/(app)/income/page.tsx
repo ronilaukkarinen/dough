@@ -27,7 +27,7 @@ interface Income {
 }
 
 const demoIncome: Income[] = [
-  { id: "1", name: "Dude Oy — Salary", amount: 2800, expectedDay: 15, isRecurring: true, isActive: true },
+  { id: "1", name: "Dude Oy \u2014 Salary", amount: 2800, expectedDay: 15, isRecurring: true, isActive: true },
   { id: "2", name: "Wife's Salary", amount: 1400, expectedDay: 25, isRecurring: true, isActive: true },
   { id: "3", name: "Freelance", amount: 500, expectedDay: 10, isRecurring: false, isActive: true },
 ];
@@ -51,72 +51,64 @@ export default function IncomePage() {
       <div className="page-header-row">
         <div>
           <h1 className="page-heading">{t.income.title}</h1>
-          <p className="page-subtitle">Track when money comes in</p>
+          <p className="page-subtitle">{t.income.subtitle}</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={<Button size="sm" />}>
             <Plus className="icon-sm" />
-            Add income
+            {t.income.addIncome}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add income source</DialogTitle>
+              <DialogTitle>{t.income.addIncomeSource}</DialogTitle>
             </DialogHeader>
             <form className="form-stack">
               <div className="form-field">
-                <Label>Name</Label>
-                <Input placeholder="e.g. Salary" />
+                <Label>{t.income.name}</Label>
+                <Input placeholder={t.income.namePlaceholder} />
               </div>
               <div className="form-grid-2">
                 <div className="form-field">
-                  <Label>Amount (€)</Label>
+                  <Label>{t.income.amountEur}</Label>
                   <Input type="number" step="0.01" placeholder="0.00" />
                 </div>
                 <div className="form-field">
-                  <Label>Expected day</Label>
+                  <Label>{t.income.expectedDay}</Label>
                   <Input type="number" min="1" max="31" placeholder="1" />
                 </div>
               </div>
               <div className="form-row">
                 <Switch id="recurring" />
-                <Label htmlFor="recurring">Recurring monthly</Label>
+                <Label htmlFor="recurring">{t.income.recurringMonthly}</Label>
               </div>
               <Button type="submit" className="w-full" onClick={() => setDialogOpen(false)}>
-                Add income
+                {t.income.addIncome}
               </Button>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Summary */}
       <div className="page-grid-2-sm">
         <Card className="metric-card">
-          <p className="metric-card-label">Expected monthly</p>
-          <p className="metric-card-value-3xl text-positive">
-            {monthlyTotal} €
-          </p>
+          <p className="metric-card-label">{t.income.expectedMonthly}</p>
+          <p className="metric-card-value-3xl text-positive">{monthlyTotal} {"\u20AC"}</p>
           <p className="metric-card-note metric-card-note-mt">
-            {incomes.filter((i) => i.isActive).length} sources
+            {incomes.filter((i) => i.isActive).length} {t.common.sources}
           </p>
         </Card>
         <Card className="metric-card">
           <div className="page-header-row">
             <div>
-              <p className="metric-card-label">Guaranteed recurring</p>
-              <p className="metric-card-value-3xl">
-                {recurringTotal} €
-              </p>
-              <p className="metric-card-note metric-card-note-mt">
-                Reliable monthly income
-              </p>
+              <p className="metric-card-label">{t.income.guaranteedRecurring}</p>
+              <p className="metric-card-value-3xl">{recurringTotal} {"\u20AC"}</p>
+              <p className="metric-card-note metric-card-note-mt">{t.income.reliableMonthlyIncome}</p>
             </div>
             <TrendingUp className="metric-card-icon-standalone text-positive" />
           </div>
         </Card>
       </div>
 
-      {/* Income list */}
       <Card className="list-card list-card-divider">
         {incomes
           .sort((a, b) => a.expectedDay - b.expectedDay)
@@ -127,25 +119,16 @@ export default function IncomePage() {
               </div>
               <div className="list-item-body">
                 <div className="list-item-name-row">
-                  <p className={`list-item-name ${!income.isActive ? "is-inactive" : ""}`}>
-                    {income.name}
-                  </p>
-                  {income.isRecurring && (
-                    <Badge variant="secondary">Recurring</Badge>
-                  )}
+                  <p className={`list-item-name ${!income.isActive ? "is-inactive" : ""}`}>{income.name}</p>
+                  {income.isRecurring && <Badge variant="secondary">{t.income.recurring}</Badge>}
                 </div>
                 <p className="list-item-meta">
-                  Expected around {income.expectedDay}th
+                  {t.income.expectedAround} {income.expectedDay}.
                 </p>
               </div>
               <div className="list-item-actions">
-                <p className="list-item-amount-value" data-positive>
-                  + {income.amount} €
-                </p>
-                <Switch
-                  checked={income.isActive}
-                  onCheckedChange={() => toggleIncome(income.id)}
-                />
+                <p className="list-item-amount-value" data-positive>+ {income.amount} {"\u20AC"}</p>
+                <Switch checked={income.isActive} onCheckedChange={() => toggleIncome(income.id)} />
               </div>
             </div>
           ))}

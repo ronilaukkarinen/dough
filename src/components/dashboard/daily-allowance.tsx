@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { ArrowDown, ArrowUp, CalendarClock, Wallet } from "lucide-react";
+import { useLocale } from "@/lib/locale-context";
 
 interface DailyAllowanceProps {
   dailyBudget: number;
@@ -20,32 +21,27 @@ export function DailyAllowance({
   nextIncomeAmount,
   nextIncomeDate,
   daysUntilIncome,
-  currency = "€",
+  currency = "\u20AC",
 }: DailyAllowanceProps) {
+  const { t } = useLocale();
   const status =
     dailyBudget > 50 ? "good" : dailyBudget > 20 ? "tight" : "danger";
 
   return (
     <div className="daily-allowance-grid">
-      {/* Daily Budget - Hero card */}
-      <Card
-        className="daily-allowance-hero"
-        data-status={status}
-      >
+      <Card className="daily-allowance-hero" data-status={status}>
         <div className="daily-allowance-hero-content">
-          <p className="daily-allowance-hero-label">
-            Daily budget
-          </p>
+          <p className="daily-allowance-hero-label">{t.dashboard.dailyBudget}</p>
           <div className="daily-allowance-hero-amount">
             <span className="daily-allowance-hero-value" data-status={status}>
               {dailyBudget.toFixed(0)} {currency}
             </span>
-            <span className="daily-allowance-hero-unit">/ day</span>
+            <span className="daily-allowance-hero-unit">{t.dashboard.perDay}</span>
           </div>
           <p className="daily-allowance-hero-note">
-            {daysUntilIncome} days until next income
-            {status === "danger" && " — cut non-essentials"}
-            {status === "tight" && " — be careful"}
+            {daysUntilIncome} {t.dashboard.daysUntilNextIncome}
+            {status === "danger" && ` \u2014 ${t.dashboard.cutNonEssentials}`}
+            {status === "tight" && ` \u2014 ${t.dashboard.beCareful}`}
           </p>
         </div>
         <div className="daily-allowance-hero-bg">
@@ -53,64 +49,54 @@ export function DailyAllowance({
         </div>
       </Card>
 
-      {/* Available Balance */}
       <Card className="metric-card">
         <div className="metric-card-row">
           <div className="metric-card-icon" data-color="primary">
             <Wallet />
           </div>
           <div>
-            <p className="metric-card-label">Available</p>
-            <p className="metric-card-value">
-              {availableBalance} {currency}
-            </p>
+            <p className="metric-card-label">{t.dashboard.available}</p>
+            <p className="metric-card-value">{availableBalance} {currency}</p>
           </div>
         </div>
       </Card>
 
-      {/* Upcoming Bills */}
       <Card className="metric-card">
         <div className="metric-card-row">
           <div className="metric-card-icon" data-color="negative">
             <ArrowUp />
           </div>
           <div>
-            <p className="metric-card-label">Bills due</p>
-            <p className="metric-card-value">
-              {upcomingBills} {currency}
-            </p>
+            <p className="metric-card-label">{t.dashboard.billsDue}</p>
+            <p className="metric-card-value">{upcomingBills} {currency}</p>
           </div>
         </div>
       </Card>
 
-      {/* Next income */}
       <Card className="metric-card metric-card-half">
         <div className="metric-card-row">
           <div className="metric-card-icon" data-color="positive">
             <ArrowDown />
           </div>
           <div>
-            <p className="metric-card-label">Next income</p>
-            <p className="metric-card-value metric-card-value-lg">
-              {nextIncomeAmount} {currency}
-            </p>
+            <p className="metric-card-label">{t.dashboard.nextIncome}</p>
+            <p className="metric-card-value metric-card-value-lg">{nextIncomeAmount} {currency}</p>
             <p className="metric-card-note">{nextIncomeDate}</p>
           </div>
         </div>
       </Card>
 
-      {/* Cash flow forecast */}
       <Card className="metric-card metric-card-half">
         <div className="metric-card-row">
           <div className="metric-card-icon" data-color="chart-4">
             <CalendarClock />
           </div>
           <div>
-            <p className="metric-card-label">Cash flow forecast</p>
+            <p className="metric-card-label">{t.dashboard.cashFlowForecast}</p>
             <p className="metric-card-value metric-card-value-lg">
               {availableBalance - upcomingBills + nextIncomeAmount} {currency}
             </p>
-            <p className="metric-card-note">End of month estimate</p>
+            <p className="metric-card-note">{t.dashboard.endOfMonthEstimate}</p>
           </div>
         </div>
       </Card>

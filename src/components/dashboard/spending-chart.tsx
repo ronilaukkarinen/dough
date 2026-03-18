@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart-container";
+import { useLocale } from "@/lib/locale-context";
 import {
   AreaChart,
   Area,
@@ -14,32 +15,33 @@ import {
 
 interface SpendingChartProps {
   data: { date: string; spent: number; budget: number }[];
-  title?: string;
 }
 
-function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: string }) {
-  if (active && payload && payload.length) {
-    return (
-      <div className="chart-tooltip">
-        <p className="chart-tooltip-label">{label}</p>
-        {payload.map((entry, index) => (
-          <p key={index} className="chart-tooltip-value">
-            <span style={{ color: entry.dataKey === "spent" ? "var(--chart-1)" : "var(--muted-foreground)" }}>
-              {entry.dataKey === "spent" ? "Spent" : "Budget"}:{" "}
-              {entry.value} €
-            </span>
-          </p>
-        ))}
-      </div>
-    );
+export function SpendingChart({ data }: SpendingChartProps) {
+  const { t } = useLocale();
+
+  function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: string }) {
+    if (active && payload && payload.length) {
+      return (
+        <div className="chart-tooltip">
+          <p className="chart-tooltip-label">{label}</p>
+          {payload.map((entry, index) => (
+            <p key={index} className="chart-tooltip-value">
+              <span style={{ color: entry.dataKey === "spent" ? "var(--chart-1)" : "var(--muted-foreground)" }}>
+                {entry.dataKey === "spent" ? t.dashboard.spent : t.dashboard.budget}:{" "}
+                {entry.value} \u20AC
+              </span>
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
   }
-  return null;
-}
 
-export function SpendingChart({ data, title = "Spending this month" }: SpendingChartProps) {
   return (
     <Card className="spending-chart-card">
-      <h3 className="spending-chart-title">{title}</h3>
+      <h3 className="spending-chart-title">{t.dashboard.spendingThisMonth}</h3>
       <ChartContainer height={280}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
@@ -53,39 +55,12 @@ export function SpendingChart({ data, title = "Spending this month" }: SpendingC
                 <stop offset="100%" stopColor="#7a8ba0" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="rgba(255,255,255,0.04)"
-              vertical={false}
-            />
-            <XAxis
-              dataKey="date"
-              tick={{ fill: "#7a8ba0", fontSize: 11 }}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              tick={{ fill: "#7a8ba0", fontSize: 11 }}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(v) => `${v} €`}
-            />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+            <XAxis dataKey="date" tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} />
+            <YAxis tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} \u20AC`} />
             <Tooltip content={<CustomTooltip />} />
-            <Area
-              type="monotone"
-              dataKey="budget"
-              stroke="#7a8ba0"
-              strokeWidth={1.5}
-              strokeDasharray="4 4"
-              fill="url(#budgetGradient)"
-            />
-            <Area
-              type="monotone"
-              dataKey="spent"
-              stroke="#4d94ff"
-              strokeWidth={2}
-              fill="url(#spentGradient)"
-            />
+            <Area type="monotone" dataKey="budget" stroke="#7a8ba0" strokeWidth={1.5} strokeDasharray="4 4" fill="url(#budgetGradient)" />
+            <Area type="monotone" dataKey="spent" stroke="#4d94ff" strokeWidth={2} fill="url(#spentGradient)" />
           </AreaChart>
         </ResponsiveContainer>
       </ChartContainer>

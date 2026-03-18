@@ -28,6 +28,8 @@
 * Remove all static inline styles, replace with CSS classes per CLAUDE.md rules
 * Add architecture and CSS framework documentation
 * Fix mobile proportions: increase card padding, hero text size, list item spacing, show list icons on mobile
+* Complete Finnish translations for all page components, dashboard, chat, settings, and UI labels
+* Add ~60 new translation keys covering bills, income, debts, settings, chat errors, and dashboard labels
 
 ### 0.1.0: 2026-03-18
 

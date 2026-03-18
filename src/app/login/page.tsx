@@ -12,7 +12,6 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    // Read directly from DOM to handle Safari autofill
     const form = formRef.current;
     if (!form) return;
 
@@ -41,7 +40,6 @@ export default function LoginPage() {
         return;
       }
 
-      // Use hard navigation so Safari iOS picks up the new cookie
       window.location.href = "/dashboard";
     } catch {
       setError("Connection error");

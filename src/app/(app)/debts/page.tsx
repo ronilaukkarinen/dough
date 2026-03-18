@@ -113,51 +113,50 @@ export default function DebtsPage() {
       <div className="page-header-row">
         <div>
           <h1 className="page-heading">{t.debts.title}</h1>
-          <p className="page-subtitle">Track and eliminate your debts</p>
+          <p className="page-subtitle">{t.debts.subtitle}</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={<Button size="sm" />}>
             <Plus className="icon-sm" />
-            Add debt
+            {t.debts.addDebt}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add debt</DialogTitle>
+              <DialogTitle>{t.debts.addDebt}</DialogTitle>
             </DialogHeader>
             <form className="form-stack">
               <div className="form-field">
-                <Label>Name</Label>
-                <Input placeholder="e.g. Car Loan" />
+                <Label>{t.debts.name}</Label>
+                <Input placeholder={t.debts.namePlaceholder} />
               </div>
               <div className="form-grid-2">
                 <div className="form-field">
-                  <Label>Total amount (€)</Label>
+                  <Label>{t.debts.totalAmountEur}</Label>
                   <Input type="number" step="0.01" placeholder="0.00" />
                 </div>
                 <div className="form-field">
-                  <Label>Remaining (€)</Label>
+                  <Label>{t.debts.remainingEur}</Label>
                   <Input type="number" step="0.01" placeholder="0.00" />
                 </div>
               </div>
               <div className="form-grid-2">
                 <div className="form-field">
-                  <Label>Interest rate (%)</Label>
+                  <Label>{t.debts.interestRatePercent}</Label>
                   <Input type="number" step="0.1" placeholder="0.0" />
                 </div>
                 <div className="form-field">
-                  <Label>Min. payment (€)</Label>
+                  <Label>{t.debts.minPaymentEur}</Label>
                   <Input type="number" step="0.01" placeholder="0.00" />
                 </div>
               </div>
               <Button type="submit" className="w-full" onClick={() => setDialogOpen(false)}>
-                Add debt
+                {t.debts.addDebt}
               </Button>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Summary */}
       <div className="page-grid-3-sm">
         <Card className="metric-card">
           <div className="metric-card-row">
@@ -165,8 +164,8 @@ export default function DebtsPage() {
               <TrendingDown />
             </div>
             <div>
-              <p className="metric-card-label">Total debt</p>
-              <p className="metric-card-value">{totalDebt} €</p>
+              <p className="metric-card-label">{t.debts.totalDebt}</p>
+              <p className="metric-card-value">{totalDebt} {"\u20AC"}</p>
             </div>
           </div>
         </Card>
@@ -176,7 +175,7 @@ export default function DebtsPage() {
               <Target />
             </div>
             <div>
-              <p className="metric-card-label">Progress</p>
+              <p className="metric-card-label">{t.debts.progress}</p>
               <p className="metric-card-value">{progress.toFixed(0)}%</p>
             </div>
           </div>
@@ -188,14 +187,13 @@ export default function DebtsPage() {
               <Calendar />
             </div>
             <div>
-              <p className="metric-card-label">Debt-free in</p>
-              <p className="metric-card-value">{snowball.months} months</p>
+              <p className="metric-card-label">{t.debts.debtFreeIn}</p>
+              <p className="metric-card-value">{snowball.months} {t.debts.months}</p>
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Debt list */}
       <Card className="list-card list-card-divider">
         {debts.map((debt) => {
           const pct = ((debt.totalAmount - debt.remainingAmount) / debt.totalAmount) * 100;
@@ -205,12 +203,12 @@ export default function DebtsPage() {
                 <div>
                   <p className="debt-item-name">{debt.name}</p>
                   <p className="debt-item-meta">
-                    {debt.interestRate}% APR · {debt.minimumPayment} €/mo min
+                    {debt.interestRate}% {t.debts.apr} · {debt.minimumPayment} {"\u20AC"}{t.debts.moMin}
                   </p>
                 </div>
                 <div className="debt-item-right">
-                  <p className="debt-item-amount">{debt.remainingAmount} €</p>
-                  <p className="debt-item-total">of {debt.totalAmount} €</p>
+                  <p className="debt-item-amount">{debt.remainingAmount} {"\u20AC"}</p>
+                  <p className="debt-item-total">{t.common.of} {debt.totalAmount} {"\u20AC"}</p>
                 </div>
               </div>
               <Progress value={pct} className="progress-thin" />
@@ -219,12 +217,11 @@ export default function DebtsPage() {
         })}
       </Card>
 
-      {/* Payoff strategy */}
       <div className="form-stack">
         <div className="payoff-header">
-          <h2 className="payoff-title">Payoff strategy</h2>
+          <h2 className="payoff-title">{t.debts.payoffStrategy}</h2>
           <div className="form-row">
-            <Label className="payoff-extra-label">Extra monthly:</Label>
+            <Label className="payoff-extra-label">{t.debts.extraMonthly}</Label>
             <Input
               type="number"
               value={extraPayment}
@@ -238,29 +235,29 @@ export default function DebtsPage() {
           <TabsList>
             <TabsTrigger value="snowball">
               <Flame className="tabs-trigger-icon" />
-              Snowball
+              {t.debts.snowball}
             </TabsTrigger>
             <TabsTrigger value="avalanche">
               <TrendingDown className="tabs-trigger-icon" />
-              Avalanche
+              {t.debts.avalanche}
             </TabsTrigger>
           </TabsList>
 
           {[
-            { key: "snowball", data: snowball, desc: "Pay smallest debts first for quick wins" },
-            { key: "avalanche", data: avalanche, desc: "Pay highest interest first to save money" },
+            { key: "snowball", data: snowball, desc: t.debts.snowballDesc },
+            { key: "avalanche", data: avalanche, desc: t.debts.avalancheDesc },
           ].map(({ key, data, desc }) => (
             <TabsContent key={key} value={key}>
               <Card className="metric-card">
                 <p className="payoff-desc">{desc}</p>
                 <div className="payoff-stats">
                   <div>
-                    <span className="payoff-stats-label">Debt-free: </span>
-                    <span className="payoff-stats-value">{data.months} months</span>
+                    <span className="payoff-stats-label">{t.debts.debtFree} </span>
+                    <span className="payoff-stats-value">{data.months} {t.debts.months}</span>
                   </div>
                   <div>
-                    <span className="payoff-stats-label">Total interest: </span>
-                    <span className="payoff-stats-value" data-color="negative">{data.totalInterest} €</span>
+                    <span className="payoff-stats-label">{t.debts.totalInterest} </span>
+                    <span className="payoff-stats-value" data-color="negative">{data.totalInterest} {"\u20AC"}</span>
                   </div>
                 </div>
                 <ChartContainer height={250}>
@@ -274,13 +271,13 @@ export default function DebtsPage() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                       <XAxis dataKey="month" tick={{ fill: "#7a8ba0", fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                      <YAxis tick={{ fill: "#7a8ba0", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k €`} />
+                      <YAxis tick={{ fill: "#7a8ba0", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k \u20AC`} />
                       <Tooltip
                         content={({ active, payload, label }) =>
                           active && payload?.length ? (
                             <div className="chart-tooltip">
                               <p className="chart-tooltip-label">{label}</p>
-                              <p className="chart-tooltip-value text-foreground">{payload[0].value} €</p>
+                              <p className="chart-tooltip-value text-foreground">{payload[0].value} {"\u20AC"}</p>
                             </div>
                           ) : null
                         }
