@@ -309,19 +309,6 @@ export default function SettingsPage() {
                     {t.settings.ynabTokenHelp}
                   </p>
                 </div>
-                <div className="form-field">
-                  <Label>{t.settings.ynabBudgetId}</Label>
-                  <Input
-                    type="text"
-                    placeholder={t.settings.ynabBudgetIdPlaceholder}
-                    value={ynabBudgetId}
-                    onChange={(e) => setYnabBudgetId(e.target.value)}
-                    className="settings-input"
-                  />
-                  <p className="settings-help">
-                    {t.settings.ynabBudgetIdHelp}
-                  </p>
-                </div>
                 {ynabError && <p className="settings-error">{ynabError}</p>}
                 <Button size="sm" onClick={handleYnabConnect} disabled={ynabLoading}>
                   {ynabLoading ? t.common.connecting : t.common.connect}
