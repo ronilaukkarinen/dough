@@ -109,46 +109,42 @@ export default function DebtsPage() {
   const avalanche = calculateAvalanche(debts, extraPayment);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="page-stack">
+      <div className="page-header-row">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {t.debts.title}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Track and eliminate your debts
-          </p>
+          <h1 className="page-heading">{t.debts.title}</h1>
+          <p className="page-subtitle">Track and eliminate your debts</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button size="sm" className="gap-2" />}>
-            <Plus className="h-4 w-4" />
+          <DialogTrigger render={<Button size="sm" />}>
+            <Plus className="icon-sm" />
             Add debt
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add debt</DialogTitle>
             </DialogHeader>
-            <form className="space-y-4">
-              <div className="space-y-2">
+            <form className="form-stack">
+              <div className="form-field">
                 <Label>Name</Label>
                 <Input placeholder="e.g. Car Loan" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="form-grid-2">
+                <div className="form-field">
                   <Label>Total amount (€)</Label>
                   <Input type="number" step="0.01" placeholder="0.00" />
                 </div>
-                <div className="space-y-2">
+                <div className="form-field">
                   <Label>Remaining (€)</Label>
                   <Input type="number" step="0.01" placeholder="0.00" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="form-grid-2">
+                <div className="form-field">
                   <Label>Interest rate (%)</Label>
                   <Input type="number" step="0.1" placeholder="0.0" />
                 </div>
-                <div className="space-y-2">
+                <div className="form-field">
                   <Label>Min. payment (€)</Label>
                   <Input type="number" step="0.01" placeholder="0.00" />
                 </div>
@@ -162,100 +158,90 @@ export default function DebtsPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="border-border/50 bg-card/80 p-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-negative/10">
-              <TrendingDown className="h-5 w-5 text-negative" />
+      <div className="page-grid-3-sm">
+        <Card className="metric-card">
+          <div className="metric-card-row">
+            <div className="metric-card-icon" data-color="negative">
+              <TrendingDown />
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Total debt</p>
-              <p className="text-2xl font-bold tracking-tight text-foreground">
-                {totalDebt} €
-              </p>
+              <p className="metric-card-label">Total debt</p>
+              <p className="metric-card-value">{totalDebt} €</p>
             </div>
           </div>
         </Card>
-        <Card className="border-border/50 bg-card/80 p-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-positive/10">
-              <Target className="h-5 w-5 text-positive" />
+        <Card className="metric-card">
+          <div className="metric-card-row">
+            <div className="metric-card-icon" data-color="positive">
+              <Target />
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Progress</p>
-              <p className="text-2xl font-bold tracking-tight text-foreground">
-                {progress.toFixed(0)}%
-              </p>
+              <p className="metric-card-label">Progress</p>
+              <p className="metric-card-value">{progress.toFixed(0)}%</p>
             </div>
           </div>
-          <Progress value={progress} className="mt-3 h-2" />
+          <Progress value={progress} style={{ marginTop: "0.75rem", height: "0.5rem" }} />
         </Card>
-        <Card className="border-border/50 bg-card/80 p-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-3/10">
-              <Calendar className="h-5 w-5 text-chart-3" />
+        <Card className="metric-card">
+          <div className="metric-card-row">
+            <div className="metric-card-icon" data-color="chart-3">
+              <Calendar />
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Debt-free in</p>
-              <p className="text-2xl font-bold tracking-tight text-foreground">
-                {snowball.months} months
-              </p>
+              <p className="metric-card-label">Debt-free in</p>
+              <p className="metric-card-value">{snowball.months} months</p>
             </div>
           </div>
         </Card>
       </div>
 
       {/* Debt list */}
-      <Card className="border-border/50 bg-card/80 divide-y divide-border/50">
+      <Card className="list-card list-card-divider">
         {debts.map((debt) => {
           const pct = ((debt.totalAmount - debt.remainingAmount) / debt.totalAmount) * 100;
           return (
-            <div key={debt.id} className="px-5 py-4">
-              <div className="flex items-center justify-between">
+            <div key={debt.id} className="debt-item">
+              <div className="debt-item-header">
                 <div>
-                  <p className="text-sm font-medium text-foreground">{debt.name}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="debt-item-name">{debt.name}</p>
+                  <p className="debt-item-meta">
                     {debt.interestRate}% APR · {debt.minimumPayment} €/mo min
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold tabular-nums text-foreground">
-                    {debt.remainingAmount} €
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">
-                    of {debt.totalAmount} €
-                  </p>
+                <div className="debt-item-right">
+                  <p className="debt-item-amount">{debt.remainingAmount} €</p>
+                  <p className="debt-item-total">of {debt.totalAmount} €</p>
                 </div>
               </div>
-              <Progress value={pct} className="mt-3 h-1.5" />
+              <Progress value={pct} style={{ marginTop: "0.75rem", height: "0.375rem" }} />
             </div>
           );
         })}
       </Card>
 
       {/* Payoff strategy */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold text-foreground">Payoff strategy</h2>
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground">Extra monthly:</Label>
+      <div className="form-stack">
+        <div className="payoff-header">
+          <h2 className="payoff-title">Payoff strategy</h2>
+          <div className="form-row">
+            <Label className="payoff-extra-label">Extra monthly:</Label>
             <Input
               type="number"
               value={extraPayment}
               onChange={(e) => setExtraPayment(Number(e.target.value))}
-              className="h-8 w-24 text-sm"
+              className="payoff-extra-input"
             />
           </div>
         </div>
 
         <Tabs defaultValue="snowball">
           <TabsList>
-            <TabsTrigger value="snowball" className="gap-1.5">
-              <Flame className="h-3.5 w-3.5" />
+            <TabsTrigger value="snowball">
+              <Flame style={{ width: "0.875rem", height: "0.875rem" }} />
               Snowball
             </TabsTrigger>
-            <TabsTrigger value="avalanche" className="gap-1.5">
-              <TrendingDown className="h-3.5 w-3.5" />
+            <TabsTrigger value="avalanche">
+              <TrendingDown style={{ width: "0.875rem", height: "0.875rem" }} />
               Avalanche
             </TabsTrigger>
           </TabsList>
@@ -265,16 +251,16 @@ export default function DebtsPage() {
             { key: "avalanche", data: avalanche, desc: "Pay highest interest first to save money" },
           ].map(({ key, data, desc }) => (
             <TabsContent key={key} value={key}>
-              <Card className="border-border/50 bg-card/80 p-6">
-                <p className="text-sm text-muted-foreground mb-4">{desc}</p>
-                <div className="mb-4 flex gap-6 text-sm">
+              <Card className="metric-card">
+                <p className="payoff-desc">{desc}</p>
+                <div className="payoff-stats">
                   <div>
-                    <span className="text-muted-foreground">Debt-free: </span>
-                    <span className="font-semibold text-foreground">{data.months} months</span>
+                    <span className="payoff-stats-label">Debt-free: </span>
+                    <span className="payoff-stats-value">{data.months} months</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Total interest: </span>
-                    <span className="font-semibold text-negative">{data.totalInterest} €</span>
+                    <span className="payoff-stats-label">Total interest: </span>
+                    <span className="payoff-stats-value" data-color="negative">{data.totalInterest} €</span>
                   </div>
                 </div>
                 <ChartContainer height={250}>
@@ -292,9 +278,9 @@ export default function DebtsPage() {
                       <Tooltip
                         content={({ active, payload, label }) =>
                           active && payload?.length ? (
-                            <div className="rounded-lg border border-border/50 bg-popover px-3 py-2 shadow-lg">
-                              <p className="text-xs text-muted-foreground">{label}</p>
-                              <p className="text-sm font-medium text-foreground">{payload[0].value} €</p>
+                            <div className="chart-tooltip">
+                              <p className="chart-tooltip-label">{label}</p>
+                              <p className="chart-tooltip-value text-foreground">{payload[0].value} €</p>
                             </div>
                           ) : null
                         }

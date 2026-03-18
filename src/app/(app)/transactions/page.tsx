@@ -10,7 +10,6 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   Search,
-  Filter,
   RefreshCw,
 } from "lucide-react";
 
@@ -48,34 +47,30 @@ export default function TransactionsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="page-stack">
+      <div className="page-header-row">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {t.transactions.title}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Synced from YNAB
-          </p>
+          <h1 className="page-heading">{t.transactions.title}</h1>
+          <p className="page-subtitle">Synced from YNAB</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2">
-          <RefreshCw className="h-4 w-4" />
+        <Button variant="outline" size="sm">
+          <RefreshCw className="icon-sm" />
           Sync
         </Button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="filter-bar">
+        <div className="filter-bar-search">
+          <Search className="filter-bar-search-icon" />
           <Input
             placeholder="Search transactions..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-10 pl-9 bg-background/50 border-border/50"
+            className="input-with-icon"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="filter-bar-buttons">
           {(["all", "expenses", "income", "recurring"] as FilterType[]).map((f) => (
             <Button
               key={f}
@@ -91,45 +86,36 @@ export default function TransactionsPage() {
       </div>
 
       {/* Transaction list */}
-      <Card className="border-border/50 bg-card/80 divide-y divide-border/50">
+      <Card className="list-card list-card-divider">
         {filtered.map((tx) => (
-          <div
-            key={tx.id}
-            className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-accent/30"
-          >
+          <div key={tx.id} className="list-item">
             <div
-              className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                tx.amount < 0 ? "bg-negative/10" : "bg-positive/10"
-              }`}
+              className="list-item-icon"
+              data-color={tx.amount < 0 ? "negative" : "positive"}
             >
               {tx.amount < 0 ? (
-                <ArrowUpRight className="h-4 w-4 text-negative" />
+                <ArrowUpRight className="icon-sm" />
               ) : (
-                <ArrowDownLeft className="h-4 w-4 text-positive" />
+                <ArrowDownLeft className="icon-sm" />
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {tx.payee}
-                </p>
+            <div className="list-item-body">
+              <div className="list-item-name-row">
+                <p className="list-item-name">{tx.payee}</p>
                 {tx.isRecurring && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                    Recurring
-                  </Badge>
+                  <Badge variant="secondary">Recurring</Badge>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">{tx.category}</p>
+              <p className="list-item-meta">{tx.category}</p>
             </div>
-            <div className="text-right">
+            <div className="list-item-amount">
               <p
-                className={`text-sm font-semibold tabular-nums ${
-                  tx.amount < 0 ? "text-foreground" : "text-positive"
-                }`}
+                className="list-item-amount-value"
+                data-positive={tx.amount >= 0 || undefined}
               >
                 {tx.amount < 0 ? "- " : "+ "}{Math.abs(tx.amount).toFixed(2)} €
               </p>
-              <p className="text-[10px] text-muted-foreground">{tx.date}</p>
+              <p className="list-item-amount-date">{tx.date}</p>
             </div>
           </div>
         ))}

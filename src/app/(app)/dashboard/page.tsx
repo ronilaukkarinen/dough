@@ -45,12 +45,10 @@ const recentTransactions = [
 export default function DashboardPage() {
   const { t } = useLocale();
   return (
-    <div className="space-y-6">
+    <div className="page-stack">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          {t.dashboard.title}
-        </h1>
+        <h1 className="page-heading">{t.dashboard.title}</h1>
       </div>
 
       {/* Daily allowance + key metrics */}
@@ -64,7 +62,7 @@ export default function DashboardPage() {
       />
 
       {/* Charts row */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="page-grid-2">
         <SpendingChart data={spendingData} />
         <CategoryBreakdown
           categories={categories}
@@ -73,7 +71,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom row */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="page-grid-2">
         <CashFlowChart data={cashFlowData} />
         <RecentTransactions transactions={recentTransactions} />
       </div>

@@ -18,8 +18,6 @@ import {
 import {
   Plus,
   CalendarClock,
-  Pencil,
-  Trash2,
   AlertCircle,
 } from "lucide-react";
 
@@ -63,41 +61,37 @@ export default function BillsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="page-stack">
+      <div className="page-header-row">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {t.bills.title}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your monthly obligations
-          </p>
+          <h1 className="page-heading">{t.bills.title}</h1>
+          <p className="page-subtitle">Manage your monthly obligations</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button size="sm" className="gap-2" />}>
-            <Plus className="h-4 w-4" />
+          <DialogTrigger render={<Button size="sm" />}>
+            <Plus className="icon-sm" />
             Add bill
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add recurring bill</DialogTitle>
             </DialogHeader>
-            <form className="space-y-4">
-              <div className="space-y-2">
+            <form className="form-stack">
+              <div className="form-field">
                 <Label>Name</Label>
                 <Input placeholder="e.g. Netflix" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="form-grid-2">
+                <div className="form-field">
                   <Label>Amount (€)</Label>
                   <Input type="number" step="0.01" placeholder="0.00" />
                 </div>
-                <div className="space-y-2">
+                <div className="form-field">
                   <Label>Due day</Label>
                   <Input type="number" min="1" max="31" placeholder="1" />
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="form-field">
                 <Label>Category</Label>
                 <Input placeholder="e.g. Subscriptions" />
               </div>
@@ -110,61 +104,56 @@ export default function BillsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="border-border/50 bg-card/80 p-6">
-          <p className="text-xs font-medium text-muted-foreground">Monthly total</p>
-          <p className="mt-1 text-3xl font-bold tracking-tight text-foreground">
+      <div className="page-grid-2-sm">
+        <Card className="metric-card">
+          <p className="metric-card-label">Monthly total</p>
+          <p className="metric-card-value" style={{ fontSize: "1.875rem", lineHeight: "2.25rem", marginTop: "0.25rem" }}>
             {monthlyTotal.toFixed(2)} €
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="metric-card-note" style={{ marginTop: "0.25rem" }}>
             {bills.filter((b) => b.isActive).length} active bills
           </p>
         </Card>
-        <Card className="border-border/50 bg-card/80 p-6">
-          <div className="flex items-start justify-between">
+        <Card className="metric-card">
+          <div className="page-header-row">
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Remaining this month</p>
-              <p className="mt-1 text-3xl font-bold tracking-tight text-negative">
+              <p className="metric-card-label">Remaining this month</p>
+              <p className="metric-card-value text-negative" style={{ fontSize: "1.875rem", lineHeight: "2.25rem", marginTop: "0.25rem" }}>
                 {remainingThisMonth.toFixed(2)} €
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="metric-card-note" style={{ marginTop: "0.25rem" }}>
                 Still due before month end
               </p>
             </div>
-            <AlertCircle className="h-5 w-5 text-negative" />
+            <AlertCircle style={{ width: "1.25rem", height: "1.25rem", color: "var(--negative)" }} />
           </div>
         </Card>
       </div>
 
       {/* Bills list */}
-      <Card className="border-border/50 bg-card/80 divide-y divide-border/50">
+      <Card className="list-card list-card-divider">
         {bills
           .sort((a, b) => a.dueDay - b.dueDay)
           .map((bill) => (
-            <div
-              key={bill.id}
-              className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-accent/30"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-4/10">
-                <CalendarClock className="h-5 w-5 text-chart-4" />
+            <div key={bill.id} className="list-item">
+              <div className="list-item-icon" data-color="chart-4">
+                <CalendarClock />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className={`text-sm font-medium ${bill.isActive ? "text-foreground" : "text-muted-foreground line-through"}`}>
+              <div className="list-item-body">
+                <div className="list-item-name-row">
+                  <p className={`list-item-name ${!bill.isActive ? "is-inactive" : ""}`}>
                     {bill.name}
                   </p>
                   {bill.dueDay >= today && bill.dueDay <= today + 3 && bill.isActive && (
-                    <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
-                      Due soon
-                    </Badge>
+                    <Badge variant="destructive">Due soon</Badge>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="list-item-meta">
                   {bill.category} · Due on {bill.dueDay}th
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <p className="text-sm font-semibold tabular-nums text-foreground">
+              <div className="list-item-actions">
+                <p className="list-item-amount-value">
                   {bill.amount.toFixed(2)} €
                 </p>
                 <Switch

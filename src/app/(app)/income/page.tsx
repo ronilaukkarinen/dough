@@ -47,41 +47,37 @@ export default function IncomePage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="page-stack">
+      <div className="page-header-row">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {t.income.title}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Track when money comes in
-          </p>
+          <h1 className="page-heading">{t.income.title}</h1>
+          <p className="page-subtitle">Track when money comes in</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button size="sm" className="gap-2" />}>
-            <Plus className="h-4 w-4" />
+          <DialogTrigger render={<Button size="sm" />}>
+            <Plus className="icon-sm" />
             Add income
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add income source</DialogTitle>
             </DialogHeader>
-            <form className="space-y-4">
-              <div className="space-y-2">
+            <form className="form-stack">
+              <div className="form-field">
                 <Label>Name</Label>
                 <Input placeholder="e.g. Salary" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="form-grid-2">
+                <div className="form-field">
                   <Label>Amount (€)</Label>
                   <Input type="number" step="0.01" placeholder="0.00" />
                 </div>
-                <div className="space-y-2">
+                <div className="form-field">
                   <Label>Expected day</Label>
                   <Input type="number" min="1" max="31" placeholder="1" />
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="form-row">
                 <Switch id="recurring" />
                 <Label htmlFor="recurring">Recurring monthly</Label>
               </div>
@@ -94,61 +90,56 @@ export default function IncomePage() {
       </div>
 
       {/* Summary */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="border-border/50 bg-card/80 p-6">
-          <p className="text-xs font-medium text-muted-foreground">Expected monthly</p>
-          <p className="mt-1 text-3xl font-bold tracking-tight text-positive">
+      <div className="page-grid-2-sm">
+        <Card className="metric-card">
+          <p className="metric-card-label">Expected monthly</p>
+          <p className="metric-card-value text-positive" style={{ fontSize: "1.875rem", lineHeight: "2.25rem", marginTop: "0.25rem" }}>
             {monthlyTotal} €
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="metric-card-note" style={{ marginTop: "0.25rem" }}>
             {incomes.filter((i) => i.isActive).length} sources
           </p>
         </Card>
-        <Card className="border-border/50 bg-card/80 p-6">
-          <div className="flex items-start justify-between">
+        <Card className="metric-card">
+          <div className="page-header-row">
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Guaranteed recurring</p>
-              <p className="mt-1 text-3xl font-bold tracking-tight text-foreground">
+              <p className="metric-card-label">Guaranteed recurring</p>
+              <p className="metric-card-value" style={{ fontSize: "1.875rem", lineHeight: "2.25rem", marginTop: "0.25rem" }}>
                 {recurringTotal} €
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="metric-card-note" style={{ marginTop: "0.25rem" }}>
                 Reliable monthly income
               </p>
             </div>
-            <TrendingUp className="h-5 w-5 text-positive" />
+            <TrendingUp style={{ width: "1.25rem", height: "1.25rem", color: "var(--positive)" }} />
           </div>
         </Card>
       </div>
 
       {/* Income list */}
-      <Card className="border-border/50 bg-card/80 divide-y divide-border/50">
+      <Card className="list-card list-card-divider">
         {incomes
           .sort((a, b) => a.expectedDay - b.expectedDay)
           .map((income) => (
-            <div
-              key={income.id}
-              className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-accent/30"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-positive/10">
-                <Wallet className="h-5 w-5 text-positive" />
+            <div key={income.id} className="list-item">
+              <div className="list-item-icon" data-color="positive">
+                <Wallet />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className={`text-sm font-medium ${income.isActive ? "text-foreground" : "text-muted-foreground line-through"}`}>
+              <div className="list-item-body">
+                <div className="list-item-name-row">
+                  <p className={`list-item-name ${!income.isActive ? "is-inactive" : ""}`}>
                     {income.name}
                   </p>
                   {income.isRecurring && (
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                      Recurring
-                    </Badge>
+                    <Badge variant="secondary">Recurring</Badge>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="list-item-meta">
                   Expected around {income.expectedDay}th
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <p className="text-sm font-semibold tabular-nums text-positive">
+              <div className="list-item-actions">
+                <p className="list-item-amount-value" data-positive>
                   + {income.amount} €
                 </p>
                 <Switch

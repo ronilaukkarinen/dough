@@ -142,36 +142,32 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="page-loading">
+        <Loader2 className="page-loading-spinner animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="page-stack">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Settings
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your preferences
-        </p>
+        <h1 className="page-heading">Settings</h1>
+        <p className="page-subtitle">Manage your preferences</p>
       </div>
 
-      <div className="grid gap-6 max-w-2xl">
+      <div className="settings-grid">
         {/* Language */}
-        <Card className="border-border/50 bg-card/80 gap-2">
+        <Card className="settings-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Globe className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="settings-card-title">
+              <Globe />
               Language
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-3">
+            <div className="settings-row">
               <Select value={language} onValueChange={(v) => v && handleLanguageChange(v)}>
-                <SelectTrigger className="max-w-xs bg-background/50 border-border/50">
+                <SelectTrigger className="settings-input">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -180,68 +176,68 @@ export default function SettingsPage() {
                 </SelectContent>
               </Select>
               {langSaved && (
-                <span className="text-xs text-positive">Saved</span>
+                <span className="settings-saved">Saved</span>
               )}
             </div>
           </CardContent>
         </Card>
 
         {/* YNAB Integration */}
-        <Card className="border-border/50 bg-card/80 gap-2">
+        <Card className="settings-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Link className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="settings-card-title">
+              <Link />
               YNAB integration
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">Status:</span>
+          <CardContent className="form-stack">
+            <div className="settings-row">
+              <span className="settings-status">Status:</span>
               {profile?.ynab_connected ? (
-                <Badge className="gap-1 bg-positive/10 text-positive border-0">
-                  <CheckCircle2 className="h-3 w-3" />
+                <Badge className="badge-connected">
+                  <CheckCircle2 />
                   Connected
                 </Badge>
               ) : (
-                <Badge variant="secondary" className="gap-1">
-                  <XCircle className="h-3 w-3" />
+                <Badge variant="secondary">
+                  <XCircle />
                   Not connected
                 </Badge>
               )}
             </div>
 
             {!profile?.ynab_connected && (
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
+              <div className="form-stack">
+                <p className="page-subtitle">
                   Connect your YNAB account to sync transactions, budgets, and account balances.
                 </p>
-                <div className="space-y-2">
+                <div className="form-field">
                   <Label>YNAB personal access token</Label>
                   <Input
                     type="password"
                     placeholder="Paste your token here"
                     value={ynabToken}
                     onChange={(e) => setYnabToken(e.target.value)}
-                    className="max-w-md bg-background/50 border-border/50"
+                    className="settings-input"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="settings-help">
                     Get your token from YNAB settings, developer settings
                   </p>
                 </div>
-                <div className="space-y-2">
+                <div className="form-field">
                   <Label>YNAB budget ID</Label>
                   <Input
                     type="text"
                     placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                     value={ynabBudgetId}
                     onChange={(e) => setYnabBudgetId(e.target.value)}
-                    className="max-w-md bg-background/50 border-border/50"
+                    className="settings-input"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="settings-help">
                     The UUID from your YNAB URL when viewing the budget
                   </p>
                 </div>
-                {ynabError && <p className="text-sm text-destructive">{ynabError}</p>}
+                {ynabError && <p className="settings-error">{ynabError}</p>}
                 <Button size="sm" onClick={handleYnabConnect} disabled={ynabLoading}>
                   {ynabLoading ? "Connecting..." : "Connect"}
                 </Button>
@@ -249,18 +245,17 @@ export default function SettingsPage() {
             )}
 
             {profile?.ynab_connected && (
-              <div className="flex items-center gap-3">
+              <div className="settings-row">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-2"
                   onClick={handleSync}
                   disabled={syncLoading}
                 >
-                  <RefreshCw className={`h-3 w-3 ${syncLoading ? "animate-spin" : ""}`} />
+                  <RefreshCw className={syncLoading ? "animate-spin" : ""} style={{ width: "0.75rem", height: "0.75rem" }} />
                   {syncLoading ? "Syncing..." : "Sync now"}
                 </Button>
-                <span className="text-xs text-muted-foreground">
+                <span className="settings-sync-time">
                   {syncResult || (profile.last_ynab_sync
                     ? `Last sync: ${new Date(profile.last_ynab_sync).toLocaleDateString("fi-FI")}`
                     : "Never synced")}
