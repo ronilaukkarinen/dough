@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useLocale } from "@/lib/locale-context";
 import { useYnab } from "@/lib/ynab-context";
 import { DailyAllowance } from "@/components/dashboard/daily-allowance";
@@ -17,9 +18,25 @@ import { fi as fiFns, enUS } from "date-fns/locale";
 // Chart colors for categories
 const CATEGORY_COLORS = ["#818cf8", "#4ade80", "#fbbf24", "#c084fc", "#f472b6", "#71717a"];
 
+interface IncomeSource {
+  id: number;
+  name: string;
+  amount: number;
+  expected_day: number;
+  is_recurring: number;
+  is_active: number;
+}
+
 export default function DashboardPage() {
   const { t, locale } = useLocale();
   const { data, loading, connected, sync, savingRate } = useYnab();
+  const [incomes, setIncomes] = useState<IncomeSource[]>([]);
+
+  useEffect(() => {
+    fetch("/api/income").then((r) => r.json()).then((d) => {
+      if (d.incomes) setIncomes(d.incomes);
+    }).catch(() => {});
+  }, []);
 
   if (!connected) {
     return (
@@ -61,8 +78,14 @@ export default function DashboardPage() {
       .reduce((s, a) => s + a.balance, 0) * 100
   ) / 100;
 
-  // Daily budget from available balance minus saving goal
-  const spendableBalance = Math.max(0, availableBalance - savingRate);
+  // Upcoming income = active income sources with expected_day still ahead this month
+  const today = now.getDate();
+  const upcomingIncome = incomes
+    .filter((i) => i.is_active && i.expected_day > today)
+    .reduce((s, i) => s + i.amount, 0);
+
+  // Daily budget = (balance + upcoming income - saving goal) / days left
+  const spendableBalance = Math.max(0, availableBalance + upcomingIncome - savingRate);
   const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
   // Burn rate = average daily real spending this month
@@ -71,7 +94,7 @@ export default function DashboardPage() {
     .filter((t) => t.amount < 0 && !t.payee.startsWith("Transfer") && t.category !== "Uncategorized")
     .reduce((s, t) => s + Math.abs(t.amount), 0);
   const dailyBurnRate = daysPassed > 0 ? Math.round((realSpendingTotal / daysPassed) * 100) / 100 : 0;
-  const projectedMonthEnd = Math.round((availableBalance - (dailyBurnRate * daysLeft)) * 100) / 100;
+  const projectedMonthEnd = Math.round((availableBalance + upcomingIncome - (dailyBurnRate * daysLeft)) * 100) / 100;
 
   // Build spending chart data from transactions (exclude transfers)
   const spendingByDay: Record<string, number> = {};
