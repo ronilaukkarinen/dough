@@ -13,6 +13,8 @@ export interface SessionUser {
   email: string;
   display_name: string;
   locale: string;
+  ynab_connected: boolean;
+  last_ynab_sync: string | null;
 }
 
 export async function createSession(userId: number): Promise<string> {
@@ -35,11 +37,20 @@ export async function getSession(): Promise<SessionUser | null> {
     const userId = payload.userId as number;
 
     const db = getDb();
-    const user = db
-      .prepare("SELECT id, email, display_name, locale FROM users WHERE id = ?")
-      .get(userId) as SessionUser | undefined;
+    const row = db
+      .prepare("SELECT id, email, display_name, locale, ynab_access_token, last_ynab_sync FROM users WHERE id = ?")
+      .get(userId) as (SessionUser & { ynab_access_token: string | null }) | undefined;
 
-    return user || null;
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      email: row.email,
+      display_name: row.display_name,
+      locale: row.locale,
+      ynab_connected: !!row.ynab_access_token,
+      last_ynab_sync: row.last_ynab_sync,
+    };
   } catch (error) {
     console.debug("[auth] Invalid session:", error);
     return null;
@@ -51,26 +62,33 @@ export async function login(
   password: string
 ): Promise<{ user: SessionUser; token: string } | null> {
   const db = getDb();
-  const row = db
-    .prepare("SELECT id, email, display_name, locale, password_hash FROM users WHERE email = ?")
-    .get(email) as (SessionUser & { password_hash: string }) | undefined;
+  const dbRow = db
+    .prepare("SELECT id, email, display_name, locale, password_hash, ynab_access_token, last_ynab_sync FROM users WHERE email = ?")
+    .get(email) as (SessionUser & { password_hash: string; ynab_access_token: string | null }) | undefined;
 
-  if (!row) {
+  if (!dbRow) {
     console.warn("[auth] Login failed: user not found", email);
     return null;
   }
 
-  const valid = await bcrypt.compare(password, row.password_hash);
+  const valid = await bcrypt.compare(password, dbRow.password_hash);
   if (!valid) {
     console.warn("[auth] Login failed: wrong password for", email);
     return null;
   }
 
-  const token = await createSession(row.id);
+  const token = await createSession(dbRow.id);
   console.info("[auth] Login successful for", email);
 
   return {
-    user: { id: row.id, email: row.email, display_name: row.display_name, locale: row.locale },
+    user: {
+      id: dbRow.id,
+      email: dbRow.email,
+      display_name: dbRow.display_name,
+      locale: dbRow.locale,
+      ynab_connected: !!dbRow.ynab_access_token,
+      last_ynab_sync: dbRow.last_ynab_sync,
+    },
     token,
   };
 }

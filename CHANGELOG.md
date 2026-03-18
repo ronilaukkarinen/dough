@@ -1,5 +1,8 @@
 ### 0.1.0: 2026-03-18
 
+* Load user settings from database on page load so they persist across refreshes
+* Wire sync now button to call YNAB sync API with user's token
+* Fix card gap between header and content in settings cards
 * Add copilot.money style button hover effects with glow and scale
 * Fix manifest.json redirect by excluding static files from auth middleware
 * Fix chart width/height warnings with mounted check wrapper

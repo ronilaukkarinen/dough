@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,28 +13,60 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, XCircle, Globe, Link } from "lucide-react";
+import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2 } from "lucide-react";
+
+interface UserProfile {
+  id: number;
+  email: string;
+  locale: string;
+  ynab_connected: boolean;
+  last_ynab_sync: string | null;
+}
 
 export default function SettingsPage() {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
   const [language, setLanguage] = useState("en");
   const [ynabToken, setYnabToken] = useState("");
-  const [ynabConnected, setYnabConnected] = useState(false);
   const [ynabLoading, setYnabLoading] = useState(false);
   const [ynabError, setYnabError] = useState("");
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncResult, setSyncResult] = useState("");
   const [langSaved, setLangSaved] = useState(false);
+
+  useEffect(() => {
+    console.debug("[settings] Loading user profile");
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.user) {
+          console.info("[settings] Profile loaded for", data.user.email);
+          setProfile(data.user);
+          setLanguage(data.user.locale || "en");
+        }
+      })
+      .catch((err) => console.error("[settings] Failed to load profile:", err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleLanguageChange = async (value: string) => {
     setLanguage(value);
+    console.info("[settings] Saving language:", value);
     try {
-      await fetch("/api/auth/update", {
+      const res = await fetch("/api/auth/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ locale: value }),
       });
-      setLangSaved(true);
-      setTimeout(() => setLangSaved(false), 2000);
-    } catch {
-      console.error("[settings] Failed to save language");
+      if (res.ok) {
+        setLangSaved(true);
+        setTimeout(() => setLangSaved(false), 2000);
+        console.info("[settings] Language saved:", value);
+      } else {
+        console.error("[settings] Failed to save language");
+      }
+    } catch (err) {
+      console.error("[settings] Language save error:", err);
     }
   };
 
@@ -45,6 +77,7 @@ export default function SettingsPage() {
     }
     setYnabLoading(true);
     setYnabError("");
+    console.info("[settings] Connecting YNAB");
 
     try {
       const res = await fetch("/api/auth/update", {
@@ -55,16 +88,53 @@ export default function SettingsPage() {
 
       if (!res.ok) {
         setYnabError("Failed to save token");
+        console.error("[settings] YNAB token save failed");
       } else {
-        setYnabConnected(true);
+        setProfile((prev) => prev ? { ...prev, ynab_connected: true } : prev);
         setYnabToken("");
+        console.info("[settings] YNAB connected");
       }
-    } catch {
+    } catch (err) {
       setYnabError("Connection error");
+      console.error("[settings] YNAB connect error:", err);
     } finally {
       setYnabLoading(false);
     }
   };
+
+  const handleSync = async () => {
+    setSyncLoading(true);
+    setSyncResult("");
+    console.info("[settings] Starting YNAB sync");
+
+    try {
+      const res = await fetch("/api/ynab/sync", { method: "POST" });
+      const data = await res.json();
+
+      if (data.success) {
+        setSyncResult("Sync complete");
+        setProfile((prev) => prev ? { ...prev, last_ynab_sync: new Date().toISOString() } : prev);
+        console.info("[settings] YNAB sync complete");
+      } else {
+        setSyncResult(data.error || "Sync failed");
+        console.error("[settings] YNAB sync failed:", data.error);
+      }
+    } catch (err) {
+      setSyncResult("Connection error");
+      console.error("[settings] YNAB sync error:", err);
+    } finally {
+      setSyncLoading(false);
+      setTimeout(() => setSyncResult(""), 5000);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -79,8 +149,8 @@ export default function SettingsPage() {
 
       <div className="grid gap-6 max-w-2xl">
         {/* Language */}
-        <Card className="border-border/50 bg-card/80">
-          <CardHeader className="pb-2">
+        <Card className="border-border/50 bg-card/80 gap-2">
+          <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Globe className="h-4 w-4 text-muted-foreground" />
               Language
@@ -105,8 +175,8 @@ export default function SettingsPage() {
         </Card>
 
         {/* YNAB Integration */}
-        <Card className="border-border/50 bg-card/80">
-          <CardHeader className="pb-2">
+        <Card className="border-border/50 bg-card/80 gap-2">
+          <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Link className="h-4 w-4 text-muted-foreground" />
               YNAB integration
@@ -115,7 +185,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Status:</span>
-              {ynabConnected ? (
+              {profile?.ynab_connected ? (
                 <Badge className="gap-1 bg-positive/10 text-positive border-0">
                   <CheckCircle2 className="h-3 w-3" />
                   Connected
@@ -128,7 +198,7 @@ export default function SettingsPage() {
               )}
             </div>
 
-            {!ynabConnected && (
+            {!profile?.ynab_connected && (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
                   Connect your YNAB account to sync transactions, budgets, and account balances.
@@ -153,14 +223,22 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {ynabConnected && (
+            {profile?.ynab_connected && (
               <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" className="gap-2">
-                  <RefreshCw className="h-3 w-3" />
-                  Sync now
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={handleSync}
+                  disabled={syncLoading}
+                >
+                  <RefreshCw className={`h-3 w-3 ${syncLoading ? "animate-spin" : ""}`} />
+                  {syncLoading ? "Syncing..." : "Sync now"}
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                  Last sync: never
+                  {syncResult || (profile.last_ynab_sync
+                    ? `Last sync: ${new Date(profile.last_ynab_sync).toLocaleDateString("fi-FI")}`
+                    : "Never synced")}
                 </span>
               </div>
             )}
