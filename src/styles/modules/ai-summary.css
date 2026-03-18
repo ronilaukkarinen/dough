@@ -90,6 +90,10 @@
   animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
+.skeleton-line-wide { width: 92%; }
+.skeleton-line-medium { width: 78%; }
+.skeleton-line-narrow { width: 85%; }
+
 @keyframes skeleton-shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }

@@ -99,9 +99,9 @@ export function AiSummary() {
       </div>
       {refreshing || (loading && !summary) ? (
         <div className="skeleton-lines">
-          <div className="skeleton-line" style={{ width: "92%" }} />
-          <div className="skeleton-line" style={{ width: "78%" }} />
-          <div className="skeleton-line" style={{ width: "85%" }} />
+          <div className="skeleton-line skeleton-line-wide" />
+          <div className="skeleton-line skeleton-line-medium" />
+          <div className="skeleton-line skeleton-line-narrow" />
         </div>
       ) : summary ? (
         <p className="ai-summary-text">{summary}</p>

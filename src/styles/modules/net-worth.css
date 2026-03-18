@@ -168,6 +168,10 @@
   color: var(--foreground);
 }
 
+.card.net-worth-chart-card {
+  padding: 1rem;
+}
+
 .net-worth-list-amount {
   font-size: 0.8125rem;
   font-weight: 600;

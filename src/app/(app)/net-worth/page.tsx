@@ -141,7 +141,7 @@ export default function NetWorthPage() {
           )}
 
           {chartData.length > 1 && (
-            <Card className="net-worth-card" style={{ padding: "1rem" }}>
+            <Card className="net-worth-card net-worth-chart-card">
               <ChartContainer height={300}>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
