@@ -1,5 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getFinancialAdvice } from "@/lib/ai/finance-advisor";
+import { getSession } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { getBudgetSummary, getTransactions, getMonthBudget } from "@/lib/ynab/client";
 
 export async function POST(request: Request) {
   try {
@@ -12,43 +16,92 @@ export async function POST(request: Request) {
       );
     }
 
-    // TODO: Pull real data from Supabase + YNAB
-    // For now, use demo context
-    const context = {
-      totalBalance: 400,
-      monthlyIncome: 4200,
-      monthlyExpenses: 1750,
-      upcomingBills: [
-        { name: "Phone (Elisa)", amount: 30, dueDay: 20 },
-        { name: "Insurance", amount: 120, dueDay: 22 },
-        { name: "Electricity", amount: 89, dueDay: 25 },
-        { name: "Tax Debt Payment", amount: 150, dueDay: 25 },
-        { name: "Car Loan", amount: 270, dueDay: 28 },
-      ],
-      recentTransactions: [
-        { date: "2026-03-18", payee: "S-Market", amount: -47.80, category: "Groceries" },
-        { date: "2026-03-17", payee: "ABC-asema", amount: -52.10, category: "Transport" },
-        { date: "2026-03-17", payee: "Netflix", amount: -17.99, category: "Subscriptions" },
-        { date: "2026-03-16", payee: "Ravintola Savotta", amount: -38.50, category: "Restaurants" },
-        { date: "2026-03-15", payee: "Salary", amount: 2100, category: "Income" },
-      ],
-      debts: [
-        { name: "Car Loan", remaining: 8400, rate: 4.5 },
-        { name: "Tax Debt", remaining: 2800, rate: 7 },
-        { name: "Credit Card", remaining: 1200, rate: 18.5 },
-      ],
-      dailyBudget: 32,
-      daysUntilNextIncome: 7,
-      locale: "en",
-    };
+    // Get real YNAB data
+    const user = await getSession();
+    let context;
+
+    if (user) {
+      const db = getDb();
+      const row = db
+        .prepare("SELECT ynab_access_token, ynab_budget_id, locale FROM users WHERE id = ?")
+        .get(user.id) as { ynab_access_token: string | null; ynab_budget_id: string | null; locale: string } | undefined;
+
+      const token = row?.ynab_access_token;
+      const budgetId = row?.ynab_budget_id;
+      const locale = row?.locale || "en";
+
+      if (token && budgetId) {
+        console.info("[chat] Fetching real YNAB data for context");
+        try {
+          const now = new Date();
+          const sinceDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+
+          const [summary, transactions, monthBudget] = await Promise.all([
+            getBudgetSummary(budgetId, token),
+            getTransactions(budgetId, sinceDate, token),
+            getMonthBudget(budgetId, undefined, token),
+          ]);
+
+          const checkingSavings = summary.accounts
+            .filter((a: any) => a.type === "checking" || a.type === "savings")
+            .reduce((s: number, a: any) => s + a.balance, 0);
+
+          const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+          const daysLeft = daysInMonth - now.getDate() + 1;
+          const dailyBudget = daysLeft > 0 ? Math.round((monthBudget.toBeBudgeted / daysLeft) * 100) / 100 : 0;
+
+          // Get debts from accounts
+          const debts = summary.accounts
+            .filter((a: any) => a.type === "otherDebt" && a.balance < 0)
+            .map((a: any) => ({ name: a.name, remaining: Math.abs(a.balance), rate: 0 }));
+
+          const recentTx = [...transactions]
+            .sort((a: any, b: any) => b.date.localeCompare(a.date))
+            .slice(0, 10)
+            .map((t: any) => ({ date: t.date, payee: t.payee, amount: t.amount, category: t.category }));
+
+          context = {
+            totalBalance: Math.round(checkingSavings * 100) / 100,
+            monthlyIncome: Math.round(monthBudget.income * 100) / 100,
+            monthlyExpenses: Math.round(Math.abs(monthBudget.activity) * 100) / 100,
+            upcomingBills: [] as { name: string; amount: number; dueDay: number }[],
+            recentTransactions: recentTx,
+            debts,
+            dailyBudget,
+            daysUntilNextIncome: daysLeft,
+            locale,
+          };
+
+          console.info("[chat] Context built with real data, balance:", context.totalBalance);
+        } catch (err) {
+          console.error("[chat] Failed to fetch YNAB data:", err);
+        }
+      }
+    }
+
+    // Fallback if no YNAB data
+    if (!context) {
+      console.warn("[chat] Using empty context, no YNAB data available");
+      context = {
+        totalBalance: 0,
+        monthlyIncome: 0,
+        monthlyExpenses: 0,
+        upcomingBills: [],
+        recentTransactions: [],
+        debts: [],
+        dailyBudget: 0,
+        daysUntilNextIncome: 0,
+        locale: "en",
+      };
+    }
 
     const response = await getFinancialAdvice(messages, context);
 
     return NextResponse.json({ message: response });
   } catch (error) {
-    console.error("Chat API error:", error);
+    console.error("[chat] API error:", error);
     return NextResponse.json(
-      { message: "Sorry, I'm having trouble connecting right now. Please check that the API key is configured." },
+      { message: "Sorry, something went wrong. Please try again." },
       { status: 500 }
     );
   }

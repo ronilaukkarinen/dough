@@ -41,13 +41,19 @@ export default function DashboardPage() {
   const now = new Date();
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysLeft = daysInMonth - now.getDate() + 1;
-  const totalBalance = data.summary.totalBalance;
   const monthActivity = Math.abs(data.monthBudget.activity);
   const monthIncome = data.monthBudget.income;
+  const toBeBudgeted = data.monthBudget.toBeBudgeted;
 
-  // Available = what's left to spend this month (toBeBudgeted or remaining balance)
-  const availableBalance = Math.round(data.monthBudget.toBeBudgeted * 100) / 100;
-  const dailyBudget = daysLeft > 0 ? Math.round((availableBalance / daysLeft) * 100) / 100 : 0;
+  // Available = total checking + savings accounts
+  const availableBalance = Math.round(
+    data.summary.accounts
+      .filter((a) => a.type === "checking" || a.type === "savings")
+      .reduce((s, a) => s + a.balance, 0) * 100
+  ) / 100;
+
+  // Daily budget from unassigned money
+  const dailyBudget = daysLeft > 0 ? Math.round((toBeBudgeted / daysLeft) * 100) / 100 : 0;
 
   // Build spending chart data from transactions
   const spendingByDay: Record<string, number> = {};

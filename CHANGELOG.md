@@ -40,6 +40,9 @@
 * Add auto-sync on app load when YNAB is connected
 * Show relative dates on transactions (today, yesterday, 3 days ago)
 * Rewrite YNAB client to use REST API directly for reliability
+* Fix available balance to show checking+savings total instead of YNAB toBeBudgeted
+* Fix AI chat by resolving claude CLI path and wiring real YNAB data as context
+* Remove all hardcoded demo data from chat API route
 
 ### 0.1.0: 2026-03-18
 
