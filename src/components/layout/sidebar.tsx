@@ -45,15 +45,10 @@ export function Sidebar() {
       )}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-border px-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg">
-          D
-        </div>
-        {!collapsed && (
-          <span className="text-lg font-semibold tracking-tight text-foreground">
-            Dough
-          </span>
-        )}
+      <div className="flex h-16 items-center border-b border-border px-4">
+        <span className="text-lg font-semibold tracking-tight text-foreground">
+          {collapsed ? "D" : "Dough"}
+        </span>
       </div>
 
       {/* Navigation */}

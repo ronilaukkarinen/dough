@@ -1,5 +1,10 @@
 ### 0.1.0: 2026-03-18
 
+* Fix font not loading by setting Inter directly in theme
+* Fix manifest.json syntax error by removing missing icon references
+* Remove logo avatar and branding from login and sidebar
+* Redesign login page to match copilot.money style
+* Change usernames to rolle and mustikkasoppa
 * Replace Supabase with local SQLite database and cookie-based auth
 * Switch AI chat from Anthropic API to claude CLI for Claude Max usage
 * Add seed script for creating users
