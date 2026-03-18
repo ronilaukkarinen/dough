@@ -80,7 +80,7 @@
 }
 
 .recent-transactions-icon[data-type="expense"] {
-  color: var(--muted-foreground);
+  color: var(--negative);
 }
 
 .recent-transactions-icon[data-type="income"] {
