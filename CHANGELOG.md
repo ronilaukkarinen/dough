@@ -38,6 +38,14 @@
 * Add polling so AI response persists even if you navigate away
 * Save AI chat responses to database server-side for reliability
 * Increase claude CLI timeout to 120 seconds for both chat and summary
+* Switch from Outfit+Inter to Geist font family for modern 2026 aesthetic
+* Update color palette to indigo/violet primary with deeper dark theme
+* Add glassmorphism card styling with backdrop blur and subtle borders
+* Add tabular-nums and tighter letter-spacing on all metric values
+* Update all chart colors to match new palette
+* Update login page to use new theme tokens and cleaner styling
+* Fix AI chat and summary by piping prompts via stdin instead of CLI arguments
+* Fix pie chart category rendering with fixed donut container dimensions
 
 ### 0.2.0: 2026-03-18
 

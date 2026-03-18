@@ -70,7 +70,8 @@
   font-size: 2.5rem;
   line-height: 1;
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (min-width: 768px) {
@@ -179,8 +180,9 @@
   font-size: 1.5rem;
   line-height: 2rem;
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   color: var(--foreground);
+  font-variant-numeric: tabular-nums;
 }
 
 .metric-card-value-lg {

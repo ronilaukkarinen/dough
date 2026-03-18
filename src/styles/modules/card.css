@@ -1,18 +1,25 @@
-/* Module: card */
+/* Module: card — glassmorphism style */
 
 .card {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   overflow: hidden;
-  border-radius: 0.75rem;
-  background-color: var(--card);
+  border-radius: var(--radius);
+  background-color: var(--glass-bg, var(--card));
   padding-top: 1rem;
   padding-bottom: 1rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: var(--card-foreground);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent);
+  border: 1px solid var(--glass-border, var(--border));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: border-color 200ms, background-color 200ms;
+}
+
+.card:hover {
+  border-color: var(--glass-hover, var(--border));
 }
 
 .card:has([data-slot="card-footer"]) {
@@ -24,11 +31,11 @@
 }
 
 .card > img:first-child {
-  border-radius: 0.75rem 0.75rem 0 0;
+  border-radius: var(--radius) var(--radius) 0 0;
 }
 
 .card > img:last-child {
-  border-radius: 0 0 0.75rem 0.75rem;
+  border-radius: 0 0 var(--radius) var(--radius);
 }
 
 .card[data-size="sm"] {
@@ -47,7 +54,7 @@
   grid-auto-rows: min-content;
   align-items: start;
   gap: 0.25rem;
-  border-radius: 0.75rem 0.75rem 0 0;
+  border-radius: var(--radius) var(--radius) 0 0;
   padding-left: 1rem;
   padding-right: 1rem;
 }
@@ -70,6 +77,7 @@
   font-size: 1rem;
   line-height: 1.375;
   font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .card[data-size="sm"] .card-title {
@@ -106,7 +114,7 @@
 .card-footer {
   display: flex;
   align-items: center;
-  border-radius: 0 0 0.75rem 0.75rem;
+  border-radius: 0 0 var(--radius) var(--radius);
   border-top: 1px solid var(--border);
   background-color: color-mix(in srgb, var(--muted) 50%, transparent);
   padding: 1rem;

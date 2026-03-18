@@ -36,11 +36,17 @@
 
 .category-breakdown-donut {
   position: relative;
-  height: 100%;
-  width: 100%;
-  max-width: 320px;
-  aspect-ratio: 1;
+  height: 320px;
+  width: 320px;
   flex-shrink: 0;
+}
+
+@media (max-width: 639px) {
+  .category-breakdown-donut {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+  }
 }
 
 .category-breakdown-donut-center {

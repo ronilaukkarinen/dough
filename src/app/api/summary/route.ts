@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { getBudgetSummary, getTransactions, getMonthBudget } from "@/lib/ynab/client";
-import { execFile } from "child_process";
-import { promisify } from "util";
-
-const execFileAsync = promisify(execFile);
+import { spawn } from "child_process";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -108,13 +105,31 @@ Data:
     const claudePath = process.env.CLAUDE_PATH || "/home/rolle/.local/bin/claude";
     console.info("[summary] Calling claude CLI");
 
-    const { stdout } = await execFileAsync(claudePath, ["-p", prompt], {
-      timeout: 120000,
-      maxBuffer: 1024 * 1024,
-      env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "cli" },
-    });
+    const summaryText = await new Promise<string>((resolve, reject) => {
+      const proc = spawn(claudePath, ["-p", "-"], {
+        env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "cli" },
+        timeout: 120000,
+      });
 
-    const summaryText = stdout.trim();
+      let stdout = "";
+      let stderr = "";
+
+      proc.stdout.on("data", (data: Buffer) => { stdout += data.toString(); });
+      proc.stderr.on("data", (data: Buffer) => { stderr += data.toString(); });
+
+      proc.on("close", (code: number) => {
+        if (code === 0 && stdout.trim()) {
+          resolve(stdout.trim());
+        } else {
+          reject(new Error(`claude exited with code ${code}: ${stderr}`));
+        }
+      });
+
+      proc.on("error", reject);
+
+      proc.stdin.write(prompt);
+      proc.stdin.end();
+    });
 
     if (summaryText) {
       db.prepare("INSERT INTO ai_summaries (user_id, locale, content) VALUES (?, ?, ?)")

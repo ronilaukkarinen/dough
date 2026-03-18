@@ -1,7 +1,4 @@
-import { execFile } from "child_process";
-import { promisify } from "util";
-
-const execFileAsync = promisify(execFile);
+import { spawn } from "child_process";
 
 interface FinancialContext {
   totalBalance: number;
@@ -70,19 +67,34 @@ export async function getFinancialAdvice(
   const prompt = buildPrompt(messages, context);
 
   try {
-    console.info("[ai] Calling claude CLI for financial advice");
+    console.info("[ai] Calling claude CLI via stdin pipe");
     const claudePath = process.env.CLAUDE_PATH || "/home/rolle/.local/bin/claude";
-    const { stdout } = await execFileAsync(claudePath, ["-p", prompt], {
-      timeout: 120000,
-      maxBuffer: 1024 * 1024,
-      env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "cli" },
-    });
 
-    const response = stdout.trim();
-    if (!response) {
-      console.warn("[ai] Empty response from claude CLI");
-      return "Sorry, I could not generate a response. Please try again.";
-    }
+    const response = await new Promise<string>((resolve, reject) => {
+      const proc = spawn(claudePath, ["-p", "-"], {
+        env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "cli" },
+        timeout: 120000,
+      });
+
+      let stdout = "";
+      let stderr = "";
+
+      proc.stdout.on("data", (data) => { stdout += data.toString(); });
+      proc.stderr.on("data", (data) => { stderr += data.toString(); });
+
+      proc.on("close", (code) => {
+        if (code === 0 && stdout.trim()) {
+          resolve(stdout.trim());
+        } else {
+          reject(new Error(`claude exited with code ${code}: ${stderr}`));
+        }
+      });
+
+      proc.on("error", reject);
+
+      proc.stdin.write(prompt);
+      proc.stdin.end();
+    });
 
     console.info("[ai] Got response from claude CLI, length:", response.length);
     return response;

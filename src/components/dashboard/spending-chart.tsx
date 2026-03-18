@@ -47,20 +47,20 @@ export function SpendingChart({ data }: SpendingChartProps) {
           <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="spentGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#4d94ff" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#4d94ff" stopOpacity={0} />
+                <stop offset="0%" stopColor="#818cf8" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#818cf8" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="budgetGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#7a8ba0" stopOpacity={0.1} />
-                <stop offset="100%" stopColor="#7a8ba0" stopOpacity={0} />
+                <stop offset="0%" stopColor="#71717a" stopOpacity={0.1} />
+                <stop offset="100%" stopColor="#71717a" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-            <XAxis dataKey="date" tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v)} €`} width={60} />
+            <XAxis dataKey="date" tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} />
+            <YAxis tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v)} €`} width={60} />
             <Tooltip content={<CustomTooltip />} />
-            <Area type="monotone" dataKey="budget" stroke="#7a8ba0" strokeWidth={1.5} strokeDasharray="4 4" fill="url(#budgetGradient)" />
-            <Area type="monotone" dataKey="spent" stroke="#4d94ff" strokeWidth={2} fill="url(#spentGradient)" />
+            <Area type="monotone" dataKey="budget" stroke="#71717a" strokeWidth={1.5} strokeDasharray="4 4" fill="url(#budgetGradient)" />
+            <Area type="monotone" dataKey="spent" stroke="#818cf8" strokeWidth={2} fill="url(#spentGradient)" />
           </AreaChart>
         </ResponsiveContainer>
       </ChartContainer>

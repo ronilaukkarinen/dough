@@ -1,11 +1,11 @@
-/* Module: login (moved from globals.css) */
+/* Module: login — modern dark glassmorphism */
 
 .login-page {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #000914;
+  background: var(--background);
 }
 
 .login-container {
@@ -16,17 +16,16 @@
 }
 
 .login-title {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.02em;
+  color: var(--foreground);
+  letter-spacing: -0.04em;
   margin-bottom: 8px;
-  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
 
 .login-subtitle {
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.45);
+  font-size: 14px;
+  color: var(--muted-foreground);
   margin-bottom: 40px;
 }
 
@@ -40,28 +39,28 @@
   width: 100%;
   height: 48px;
   padding: 0 16px;
-  font-size: 15px;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  font-size: 14px;
+  color: var(--foreground);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
+  border-radius: var(--radius);
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 200ms, background-color 200ms;
   font-family: inherit;
 }
 
 .login-input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--muted-foreground);
 }
 
 .login-input:focus {
-  border-color: rgba(26, 102, 255, 0.5);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .login-error {
   font-size: 13px;
-  color: #ff6b6b;
+  color: var(--negative);
   text-align: left;
 }
 
@@ -69,24 +68,21 @@
   width: 100%;
   height: 48px;
   margin-top: 8px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: #fff;
-  background: linear-gradient(rgb(26, 102, 255) 0%, rgb(26, 102, 255) 100%) rgb(26, 102, 255);
+  background: var(--primary);
   border: none;
-  border-radius: 20px;
-  box-shadow:
-    rgba(255, 255, 255, 0.16) 4px 4px 16px -4px inset,
-    rgba(0, 0, 0, 0.2) -4px -4px 16px -4px inset,
-    rgba(255, 255, 255, 0.08) 4px 4px 8px 0px inset,
-    rgba(255, 255, 255, 0.4) 1px 1px 1px -0.5px inset;
+  border-radius: var(--radius);
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
+  transition: opacity 200ms, transform 100ms, box-shadow 200ms;
   font-family: inherit;
 }
 
 .login-button:hover {
-  opacity: 0.92;
+  opacity: 0.9;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 .login-button:active {

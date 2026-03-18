@@ -15,7 +15,7 @@ import { formatDistanceToNow } from "date-fns";
 import { fi as fiFns, enUS } from "date-fns/locale";
 
 // Chart colors for categories
-const CATEGORY_COLORS = ["#4d94ff", "#00e676", "#ffb74d", "#b388ff", "#ff80ab", "#7a8ba0"];
+const CATEGORY_COLORS = ["#818cf8", "#4ade80", "#fbbf24", "#c084fc", "#f472b6", "#71717a"];
 
 export default function DashboardPage() {
   const { t, locale } = useLocale();

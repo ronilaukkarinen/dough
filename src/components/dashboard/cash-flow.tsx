@@ -59,12 +59,12 @@ export function CashFlowChart({ data }: CashFlowProps) {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-            <XAxis dataKey="month" tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v)} €`} />
+            <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} />
+            <YAxis tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v)} €`} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" />
-            <Bar dataKey="income" fill="#00e676" radius={[4, 4, 0, 0]} barSize={20} />
-            <Bar dataKey="expenses" fill="#ff6b6b" radius={[4, 4, 0, 0]} barSize={20} />
+            <Bar dataKey="income" fill="#4ade80" radius={[4, 4, 0, 0]} barSize={20} />
+            <Bar dataKey="expenses" fill="#f87171" radius={[4, 4, 0, 0]} barSize={20} />
           </BarChart>
         </ResponsiveContainer>
       </ChartContainer>

@@ -46,23 +46,13 @@
 .button[data-variant="default"],
 .button:not([data-variant]) {
   background-color: var(--primary);
-  color: var(--primary-foreground);
-  box-shadow:
-    inset 4px 4px 16px -4px rgba(255, 255, 255, 0.16),
-    inset -4px -4px 16px -4px rgba(0, 0, 0, 0.2),
-    inset 4px 4px 8px 0px rgba(255, 255, 255, 0.08),
-    inset 1px 1px 1px -0.5px rgba(255, 255, 255, 0.4);
+  color: #fff;
 }
 
 .button[data-variant="default"]:hover,
 .button:not([data-variant]):hover {
-  filter: brightness(1.1);
-  box-shadow:
-    inset 4px 4px 16px -4px rgba(255, 255, 255, 0.2),
-    inset -4px -4px 16px -4px rgba(0, 0, 0, 0.25),
-    inset 4px 4px 8px 0px rgba(255, 255, 255, 0.1),
-    inset 1px 1px 1px -0.5px rgba(255, 255, 255, 0.5),
-    0 0 16px rgba(77, 148, 255, 0.3);
+  opacity: 0.9;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 .button[data-variant="default"]:active,
@@ -79,7 +69,7 @@
   background-color: var(--muted);
   color: var(--foreground);
   border-color: color-mix(in srgb, var(--primary) 30%, transparent);
-  box-shadow: 0 0 12px rgba(77, 148, 255, 0.15);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 15%, transparent);
 }
 
 .button[data-variant="outline"]:active {
@@ -107,7 +97,7 @@
 
 .button[data-variant="secondary"]:hover {
   background-color: color-mix(in srgb, var(--secondary) 80%, transparent);
-  box-shadow: 0 0 12px rgba(77, 148, 255, 0.1);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .button[data-variant="secondary"]:active {
