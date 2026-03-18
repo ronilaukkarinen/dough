@@ -87,6 +87,13 @@
 * Fix AI summary refresh button with type="button" and Safari clipboard fallback
 * Fix global focus ring to use indigo instead of white
 * Enlarge AI summary button tap targets
+* Add YNAB payee matching system for income sources
+* Support multiple payee patterns per income source (regex supported)
+* Auto-match transactions to income sources on YNAB sync
+* Show green "Received" badge on matched income sources
+* Skip already-received income from upcoming calculations on dashboard
+* Add link button to income list items for managing payee patterns
+* Add payee_matches and monthly_matches tables
 
 ### 0.2.0: 2026-03-18
 

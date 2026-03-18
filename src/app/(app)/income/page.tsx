@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Wallet, TrendingUp, Loader2 } from "lucide-react";
+import { Plus, Wallet, TrendingUp, Loader2, Link2, Check, X } from "lucide-react";
 
 interface Income {
   id: number;
@@ -27,20 +27,43 @@ interface Income {
 }
 
 export default function IncomePage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [patterns, setPatterns] = useState<Record<number, { id: number; payee_pattern: string }[]>>({});
+  const [monthlyMatches, setMonthlyMatches] = useState<Record<number, boolean>>({});
+  const [addingPattern, setAddingPattern] = useState<number | null>(null);
+  const [newPattern, setNewPattern] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    console.debug("[income] Loading income sources");
-    fetch("/api/income")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.incomes) {
-          console.info("[income] Loaded", data.incomes.length, "sources");
-          setIncomes(data.incomes);
+    console.debug("[income] Loading income sources and matches");
+    Promise.all([
+      fetch("/api/income").then((r) => r.json()),
+      fetch("/api/matches").then((r) => r.json()),
+    ])
+      .then(([incomeData, matchData]) => {
+        if (incomeData.incomes) {
+          console.info("[income] Loaded", incomeData.incomes.length, "sources");
+          setIncomes(incomeData.incomes);
+        }
+        if (matchData.patterns) {
+          const grouped: Record<number, { id: number; payee_pattern: string }[]> = {};
+          for (const p of matchData.patterns) {
+            if (p.source_type === "income") {
+              if (!grouped[p.source_id]) grouped[p.source_id] = [];
+              grouped[p.source_id].push({ id: p.id, payee_pattern: p.payee_pattern });
+            }
+          }
+          setPatterns(grouped);
+        }
+        if (matchData.monthlyMatches) {
+          const matched: Record<number, boolean> = {};
+          for (const m of matchData.monthlyMatches) {
+            if (m.source_type === "income") matched[m.source_id] = true;
+          }
+          setMonthlyMatches(matched);
         }
       })
       .catch((err) => console.error("[income] Load error:", err))
@@ -98,6 +121,46 @@ export default function IncomePage() {
       });
     } catch (err) {
       console.error("[income] Toggle error:", err);
+    }
+  };
+
+  const handleAddPattern = async (sourceId: number) => {
+    if (!newPattern.trim()) return;
+    console.info("[income] Adding pattern:", newPattern, "for source", sourceId);
+    try {
+      const res = await fetch("/api/matches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source_type: "income", source_id: sourceId, payee_pattern: newPattern.trim() }),
+      });
+      const data = await res.json();
+      if (data.id) {
+        setPatterns((prev) => ({
+          ...prev,
+          [sourceId]: [...(prev[sourceId] || []), { id: data.id, payee_pattern: newPattern.trim() }],
+        }));
+        setNewPattern("");
+        setAddingPattern(null);
+      }
+    } catch (err) {
+      console.error("[income] Add pattern error:", err);
+    }
+  };
+
+  const handleRemovePattern = async (patternId: number, sourceId: number) => {
+    console.info("[income] Removing pattern:", patternId);
+    try {
+      await fetch("/api/matches", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: patternId }),
+      });
+      setPatterns((prev) => ({
+        ...prev,
+        [sourceId]: (prev[sourceId] || []).filter((p) => p.id !== patternId),
+      }));
+    } catch (err) {
+      console.error("[income] Remove pattern error:", err);
     }
   };
 
@@ -181,23 +244,55 @@ export default function IncomePage() {
           {[...incomes]
             .sort((a, b) => a.expected_day - b.expected_day)
             .map((income) => (
-              <div key={income.id} className="list-item">
-                <div className="list-item-icon" data-color="positive">
-                  <Wallet />
-                </div>
-                <div className="list-item-body">
-                  <div className="list-item-name-row">
-                    <p className={`list-item-name ${!income.is_active ? "is-inactive" : ""}`}>{income.name}</p>
-                    {income.is_recurring ? <Badge variant="secondary">{t.income.recurring}</Badge> : null}
+              <div key={income.id} className="list-item list-item-col">
+                <div className="list-item-main">
+                  <div className="list-item-icon" data-color="positive">
+                    <Wallet />
                   </div>
-                  <p className="list-item-meta">
-                    {t.income.expectedAround} {income.expected_day}.
-                  </p>
+                  <div className="list-item-body">
+                    <div className="list-item-name-row">
+                      <p className={`list-item-name ${!income.is_active ? "is-inactive" : ""}`}>{income.name}</p>
+                      {monthlyMatches[income.id] && <Badge className="badge-matched"><Check className="icon-xs" />{locale === "fi" ? "Saatu" : "Received"}</Badge>}
+                      {income.is_recurring ? <Badge variant="secondary">{t.income.recurring}</Badge> : null}
+                    </div>
+                    <p className="list-item-meta">
+                      {t.income.expectedAround} {income.expected_day}.
+                      {(patterns[income.id] || []).length > 0 && (
+                        <span className="list-item-patterns">
+                          {" – "}{(patterns[income.id]).map((p) => p.payee_pattern).join(", ")}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="list-item-actions">
+                    <p className="list-item-amount-value" data-positive>+{income.amount.toFixed(2)} €</p>
+                    <button type="button" className="list-item-link-btn" onClick={() => setAddingPattern(addingPattern === income.id ? null : income.id)}>
+                      <Link2 />
+                    </button>
+                    <Switch checked={!!income.is_active} onCheckedChange={() => toggleIncome(income.id, income.is_active)} />
+                  </div>
                 </div>
-                <div className="list-item-actions">
-                  <p className="list-item-amount-value" data-positive>+{income.amount.toFixed(2)} €</p>
-                  <Switch checked={!!income.is_active} onCheckedChange={() => toggleIncome(income.id, income.is_active)} />
-                </div>
+                {addingPattern === income.id && (
+                  <div className="match-pattern-row">
+                    <Input
+                      value={newPattern}
+                      onChange={(e) => setNewPattern(e.target.value)}
+                      placeholder={locale === "fi" ? "YNAB-saajan nimi tai regex" : "YNAB payee name or regex"}
+                      className="match-pattern-input"
+                    />
+                    <Button type="button" size="sm" onClick={() => handleAddPattern(income.id)}>{locale === "fi" ? "Lisää" : "Add"}</Button>
+                  </div>
+                )}
+                {addingPattern === income.id && (patterns[income.id] || []).length > 0 && (
+                  <div className="match-pattern-list">
+                    {(patterns[income.id]).map((p) => (
+                      <span key={p.id} className="match-pattern-tag">
+                        {p.payee_pattern}
+                        <button type="button" className="match-pattern-remove" onClick={() => handleRemovePattern(p.id, income.id)}><X /></button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
         </Card>

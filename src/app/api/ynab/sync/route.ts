@@ -64,6 +64,16 @@ export async function POST() {
       console.error("[api/ynab/sync] Failed to save net worth snapshot:", err);
     }
 
+    // Auto-match transactions to income sources and bills
+    try {
+      const { runAutoMatch } = await import("@/lib/matching");
+      const month = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+      const matchResult = runAutoMatch(transactions, month);
+      console.info("[api/ynab/sync] Auto-match:", matchResult.matched, "new matches");
+    } catch (err) {
+      console.error("[api/ynab/sync] Auto-match error:", err);
+    }
+
     console.info("[api/ynab/sync] Sync complete. Accounts:", summary.accounts.length, "Transactions:", transactions.length);
 
     return NextResponse.json({

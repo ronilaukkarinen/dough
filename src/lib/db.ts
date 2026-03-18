@@ -117,6 +117,28 @@ function initializeDb(db: Database.Database) {
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_net_worth_user_date ON net_worth_snapshots(user_id, date);
 
+    CREATE TABLE IF NOT EXISTS payee_matches (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill')),
+      source_id INTEGER NOT NULL,
+      payee_pattern TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_payee_matches_source ON payee_matches(source_type, source_id);
+
+    CREATE TABLE IF NOT EXISTS monthly_matches (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill')),
+      source_id INTEGER NOT NULL,
+      month TEXT NOT NULL,
+      ynab_transaction_id TEXT NOT NULL,
+      amount REAL NOT NULL,
+      matched_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_monthly_matches_unique ON monthly_matches(source_type, source_id, month, ynab_transaction_id);
+
     CREATE TABLE IF NOT EXISTS debt_overrides (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       ynab_account_id TEXT UNIQUE NOT NULL,

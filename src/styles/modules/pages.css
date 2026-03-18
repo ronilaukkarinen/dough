@@ -150,6 +150,106 @@
   background-color: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
+.list-item-col {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.list-item-main {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+}
+
+.list-item-patterns {
+  color: var(--primary);
+  font-style: italic;
+}
+
+.list-item-link-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--muted-foreground);
+  background: none;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: color 150ms;
+}
+
+.list-item-link-btn:hover {
+  color: var(--primary);
+}
+
+.list-item-link-btn svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.match-pattern-row {
+  display: flex;
+  gap: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+.match-pattern-input {
+  flex: 1;
+  height: 1.75rem;
+  font-size: 0.8125rem;
+}
+
+.match-pattern-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding-left: 1.5rem;
+}
+
+.match-pattern-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary);
+}
+
+.match-pattern-remove {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  padding: 0;
+}
+
+.match-pattern-remove:hover {
+  color: var(--negative);
+}
+
+.match-pattern-remove svg {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+.badge-matched {
+  background-color: color-mix(in srgb, var(--positive) 10%, transparent);
+  color: var(--positive);
+  border: none;
+}
+
+.icon-xs {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
 /* Icon — bare, no box, consistent with dashboard */
 .list-item-icon {
   display: flex;

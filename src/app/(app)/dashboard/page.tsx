@@ -31,10 +31,21 @@ export default function DashboardPage() {
   const { t, locale } = useLocale();
   const { data, loading, connected, sync, savingRate } = useYnab();
   const [incomes, setIncomes] = useState<IncomeSource[]>([]);
+  const [matchedIncomeIds, setMatchedIncomeIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    fetch("/api/income").then((r) => r.json()).then((d) => {
-      if (d.incomes) setIncomes(d.incomes);
+    Promise.all([
+      fetch("/api/income").then((r) => r.json()),
+      fetch("/api/matches").then((r) => r.json()),
+    ]).then(([incomeData, matchData]) => {
+      if (incomeData.incomes) setIncomes(incomeData.incomes);
+      if (matchData.monthlyMatches) {
+        const ids = new Set<number>();
+        for (const m of matchData.monthlyMatches) {
+          if (m.source_type === "income") ids.add(m.source_id);
+        }
+        setMatchedIncomeIds(ids);
+      }
     }).catch(() => {});
   }, []);
 
@@ -78,10 +89,10 @@ export default function DashboardPage() {
       .reduce((s, a) => s + a.balance, 0) * 100
   ) / 100;
 
-  // Upcoming income = active income sources with expected_day still ahead this month
+  // Upcoming income = active, unmatched income sources with expected_day still ahead
   const today = now.getDate();
   const upcomingIncome = incomes
-    .filter((i) => i.is_active && i.expected_day > today)
+    .filter((i) => i.is_active && i.expected_day > today && !matchedIncomeIds.has(i.id))
     .reduce((s, i) => s + i.amount, 0);
 
   // Daily budget = (balance - saving goal) / days left
@@ -189,20 +200,20 @@ export default function DashboardPage() {
         upcomingBills={0}
         nextIncomeAmount={(() => {
           const next = incomes
-            .filter((i) => i.is_active && i.expected_day > today)
+            .filter((i) => i.is_active && i.expected_day > today && !matchedIncomeIds.has(i.id))
             .sort((a, b) => a.expected_day - b.expected_day)[0];
           return next?.amount ?? 0;
         })()}
         nextIncomeDate={(() => {
           const next = incomes
-            .filter((i) => i.is_active && i.expected_day > today)
+            .filter((i) => i.is_active && i.expected_day > today && !matchedIncomeIds.has(i.id))
             .sort((a, b) => a.expected_day - b.expected_day)[0];
           if (!next) return "";
           return `${next.expected_day}.${now.getMonth() + 1}. – ${next.name}`;
         })()}
         daysUntilIncome={(() => {
           const next = incomes
-            .filter((i) => i.is_active && i.expected_day > today)
+            .filter((i) => i.is_active && i.expected_day > today && !matchedIncomeIds.has(i.id))
             .sort((a, b) => a.expected_day - b.expected_day)[0];
           return next ? next.expected_day - today : daysLeft;
         })()}
