@@ -20,15 +20,11 @@ interface SpendingChartProps {
 function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: string }) {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-lg border border-border/50 bg-popover px-3 py-2 shadow-lg">
-        <p className="text-xs text-muted-foreground">{label}</p>
+      <div className="chart-tooltip">
+        <p className="chart-tooltip-label">{label}</p>
         {payload.map((entry, index) => (
-          <p key={index} className="text-sm font-medium">
-            <span
-              className={
-                entry.dataKey === "spent" ? "text-chart-1" : "text-muted-foreground"
-              }
-            >
+          <p key={index} className="chart-tooltip-value">
+            <span style={{ color: entry.dataKey === "spent" ? "var(--chart-1)" : "var(--muted-foreground)" }}>
               {entry.dataKey === "spent" ? "Spent" : "Budget"}:{" "}
               {entry.value} €
             </span>
@@ -42,8 +38,8 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 
 export function SpendingChart({ data, title = "Spending this month" }: SpendingChartProps) {
   return (
-    <Card className="border-border/50 bg-card/80 p-6">
-      <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+    <Card className="spending-chart-card">
+      <h3 className="spending-chart-title">{title}</h3>
       <ChartContainer height={280}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>

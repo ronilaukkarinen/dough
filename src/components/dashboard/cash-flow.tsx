@@ -20,18 +20,18 @@ interface CashFlowProps {
 function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: string }) {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-lg border border-border/50 bg-popover px-3 py-2 shadow-lg">
-        <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>
+      <div className="chart-tooltip">
+        <p className="chart-tooltip-label chart-tooltip-value-mb">{label}</p>
         {payload.map((entry, index) => (
-          <p key={index} className="text-sm">
+          <p key={index} className="chart-tooltip-value">
             <span
-              className={
-                entry.dataKey === "income"
-                  ? "text-positive"
+              style={{
+                color: entry.dataKey === "income"
+                  ? "var(--positive)"
                   : entry.dataKey === "expenses"
-                  ? "text-negative"
-                  : "text-primary"
-              }
+                  ? "var(--negative)"
+                  : "var(--primary)"
+              }}
             >
               {entry.dataKey === "income"
                 ? "Income"
@@ -50,10 +50,8 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 
 export function CashFlowChart({ data }: CashFlowProps) {
   return (
-    <Card className="border-border/50 bg-card/80 p-6">
-      <h3 className="text-sm font-medium text-muted-foreground">
-        Monthly cash flow
-      </h3>
+    <Card className="cash-flow-card">
+      <h3 className="cash-flow-title">Monthly cash flow</h3>
       <ChartContainer height={280}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>

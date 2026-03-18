@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { ArrowUpRight, ArrowDownLeft, MoreHorizontal } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import Link from "next/link";
 
 interface Transaction {
@@ -22,51 +22,35 @@ export function RecentTransactions({
   currency = "€",
 }: RecentTransactionsProps) {
   return (
-    <Card className="border-border/50 bg-card/80 p-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          Recent transactions
-        </h3>
-        <Link
-          href="/transactions"
-          className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-        >
+    <Card className="recent-transactions-card">
+      <div className="recent-transactions-header">
+        <h3 className="recent-transactions-title">Recent transactions</h3>
+        <Link href="/transactions" className="recent-transactions-link">
           View all
         </Link>
       </div>
-      <div className="mt-4 space-y-1">
+      <div className="recent-transactions-list">
         {transactions.map((tx) => (
-          <div
-            key={tx.id}
-            className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-accent/50"
-          >
+          <div key={tx.id} className="recent-transactions-item">
             <div
-              className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                tx.amount < 0 ? "bg-negative/10" : "bg-positive/10"
-              }`}
+              className="recent-transactions-icon"
+              data-type={tx.amount < 0 ? "expense" : "income"}
             >
-              {tx.amount < 0 ? (
-                <ArrowUpRight className="h-4 w-4 text-negative" />
-              ) : (
-                <ArrowDownLeft className="h-4 w-4 text-positive" />
-              )}
+              {tx.amount < 0 ? <ArrowUpRight /> : <ArrowDownLeft />}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
-                {tx.payee}
-              </p>
-              <p className="text-xs text-muted-foreground">{tx.category}</p>
+            <div className="recent-transactions-info">
+              <p className="recent-transactions-payee">{tx.payee}</p>
+              <p className="recent-transactions-category">{tx.category}</p>
             </div>
-            <div className="text-right">
+            <div className="recent-transactions-amount">
               <p
-                className={`text-sm font-semibold ${
-                  tx.amount < 0 ? "text-foreground" : "text-positive"
-                }`}
+                className="recent-transactions-amount-value"
+                data-type={tx.amount < 0 ? "expense" : "income"}
               >
                 {tx.amount < 0 ? "-" : "+"}
                 {Math.abs(tx.amount)} {currency}
               </p>
-              <p className="text-[10px] text-muted-foreground">{tx.date}</p>
+              <p className="recent-transactions-date">{tx.date}</p>
             </div>
           </div>
         ))}

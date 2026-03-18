@@ -20,9 +20,9 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="rounded-lg border border-border/50 bg-popover px-3 py-2 shadow-lg">
-        <p className="text-sm font-medium text-foreground">{data.name}</p>
-        <p className="text-xs text-muted-foreground">{data.amount} €</p>
+      <div className="chart-tooltip">
+        <p className="chart-tooltip-value" style={{ color: "var(--foreground)" }}>{data.name}</p>
+        <p className="chart-tooltip-label">{data.amount} €</p>
       </div>
     );
   }
@@ -35,13 +35,11 @@ export function CategoryBreakdown({
   currency = "€",
 }: CategoryBreakdownProps) {
   return (
-    <Card className="border-border/50 bg-card/80 p-6">
-      <h3 className="text-sm font-medium text-muted-foreground">
-        Top categories
-      </h3>
-      <div className="mt-4 flex items-center gap-6">
+    <Card className="category-breakdown-card">
+      <h3 className="category-breakdown-title">Top categories</h3>
+      <div className="category-breakdown-body">
         {/* Donut chart */}
-        <div className="relative h-[160px] w-[160px] shrink-0">
+        <div className="category-breakdown-donut">
           <ChartContainer height={160}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -62,26 +60,26 @@ export function CategoryBreakdown({
               </PieChart>
             </ResponsiveContainer>
           </ChartContainer>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-lg font-bold text-foreground">
+          <div className="category-breakdown-donut-center">
+            <span className="category-breakdown-donut-total">
               {total} {currency}
             </span>
-            <span className="text-[10px] text-muted-foreground">total</span>
+            <span className="category-breakdown-donut-label">total</span>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="flex-1 space-y-3">
+        <div className="category-breakdown-legend">
           {categories.map((cat, i) => (
-            <div key={i} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div key={i} className="category-breakdown-legend-item">
+              <div className="category-breakdown-legend-name">
                 <div
-                  className="h-2.5 w-2.5 rounded-full"
+                  className="category-breakdown-legend-dot"
                   style={{ backgroundColor: cat.color }}
                 />
-                <span className="text-sm text-foreground">{cat.name}</span>
+                <span className="category-breakdown-legend-text">{cat.name}</span>
               </div>
-              <span className="text-sm font-medium text-foreground">
+              <span className="category-breakdown-legend-amount">
                 {cat.amount} {currency}
               </span>
             </div>

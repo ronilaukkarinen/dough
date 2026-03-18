@@ -25,56 +25,43 @@ export function DailyAllowance({
   const status =
     dailyBudget > 50 ? "good" : dailyBudget > 20 ? "tight" : "danger";
 
-  const statusColor = {
-    good: "text-positive",
-    tight: "text-chart-3",
-    danger: "text-negative",
-  }[status];
-
-  const statusBg = {
-    good: "from-positive/10 to-positive/5",
-    tight: "from-chart-3/10 to-chart-3/5",
-    danger: "from-negative/10 to-negative/5",
-  }[status];
-
   return (
-    <div className="grid gap-4 md:grid-cols-4">
+    <div className="daily-allowance-grid">
       {/* Daily Budget - Hero card */}
       <Card
-        className={`relative col-span-full overflow-hidden border-0 bg-gradient-to-br ${statusBg} p-8 md:col-span-2`}
+        className="daily-allowance-hero"
+        data-status={status}
       >
-        <div className="relative z-10">
-          <p className="text-sm font-medium text-muted-foreground">
+        <div className="daily-allowance-hero-content">
+          <p className="daily-allowance-hero-label">
             Daily budget
           </p>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className={`text-5xl font-bold tracking-tight ${statusColor}`}>
+          <div className="daily-allowance-hero-amount">
+            <span className="daily-allowance-hero-value" data-status={status}>
               {dailyBudget.toFixed(0)} {currency}
             </span>
-            <span className="text-lg text-muted-foreground">/ day</span>
+            <span className="daily-allowance-hero-unit">/ day</span>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="daily-allowance-hero-note">
             {daysUntilIncome} days until next income
             {status === "danger" && " — cut non-essentials"}
             {status === "tight" && " — be careful"}
           </p>
         </div>
-        <div className="absolute -bottom-4 -right-4 opacity-5">
-          <Wallet className="h-32 w-32" />
+        <div className="daily-allowance-hero-bg">
+          <Wallet />
         </div>
       </Card>
 
       {/* Available Balance */}
-      <Card className="border-border/50 bg-card/80 p-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <Wallet className="h-5 w-5 text-primary" />
+      <Card className="metric-card">
+        <div className="metric-card-row">
+          <div className="metric-card-icon" data-color="primary">
+            <Wallet />
           </div>
           <div>
-            <p className="text-xs font-medium text-muted-foreground">
-              Available
-            </p>
-            <p className="text-2xl font-bold tracking-tight text-foreground">
+            <p className="metric-card-label">Available</p>
+            <p className="metric-card-value">
               {availableBalance} {currency}
             </p>
           </div>
@@ -82,53 +69,48 @@ export function DailyAllowance({
       </Card>
 
       {/* Upcoming Bills */}
-      <Card className="border-border/50 bg-card/80 p-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-negative/10">
-            <ArrowUp className="h-5 w-5 text-negative" />
+      <Card className="metric-card">
+        <div className="metric-card-row">
+          <div className="metric-card-icon" data-color="negative">
+            <ArrowUp />
           </div>
           <div>
-            <p className="text-xs font-medium text-muted-foreground">
-              Bills due
-            </p>
-            <p className="text-2xl font-bold tracking-tight text-foreground">
+            <p className="metric-card-label">Bills due</p>
+            <p className="metric-card-value">
               {upcomingBills} {currency}
             </p>
           </div>
         </div>
       </Card>
 
-      {/* Smaller info cards */}
-      <Card className="border-border/50 bg-card/80 p-6 md:col-span-2">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-positive/10">
-            <ArrowDown className="h-5 w-5 text-positive" />
+      {/* Next income */}
+      <Card className="metric-card metric-card-half">
+        <div className="metric-card-row">
+          <div className="metric-card-icon" data-color="positive">
+            <ArrowDown />
           </div>
           <div>
-            <p className="text-xs font-medium text-muted-foreground">
-              Next income
-            </p>
-            <p className="text-xl font-bold tracking-tight text-foreground">
+            <p className="metric-card-label">Next income</p>
+            <p className="metric-card-value metric-card-value-lg">
               {nextIncomeAmount} {currency}
             </p>
-            <p className="text-xs text-muted-foreground">{nextIncomeDate}</p>
+            <p className="metric-card-note">{nextIncomeDate}</p>
           </div>
         </div>
       </Card>
 
-      <Card className="border-border/50 bg-card/80 p-6 md:col-span-2">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-4/10">
-            <CalendarClock className="h-5 w-5 text-chart-4" />
+      {/* Cash flow forecast */}
+      <Card className="metric-card metric-card-half">
+        <div className="metric-card-row">
+          <div className="metric-card-icon" data-color="chart-4">
+            <CalendarClock />
           </div>
           <div>
-            <p className="text-xs font-medium text-muted-foreground">
-              Cash flow forecast
-            </p>
-            <p className="text-xl font-bold tracking-tight text-foreground">
+            <p className="metric-card-label">Cash flow forecast</p>
+            <p className="metric-card-value metric-card-value-lg">
               {availableBalance - upcomingBills + nextIncomeAmount} {currency}
             </p>
-            <p className="text-xs text-muted-foreground">End of month estimate</p>
+            <p className="metric-card-note">End of month estimate</p>
           </div>
         </div>
       </Card>
