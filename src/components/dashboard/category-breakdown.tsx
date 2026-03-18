@@ -38,10 +38,10 @@ export function CategoryBreakdown({ categories, total, currency = "€" }: Categ
       <h3 className="category-breakdown-title">{t.dashboard.topCategories}</h3>
       <div className="category-breakdown-body">
         <div className="category-breakdown-donut">
-          <ChartContainer height={260}>
+          <ChartContainer height={320}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={categories} cx="50%" cy="50%" innerRadius={70} outerRadius={110} paddingAngle={2} dataKey="amount">
+                <Pie data={categories} cx="50%" cy="50%" innerRadius={85} outerRadius={140} paddingAngle={2} dataKey="amount">
                   {categories.map((entry, index) => (
                     <Cell key={index} fill={entry.color} stroke="transparent" />
                   ))}
