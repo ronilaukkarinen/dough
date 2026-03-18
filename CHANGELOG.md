@@ -1,5 +1,8 @@
 ### 0.1.0: 2026-03-18
 
+* Add Outfit font for headings, Inter for body text
+* Add favicon with white $ on midnight blue background
+* Use stronger generated passwords for users
 * Fix font not loading by setting Inter directly in theme
 * Fix manifest.json syntax error by removing missing icon references
 * Remove logo avatar and branding from login and sidebar
