@@ -1,19 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    // Read directly from DOM to handle Safari autofill
+    const form = formRef.current;
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const username = (formData.get("username") as string) || "";
+    const password = (formData.get("password") as string) || "";
+
+    if (!username || !password) {
+      setError("Username and password required");
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -43,12 +56,11 @@ export default function LoginPage() {
         <h1 className="login-title">Dough</h1>
         <p className="login-subtitle">Sign in to continue</p>
 
-        <form onSubmit={handleLogin} className="login-form">
+        <form ref={formRef} onSubmit={handleLogin} className="login-form">
           <input
             type="text"
+            name="username"
             placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
             className="login-input"
             autoComplete="username"
             autoFocus
@@ -56,9 +68,8 @@ export default function LoginPage() {
           />
           <input
             type="password"
+            name="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             className="login-input"
             autoComplete="current-password"
             required
