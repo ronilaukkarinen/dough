@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -97,47 +96,41 @@ export function ChatInterface() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-10rem)] flex-col rounded-xl border border-border/50 bg-card/80">
+    <div className="chat-container">
       {/* Messages */}
-      <ScrollArea className="flex-1 p-6" ref={scrollRef}>
-        <div className="space-y-6">
+      <ScrollArea className="chat-messages" ref={scrollRef}>
+        <div className="chat-messages-list">
           {messages.map((message) => (
             <div
               key={message.id}
-              className={cn(
-                "flex gap-3",
-                message.role === "user" ? "justify-end" : "justify-start"
-              )}
+              className="chat-message"
+              data-role={message.role}
             >
               {message.role === "assistant" && (
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                  <Bot className="h-4 w-4 text-primary" />
+                <div className="chat-message-avatar" data-role="assistant">
+                  <Bot />
                 </div>
               )}
               <div
-                className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
-                  message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-accent/50 text-foreground"
-                )}
+                className="chat-message-bubble"
+                data-role={message.role}
               >
-                <div className="whitespace-pre-wrap">{message.content}</div>
+                <div className="chat-message-text">{message.content}</div>
               </div>
               {message.role === "user" && (
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent">
-                  <User className="h-4 w-4 text-foreground" />
+                <div className="chat-message-avatar" data-role="user">
+                  <User />
                 </div>
               )}
             </div>
           ))}
           {loading && (
-            <div className="flex gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <Bot className="h-4 w-4 text-primary" />
+            <div className="chat-loading">
+              <div className="chat-message-avatar" data-role="assistant">
+                <Bot />
               </div>
-              <div className="rounded-2xl bg-accent/50 px-4 py-3">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <div className="chat-loading-bubble">
+                <Loader2 className="chat-loading-spinner animate-spin" />
               </div>
             </div>
           )}
@@ -145,23 +138,23 @@ export function ChatInterface() {
       </ScrollArea>
 
       {/* Input */}
-      <div className="border-t border-border/50 p-4">
-        <form onSubmit={handleSubmit} className="flex gap-3">
+      <div className="chat-input-area">
+        <form onSubmit={handleSubmit} className="chat-input-form">
           <Input
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about your finances..."
-            className="h-11 flex-1 border-border/50 bg-background/50 focus:border-primary"
+            className="chat-input"
             disabled={loading}
           />
           <Button
             type="submit"
             size="icon"
-            className="h-11 w-11 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="chat-send-button"
             disabled={!input.trim() || loading}
           >
-            <Send className="h-4 w-4" />
+            <Send />
           </Button>
         </form>
       </div>
