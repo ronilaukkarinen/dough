@@ -97,6 +97,18 @@ export async function POST(request: Request) {
 
     const response = await getFinancialAdvice(messages, context);
 
+    // Save assistant response to DB for persistence
+    if (user && response) {
+      try {
+        const chatDb = getDb();
+        chatDb.prepare("INSERT INTO chat_messages (user_id, role, content) VALUES (?, ?, ?)")
+          .run(user.id, "assistant", response);
+        console.info("[chat] Saved assistant response to DB");
+      } catch (err) {
+        console.error("[chat] Failed to save response to DB:", err);
+      }
+    }
+
     return NextResponse.json({ message: response });
   } catch (error) {
     console.error("[chat] API error:", error);

@@ -32,6 +32,12 @@
 * Add net worth section to dashboard with investments, accounts and debts breakdown
 * Add investment account list from YNAB otherAsset accounts
 * Add netWorth, accounts, investments i18n keys for EN and FI
+* Replace chat spinner with bouncing dots typing indicator
+* Remove chat clear/trash button
+* Don't save error messages to chat history
+* Add polling so AI response persists even if you navigate away
+* Save AI chat responses to database server-side for reliability
+* Increase claude CLI timeout to 120 seconds for both chat and summary
 
 ### 0.2.0: 2026-03-18
 

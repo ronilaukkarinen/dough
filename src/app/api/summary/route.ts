@@ -109,7 +109,7 @@ Data:
     console.info("[summary] Calling claude CLI");
 
     const { stdout } = await execFileAsync(claudePath, ["-p", prompt], {
-      timeout: 60000,
+      timeout: 120000,
       maxBuffer: 1024 * 1024,
       env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "cli" },
     });

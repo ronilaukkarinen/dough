@@ -1,30 +1,16 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, Loader2, Trash2 } from "lucide-react";
+import { Send, Bot, User } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  timestamp: Date;
-}
-
-async function saveMessage(role: string, content: string) {
-  try {
-    await fetch("/api/chat/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role, content }),
-    });
-    console.debug("[chat] Message saved:", role);
-  } catch (err) {
-    console.error("[chat] Failed to save message:", err);
-  }
 }
 
 export function ChatInterface() {
@@ -35,6 +21,13 @@ export function ChatInterface() {
   const [initialLoading, setInitialLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const scrollToBottom = useCallback(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, []);
 
   // Load persisted messages on mount
   useEffect(() => {
@@ -43,134 +36,138 @@ export function ChatInterface() {
       .then((r) => r.json())
       .then((data) => {
         if (data.messages?.length > 0) {
-          console.info("[chat] Loaded", data.messages.length, "messages from database");
+          console.info("[chat] Loaded", data.messages.length, "messages");
           setMessages(
-            data.messages.map((m: { id: number; role: string; content: string; created_at: string }) => ({
+            data.messages.map((m: { id: number; role: string; content: string }) => ({
               id: m.id.toString(),
               role: m.role as "user" | "assistant",
               content: m.content,
-              timestamp: new Date(m.created_at),
             }))
           );
         } else {
-          // Show greeting if no history
-          setMessages([
-            {
-              id: "greeting",
-              role: "assistant",
-              content: t.chat.greeting,
-              timestamp: new Date(),
-            },
-          ]);
+          setMessages([{ id: "greeting", role: "assistant", content: t.chat.greeting }]);
         }
       })
-      .catch((err) => {
-        console.error("[chat] Failed to load messages:", err);
-        setMessages([
-          {
-            id: "greeting",
-            role: "assistant",
-            content: t.chat.greeting,
-            timestamp: new Date(),
-          },
-        ]);
+      .catch(() => {
+        setMessages([{ id: "greeting", role: "assistant", content: t.chat.greeting }]);
       })
       .finally(() => setInitialLoading(false));
   }, []);
 
+  // Poll for new messages when waiting for AI response
+  const startPolling = useCallback(() => {
+    if (pollRef.current) return;
+    console.debug("[chat] Starting poll for AI response");
+    pollRef.current = setInterval(() => {
+      fetch("/api/chat/messages")
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.messages?.length > 0) {
+            const latest = data.messages[data.messages.length - 1];
+            if (latest.role === "assistant") {
+              console.info("[chat] AI response received via poll");
+              setMessages(
+                data.messages.map((m: { id: number; role: string; content: string }) => ({
+                  id: m.id.toString(),
+                  role: m.role as "user" | "assistant",
+                  content: m.content,
+                }))
+              );
+              setLoading(false);
+              if (pollRef.current) {
+                clearInterval(pollRef.current);
+                pollRef.current = null;
+              }
+            }
+          }
+        })
+        .catch(() => {});
+    }, 3000);
+  }, []);
+
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
 
     const userContent = input.trim();
-
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
       content: userContent,
-      timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
 
-    // Save user message to DB
-    saveMessage("user", userContent);
-
+    // Save user message
     try {
-      const response = await fetch("/api/chat", {
+      await fetch("/api/chat/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
+        body: JSON.stringify({ role: "user", content: userContent }),
       });
+    } catch {}
 
-      const data = await response.json();
-      const assistantContent = data.message || t.chat.errorProcess;
+    // Start polling for response (so user can navigate away)
+    startPolling();
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: assistantContent,
-          timestamp: new Date(),
-        },
-      ]);
-
-      // Save assistant message to DB
-      saveMessage("assistant", assistantContent);
-    } catch {
-      const errorContent = t.chat.errorGeneral;
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: errorContent,
-          timestamp: new Date(),
-        },
-      ]);
-      saveMessage("assistant", errorContent);
-    } finally {
-      setLoading(false);
-      inputRef.current?.focus();
-    }
-  };
-
-  const handleClearChat = async () => {
-    console.info("[chat] Clearing chat history");
-    try {
-      await fetch("/api/chat/messages", { method: "DELETE" });
-      setMessages([
-        {
-          id: "greeting",
-          role: "assistant",
-          content: t.chat.greeting,
-          timestamp: new Date(),
-        },
-      ]);
-    } catch (err) {
-      console.error("[chat] Failed to clear chat:", err);
-    }
+    // Fire and forget the AI request
+    fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [...messages, userMessage].map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.message) {
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: data.message,
+          };
+          setMessages((prev) => [...prev, assistantMessage]);
+          setLoading(false);
+          if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
+          // Save assistant message
+          fetch("/api/chat/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ role: "assistant", content: data.message }),
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {
+        // Don't save errors, just keep polling
+        console.warn("[chat] AI request failed, polling will pick up response if it completes");
+      });
   };
 
   if (initialLoading) {
     return (
       <div className="chat-container">
-        <div className="chat-loading">
-          <Loader2 className="chat-loading-spinner animate-spin" />
+        <div className="chat-loading-center">
+          <div className="typing-dots">
+            <span /><span /><span />
+          </div>
         </div>
       </div>
     );
@@ -178,13 +175,6 @@ export function ChatInterface() {
 
   return (
     <div className="chat-container">
-      {messages.length > 1 && (
-        <div className="chat-toolbar">
-          <button className="chat-clear-btn" onClick={handleClearChat} title="Clear chat">
-            <Trash2 />
-          </button>
-        </div>
-      )}
       <ScrollArea className="chat-messages" ref={scrollRef}>
         <div className="chat-messages-list">
           {messages.map((message) => (
@@ -204,7 +194,9 @@ export function ChatInterface() {
             <div className="chat-loading">
               <div className="chat-message-avatar" data-role="assistant"><Bot /></div>
               <div className="chat-loading-bubble">
-                <Loader2 className="chat-loading-spinner animate-spin" />
+                <div className="typing-dots">
+                  <span /><span /><span />
+                </div>
               </div>
             </div>
           )}
