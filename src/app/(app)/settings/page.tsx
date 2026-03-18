@@ -338,21 +338,7 @@ export default function SettingsPage() {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <div className="settings-row">
-                      <Input
-                        type="text"
-                        placeholder={t.settings.budgetId}
-                        value={ynabBudgetId}
-                        onChange={(e) => setYnabBudgetId(e.target.value)}
-                        className="settings-input"
-                      />
-                      <Button size="sm" variant="outline" onClick={() => handleBudgetIdSave()}>
-                        {t.common.save}
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => fetchBudgets()} disabled={budgetsLoading}>
-                        {budgetsLoading ? t.common.loading : t.settings.fetch}
-                      </Button>
-                    </div>
+                    <span className="settings-sync-time">{t.common.loading}</span>
                   )}
                 </div>
                 <div className="settings-row">
