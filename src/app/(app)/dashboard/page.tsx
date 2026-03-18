@@ -56,10 +56,10 @@ export default function DashboardPage() {
   // Daily budget from available checking+savings balance
   const dailyBudget = daysLeft > 0 ? Math.round((availableBalance / daysLeft) * 100) / 100 : 0;
 
-  // Build spending chart data from transactions
+  // Build spending chart data from transactions (exclude transfers)
   const spendingByDay: Record<string, number> = {};
   const sortedTx = [...data.transactions]
-    .filter((t) => t.amount < 0)
+    .filter((t) => t.amount < 0 && !t.payee.startsWith("Transfer") && t.category !== "Uncategorized")
     .sort((a, b) => a.date.localeCompare(b.date));
 
   let cumulative = 0;
@@ -69,7 +69,9 @@ export default function DashboardPage() {
     spendingByDay[day] = Math.round(cumulative);
   }
 
-  const dailyBudgetLine = availableBalance > 0 ? (monthActivity + availableBalance) / daysInMonth : monthActivity / now.getDate();
+  // Budget line based on actual non-transfer spending
+  const realSpending = sortedTx.reduce((s, t) => s + Math.abs(t.amount), 0);
+  const dailyBudgetLine = now.getDate() > 0 ? realSpending / now.getDate() : 0;
   const spendingData = Array.from({ length: now.getDate() }, (_, i) => ({
     date: `${i + 1}.`,
     spent: spendingByDay[i + 1] || (i > 0 ? spendingByDay[i] || 0 : 0),

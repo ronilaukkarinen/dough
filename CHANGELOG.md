@@ -17,6 +17,11 @@
 * Fix pie chart legend overlap by adding gap, truncation and nowrap on amounts
 * Make pie chart larger on mobile (220px)
 * Increase legend amount font weight to 600
+* Fix spending chart by filtering out transfer transactions between accounts
+* Fix spending chart Y-axis width to prevent truncated labels
+* Fix spending chart budget line to use actual spending pace instead of inflated total
+* Add global .icon-sm utility class for consistent small icon sizing
+* Fix Finnish translation for bills still due ("Erääntyy ennen kuun loppua")
 
 ### 0.2.0: 2026-03-18
 

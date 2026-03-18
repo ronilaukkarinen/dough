@@ -87,6 +87,12 @@ img, video {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Icon sizes */
+.icon-sm {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
 /* Screen reader only */
 .sr-only {
   position: absolute;

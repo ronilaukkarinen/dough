@@ -106,7 +106,7 @@ Kokeile kysyä esimerkiksi:
     active: "Aktiivinen",
     monthlyTotal: "Kuukausittain yhteensä",
     remainingThisMonth: "Jäljellä tässä kuussa",
-    stillDueBeforeMonthEnd: "Erääntymättä ennen kuun loppua",
+    stillDueBeforeMonthEnd: "Erääntyy ennen kuun loppua",
     dueSoon: "Erääntyy pian",
     dueOn: "Eräpäivä",
     nextDue: "Seuraava eräpäivä",
