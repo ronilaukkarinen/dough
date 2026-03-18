@@ -1,0 +1,118 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { getYnabToken, getYnabBudgetId } from "@/lib/household";
+
+export async function GET() {
+  try {
+    const user = await getSession();
+    if (!user) return NextResponse.json({ debts: [] }, { status: 401 });
+
+    const token = getYnabToken();
+    const budgetId = getYnabBudgetId();
+    if (!token || !budgetId) {
+      return NextResponse.json({ debts: [], error: "YNAB not connected" });
+    }
+
+    console.info("[debts] Fetching debt data from YNAB");
+    const { getBudgetSummary, getMonthBudget } = await import("@/lib/ynab/client");
+
+    const [summary, monthBudget] = await Promise.all([
+      getBudgetSummary(budgetId, token),
+      getMonthBudget(budgetId, undefined, token),
+    ]);
+
+    const debtAccounts = summary.accounts.filter((a: any) => a.type === "otherDebt" && a.balance < 0);
+
+    const db = getDb();
+    const overrides = db.prepare("SELECT * FROM debt_overrides").all() as any[];
+    const overrideMap: Record<string, any> = {};
+    for (const o of overrides) {
+      overrideMap[o.ynab_account_id] = o;
+    }
+
+    const debts = debtAccounts.map((a: any) => {
+      const override = overrideMap[a.id];
+      // Find matching category for payment info
+      const matchingCat = monthBudget.categories.find((c: any) =>
+        c.name.toLowerCase().includes(a.name.split("(")[0].trim().toLowerCase()) ||
+        a.name.toLowerCase().includes(c.name.split("(")[0].trim().toLowerCase())
+      );
+
+      const monthlyTarget = matchingCat ? Math.abs(matchingCat.budgeted) : 0;
+      const monthlyPayment = matchingCat ? Math.abs(matchingCat.activity) : 0;
+
+      return {
+        id: a.id,
+        name: a.name,
+        balance: Math.abs(a.balance),
+        interestRate: override?.interest_rate ?? 0,
+        minimumPayment: override?.minimum_payment ?? monthlyTarget,
+        monthlyTarget,
+        monthlyPayment,
+        notes: override?.notes ?? "",
+      };
+    });
+
+    // Snowball suggestion: pay smallest balance first
+    const sorted = [...debts].sort((a, b) => a.balance - b.balance);
+    const snowballTarget = sorted.find((d) => d.balance > 0);
+
+    // Avalanche suggestion: pay highest interest first
+    const sortedByRate = [...debts].sort((a, b) => b.interestRate - a.interestRate);
+    const avalancheTarget = sortedByRate.find((d) => d.interestRate > 0 && d.balance > 0) || snowballTarget;
+
+    console.info("[debts] Loaded", debts.length, "debts");
+
+    return NextResponse.json({
+      debts,
+      suggestions: {
+        snowball: snowballTarget ? {
+          name: snowballTarget.name,
+          balance: snowballTarget.balance,
+          reason: "Smallest balance — quick win",
+        } : null,
+        avalanche: avalancheTarget ? {
+          name: avalancheTarget.name,
+          interestRate: avalancheTarget.interestRate,
+          reason: "Highest interest — saves most money",
+        } : null,
+      },
+      totalDebt: debts.reduce((s: number, d: any) => s + d.balance, 0),
+      totalMonthlyPayment: debts.reduce((s: number, d: any) => s + d.monthlyPayment, 0),
+    });
+  } catch (error) {
+    console.error("[debts] GET error:", error);
+    return NextResponse.json({ debts: [], error: "Failed to load debts" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const user = await getSession();
+    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+    const body = await request.json();
+    const { ynab_account_id, interest_rate, minimum_payment, notes } = body;
+
+    if (!ynab_account_id) return NextResponse.json({ error: "Account ID required" }, { status: 400 });
+
+    const db = getDb();
+    db.prepare(`
+      INSERT INTO debt_overrides (ynab_account_id, interest_rate, minimum_payment, notes)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(ynab_account_id) DO UPDATE SET
+        interest_rate = excluded.interest_rate,
+        minimum_payment = excluded.minimum_payment,
+        notes = excluded.notes,
+        updated_at = datetime('now')
+    `).run(ynab_account_id, interest_rate ?? 0, minimum_payment ?? 0, notes ?? "");
+
+    console.info("[debts] Override saved for", ynab_account_id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[debts] PUT error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

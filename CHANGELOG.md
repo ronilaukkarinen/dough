@@ -79,6 +79,14 @@
 * Hide transfers from "all" view, show with dedicated filter button
 * Auto-take net worth snapshot on every YNAB sync
 * Fix spending chart Y-axis width and margins
+* Enhance debts page with live YNAB data, editable interest rates and payments
+* Add debt_overrides table for manual interest rate and payment adjustments
+* Add AI debt payoff suggestion with refresh button
+* Show YNAB monthly targets and actual payments per debt
+* Fix logout by using window.location.replace
+* Fix AI summary refresh button with type="button" and Safari clipboard fallback
+* Fix global focus ring to use indigo instead of white
+* Enlarge AI summary button tap targets
 
 ### 0.2.0: 2026-03-18
 

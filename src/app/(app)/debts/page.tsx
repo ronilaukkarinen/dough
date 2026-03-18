@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocale } from "@/lib/locale-context";
-import { useYnab } from "@/lib/ynab-context";
-import { formatDuration } from "@/lib/date-utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,18 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Plus,
   TrendingDown,
   Target,
   Calendar,
   Flame,
+  Loader2,
+  Sparkles,
+  RefreshCw,
+  Save,
+  Check,
 } from "lucide-react";
 import {
   AreaChart,
@@ -34,34 +29,26 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart-container";
+import { formatDuration } from "@/lib/date-utils";
 
-interface Debt {
+interface DebtData {
   id: string;
   name: string;
-  totalAmount: number;
-  remainingAmount: number;
+  balance: number;
   interestRate: number;
   minimumPayment: number;
+  monthlyTarget: number;
+  monthlyPayment: number;
+  notes: string;
 }
 
-// TODO: Load from database
-
-function calculateSnowball(debts: Debt[], extraPayment: number = 0) {
-  const sorted = [...debts].sort((a, b) => a.remainingAmount - b.remainingAmount);
-  return calculatePayoff(sorted, extraPayment);
-}
-
-function calculateAvalanche(debts: Debt[], extraPayment: number = 0) {
-  const sorted = [...debts].sort((a, b) => b.interestRate - a.interestRate);
-  return calculatePayoff(sorted, extraPayment);
-}
-
-function calculatePayoff(sortedDebts: Debt[], extraPayment: number) {
-  const balances = sortedDebts.map((d) => d.remainingAmount);
-  const rates = sortedDebts.map((d) => d.interestRate / 100 / 12);
-  const minPayments = sortedDebts.map((d) => d.minimumPayment);
+function calculatePayoff(debts: DebtData[], extraPayment: number, sortFn: (a: DebtData, b: DebtData) => number) {
+  if (debts.length === 0) return { timeline: [], months: 0, totalInterest: 0 };
+  const sorted = [...debts].sort(sortFn);
+  const balances = sorted.map((d) => d.balance);
+  const rates = sorted.map((d) => d.interestRate / 100 / 12);
+  const minPayments = sorted.map((d) => d.minimumPayment || d.monthlyTarget || 50);
   const timeline: { month: string; total: number }[] = [];
-
   let month = 0;
   let totalInterest = 0;
 
@@ -79,7 +66,6 @@ function calculatePayoff(sortedDebts: Debt[], extraPayment: number) {
       balances[i] = balances[i] + interest - payment;
       if (balances[i] < 1) balances[i] = 0;
     }
-
     const date = new Date();
     date.setMonth(date.getMonth() + month);
     timeline.push({
@@ -88,37 +74,82 @@ function calculatePayoff(sortedDebts: Debt[], extraPayment: number) {
     });
     month++;
   }
-
   return { timeline, months: month, totalInterest: Math.round(totalInterest) };
 }
 
 export default function DebtsPage() {
   const { t, locale } = useLocale();
-  const { data } = useYnab();
+  const [debts, setDebts] = useState<DebtData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [extraPayment, setExtraPayment] = useState(50);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [saving, setSaving] = useState<string | null>(null);
 
-  // Build debts from YNAB otherDebt accounts
-  const ynabDebts: Debt[] = (data?.summary.accounts ?? [])
-    .filter((a) => a.type === "otherDebt" && a.balance < 0)
-    .map((a) => ({
-      id: a.id,
-      name: a.name,
-      totalAmount: Math.abs(a.balance),
-      remainingAmount: Math.abs(a.balance),
-      interestRate: 0,
-      minimumPayment: 0,
-    }));
+  useEffect(() => {
+    console.debug("[debts] Loading debts");
+    fetch("/api/debts")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.debts) {
+          console.info("[debts] Loaded", data.debts.length, "debts");
+          setDebts(data.debts);
+        }
+      })
+      .catch((err) => console.error("[debts] Load error:", err))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const debts = ynabDebts;
+  const fetchAiSuggestion = () => {
+    setAiLoading(true);
+    setAiSuggestion(null);
+    console.info("[debts] Fetching AI suggestion");
+    fetch("/api/debts/suggestion")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.suggestion) setAiSuggestion(data.suggestion);
+      })
+      .catch((err) => console.error("[debts] AI suggestion error:", err))
+      .finally(() => setAiLoading(false));
+  };
 
-  const totalDebt = debts.reduce((s, d) => s + d.remainingAmount, 0);
-  const totalOriginal = debts.reduce((s, d) => s + d.totalAmount, 0);
-  const totalPaid = totalOriginal - totalDebt;
-  const progress = totalOriginal > 0 ? (totalPaid / totalOriginal) * 100 : 0;
+  const saveOverride = async (debt: DebtData) => {
+    setSaving(debt.id);
+    console.info("[debts] Saving override for", debt.name);
+    try {
+      await fetch("/api/debts", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ynab_account_id: debt.id,
+          interest_rate: debt.interestRate,
+          minimum_payment: debt.minimumPayment,
+        }),
+      });
+    } catch (err) {
+      console.error("[debts] Save error:", err);
+    } finally {
+      setTimeout(() => setSaving(null), 1000);
+    }
+  };
 
-  const snowball = calculateSnowball(debts, extraPayment);
-  const avalanche = calculateAvalanche(debts, extraPayment);
+  const updateDebt = (id: string, field: keyof DebtData, value: number) => {
+    setDebts((prev) => prev.map((d) => d.id === id ? { ...d, [field]: value } : d));
+  };
+
+  const totalDebt = debts.reduce((s, d) => s + d.balance, 0);
+  const totalMonthly = debts.reduce((s, d) => s + (d.monthlyPayment || d.minimumPayment || d.monthlyTarget), 0);
+
+  const snowball = calculatePayoff(debts, extraPayment, (a, b) => a.balance - b.balance);
+  const avalanche = calculatePayoff(debts, extraPayment, (a, b) => b.interestRate - a.interestRate);
+
+  if (loading) {
+    return (
+      <div className="page-loading">
+        <Loader2 className="page-loading-spinner animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="page-stack">
@@ -127,48 +158,9 @@ export default function DebtsPage() {
           <h1 className="page-heading">{t.debts.title}</h1>
           <p className="page-subtitle">{t.debts.subtitle}</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button size="sm" />}>
-            <Plus className="icon-sm" />
-            {t.debts.addDebt}
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t.debts.addDebt}</DialogTitle>
-            </DialogHeader>
-            <form className="form-stack">
-              <div className="form-field">
-                <Label>{t.debts.name}</Label>
-                <Input placeholder={t.debts.namePlaceholder} />
-              </div>
-              <div className="form-grid-2">
-                <div className="form-field">
-                  <Label>{t.debts.totalAmountEur}</Label>
-                  <Input type="number" step="0.01" placeholder="0.00" />
-                </div>
-                <div className="form-field">
-                  <Label>{t.debts.remainingEur}</Label>
-                  <Input type="number" step="0.01" placeholder="0.00" />
-                </div>
-              </div>
-              <div className="form-grid-2">
-                <div className="form-field">
-                  <Label>{t.debts.interestRatePercent}</Label>
-                  <Input type="number" step="0.1" placeholder="0.0" />
-                </div>
-                <div className="form-field">
-                  <Label>{t.debts.minPaymentEur}</Label>
-                  <Input type="number" step="0.01" placeholder="0.00" />
-                </div>
-              </div>
-              <Button type="submit" className="w-full" onClick={() => setDialogOpen(false)}>
-                {t.debts.addDebt}
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
       </div>
 
+      {/* Summary cards */}
       <div className="page-grid-3-sm">
         <Card className="metric-card">
           <div className="metric-card-row">
@@ -183,15 +175,14 @@ export default function DebtsPage() {
         </Card>
         <Card className="metric-card">
           <div className="metric-card-row">
-            <div className="metric-card-icon" data-color="positive">
+            <div className="metric-card-icon" data-color="primary">
               <Target />
             </div>
             <div>
-              <p className="metric-card-label">{t.debts.progress}</p>
-              <p className="metric-card-value">{progress.toFixed(0)}%</p>
+              <p className="metric-card-label">{locale === "fi" ? "Kuukausimaksut" : "Monthly payments"}</p>
+              <p className="metric-card-value">{totalMonthly.toFixed(2)} €</p>
             </div>
           </div>
-          <Progress value={progress} className="progress-thick" />
         </Card>
         <Card className="metric-card">
           <div className="metric-card-row">
@@ -206,103 +197,160 @@ export default function DebtsPage() {
         </Card>
       </div>
 
-      <Card className="list-card list-card-divider">
-        {debts.map((debt) => {
-          const pct = ((debt.totalAmount - debt.remainingAmount) / debt.totalAmount) * 100;
-          return (
+      {/* AI suggestion */}
+      <Card className="ai-summary-card">
+        <div className="ai-summary-header">
+          <div className="ai-summary-icon"><Sparkles /></div>
+          <button type="button" className="ai-summary-refresh" onClick={fetchAiSuggestion} disabled={aiLoading}>
+            <RefreshCw className={aiLoading ? "animate-spin" : ""} />
+          </button>
+        </div>
+        {aiLoading ? (
+          <div className="typing-dots"><span /><span /><span /></div>
+        ) : aiSuggestion ? (
+          <p className="ai-summary-text">{aiSuggestion}</p>
+        ) : (
+          <p className="ai-summary-text page-subtitle">
+            {locale === "fi" ? "Hae AI-suositus velkojesi maksustrategiasta" : "Get AI suggestion for your debt payoff strategy"}
+          </p>
+        )}
+      </Card>
+
+      {/* Debt list with editable fields */}
+      {debts.length > 0 && (
+        <Card className="list-card">
+          {debts.map((debt) => (
             <div key={debt.id} className="debt-item">
               <div className="debt-item-header">
                 <div>
                   <p className="debt-item-name">{debt.name}</p>
-                  <p className="debt-item-meta">
-                    {debt.interestRate}% {t.debts.apr} · {debt.minimumPayment.toFixed(2)} €{t.debts.moMin}
-                  </p>
+                  {debt.monthlyPayment > 0 && (
+                    <p className="debt-item-meta">
+                      {locale === "fi" ? "Maksettu tässä kuussa" : "Paid this month"}: {debt.monthlyPayment.toFixed(2)} €
+                    </p>
+                  )}
                 </div>
                 <div className="debt-item-right">
-                  <p className="debt-item-amount">{debt.remainingAmount.toFixed(2)} €</p>
-                  <p className="debt-item-total">{t.common.of} {debt.totalAmount.toFixed(2)} €</p>
+                  <p className="debt-item-amount">{debt.balance.toFixed(2)} €</p>
                 </div>
               </div>
-              <Progress value={pct} className="progress-thin" />
-            </div>
-          );
-        })}
-      </Card>
-
-      <div className="form-stack">
-        <div className="payoff-header">
-          <h2 className="payoff-title">{t.debts.payoffStrategy}</h2>
-          <div className="form-row">
-            <Label className="payoff-extra-label">{t.debts.extraMonthly}</Label>
-            <Input
-              type="number"
-              value={extraPayment}
-              onChange={(e) => setExtraPayment(Number(e.target.value))}
-              className="payoff-extra-input"
-            />
-          </div>
-        </div>
-
-        <Tabs defaultValue="snowball">
-          <TabsList>
-            <TabsTrigger value="snowball">
-              <Flame className="tabs-trigger-icon" />
-              {t.debts.snowball}
-            </TabsTrigger>
-            <TabsTrigger value="avalanche">
-              <TrendingDown className="tabs-trigger-icon" />
-              {t.debts.avalanche}
-            </TabsTrigger>
-          </TabsList>
-
-          {[
-            { key: "snowball", data: snowball, desc: t.debts.snowballDesc },
-            { key: "avalanche", data: avalanche, desc: t.debts.avalancheDesc },
-          ].map(({ key, data, desc }) => (
-            <TabsContent key={key} value={key}>
-              <Card className="metric-card">
-                <p className="payoff-desc">{desc}</p>
-                <div className="payoff-stats">
-                  <div>
-                    <span className="payoff-stats-label">{t.debts.debtFree} </span>
-                    <span className="payoff-stats-value">{formatDuration(data.months, locale)}</span>
-                  </div>
-                  <div>
-                    <span className="payoff-stats-label">{t.debts.totalInterest} </span>
-                    <span className="payoff-stats-value" data-color="negative">{data.totalInterest.toFixed(2)} €</span>
-                  </div>
+              <div className="debt-edit-row">
+                <div className="debt-edit-field">
+                  <Label className="debt-edit-label">{locale === "fi" ? "Korko %" : "Interest %"}</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={debt.interestRate || ""}
+                    onChange={(e) => updateDebt(debt.id, "interestRate", parseFloat(e.target.value) || 0)}
+                    placeholder="0"
+                    className="debt-edit-input"
+                  />
                 </div>
-                <ChartContainer height={250}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data.timeline} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id={`${key}Grad`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#ff6b6b" stopOpacity={0.3} />
-                          <stop offset="100%" stopColor="#ff6b6b" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                      <XAxis dataKey="month" tick={{ fill: "#7a8ba0", fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                      <YAxis tick={{ fill: "#7a8ba0", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v / 1000)}k €`} />
-                      <Tooltip
-                        content={({ active, payload, label }) =>
-                          active && payload?.length ? (
-                            <div className="chart-tooltip">
-                              <p className="chart-tooltip-label">{label}</p>
-                              <p className="chart-tooltip-value text-foreground">{Number(payload[0].value).toFixed(2)} €</p>
-                            </div>
-                          ) : null
-                        }
-                      />
-                      <Area type="monotone" dataKey="total" stroke="#ff6b6b" strokeWidth={2} fill={`url(#${key}Grad)`} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </Card>
-            </TabsContent>
+                <div className="debt-edit-field">
+                  <Label className="debt-edit-label">{locale === "fi" ? "Kk-maksu €" : "Monthly €"}</Label>
+                  <Input
+                    type="number"
+                    step="1"
+                    value={debt.minimumPayment || ""}
+                    onChange={(e) => updateDebt(debt.id, "minimumPayment", parseFloat(e.target.value) || 0)}
+                    placeholder={debt.monthlyTarget ? String(debt.monthlyTarget) : "0"}
+                    className="debt-edit-input"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => saveOverride(debt)}
+                >
+                  {saving === debt.id ? <Check /> : <Save />}
+                </Button>
+              </div>
+            </div>
           ))}
-        </Tabs>
-      </div>
+        </Card>
+      )}
+
+      {/* Payoff strategy */}
+      {debts.length > 0 && (
+        <div className="form-stack">
+          <div className="payoff-header">
+            <h2 className="payoff-title">{t.debts.payoffStrategy}</h2>
+            <div className="form-row">
+              <Label className="payoff-extra-label">{t.debts.extraMonthly}</Label>
+              <Input
+                type="number"
+                value={extraPayment}
+                onChange={(e) => setExtraPayment(Number(e.target.value))}
+                className="payoff-extra-input"
+              />
+            </div>
+          </div>
+
+          <Tabs defaultValue="snowball">
+            <TabsList>
+              <TabsTrigger value="snowball">
+                <Flame className="tabs-trigger-icon" />
+                {t.debts.snowball}
+              </TabsTrigger>
+              <TabsTrigger value="avalanche">
+                <TrendingDown className="tabs-trigger-icon" />
+                {t.debts.avalanche}
+              </TabsTrigger>
+            </TabsList>
+
+            {[
+              { key: "snowball", data: snowball, desc: t.debts.snowballDesc },
+              { key: "avalanche", data: avalanche, desc: t.debts.avalancheDesc },
+            ].map(({ key, data, desc }) => (
+              <TabsContent key={key} value={key}>
+                <Card className="metric-card">
+                  <p className="payoff-desc">{desc}</p>
+                  <div className="payoff-stats">
+                    <div>
+                      <span className="payoff-stats-label">{t.debts.debtFree} </span>
+                      <span className="payoff-stats-value">{formatDuration(data.months, locale)}</span>
+                    </div>
+                    <div>
+                      <span className="payoff-stats-label">{t.debts.totalInterest} </span>
+                      <span className="payoff-stats-value" data-color="negative">{data.totalInterest.toFixed(2)} €</span>
+                    </div>
+                  </div>
+                  {data.timeline.length > 1 && (
+                    <ChartContainer height={250}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={data.timeline} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id={`${key}Grad`} x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#f87171" stopOpacity={0.3} />
+                              <stop offset="100%" stopColor="#f87171" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                          <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                          <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v / 1000)}k €`} width={50} />
+                          <Tooltip
+                            content={({ active, payload, label }) =>
+                              active && payload?.length ? (
+                                <div className="chart-tooltip">
+                                  <p className="chart-tooltip-label">{label}</p>
+                                  <p className="chart-tooltip-value text-foreground">{Number(payload[0].value).toFixed(2)} €</p>
+                                </div>
+                              ) : null
+                            }
+                          />
+                          <Area type="monotone" dataKey="total" stroke="#f87171" strokeWidth={2} fill={`url(#${key}Grad)`} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  )}
+                </Card>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
+      )}
     </div>
   );
 }
+

@@ -117,6 +117,15 @@ function initializeDb(db: Database.Database) {
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_net_worth_user_date ON net_worth_snapshots(user_id, date);
 
+    CREATE TABLE IF NOT EXISTS debt_overrides (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ynab_account_id TEXT UNIQUE NOT NULL,
+      interest_rate REAL NOT NULL DEFAULT 0,
+      minimum_payment REAL NOT NULL DEFAULT 0,
+      notes TEXT DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS household_settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL,

@@ -42,9 +42,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { t } = useLocale();
 
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/login";
+  const handleLogout = () => {
+    fetch("/api/auth/logout", { method: "POST" }).finally(() => {
+      window.location.replace("/login");
+    });
   };
 
   const handleNavClick = () => {

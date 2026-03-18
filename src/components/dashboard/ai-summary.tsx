@@ -12,8 +12,8 @@ export function AiSummary() {
   const [copied, setCopied] = useState(false);
   const { locale } = useLocale();
 
-  const fetchSummary = async (refresh = false) => {
-    console.debug("[ai-summary] Fetching summary, refresh:", refresh);
+  const fetchSummary = (refresh = false) => {
+    console.info("[ai-summary] Fetching summary, refresh:", refresh);
     if (refresh) {
       setRefreshing(true);
       setSummary(null);
@@ -21,27 +21,53 @@ export function AiSummary() {
       setLoading(true);
     }
 
-    try {
-      const params = new URLSearchParams({ locale });
-      if (refresh) params.set("refresh", "1");
-      const url = `/api/summary?${params}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.summary) {
-        console.info("[ai-summary] Got summary, cached:", data.cached);
-        setSummary(data.summary);
-      }
-    } catch (err) {
-      console.error("[ai-summary] Failed to fetch:", err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+    const params = new URLSearchParams({ locale });
+    if (refresh) params.set("refresh", "1");
+
+    fetch(`/api/summary?${params}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.summary) {
+          console.info("[ai-summary] Got summary, cached:", data.cached);
+          setSummary(data.summary);
+        }
+      })
+      .catch((err) => console.error("[ai-summary] Failed:", err))
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+      });
   };
 
   useEffect(() => {
     fetchSummary();
   }, [locale]);
+
+  const handleCopy = () => {
+    if (!summary) return;
+    console.info("[ai-summary] Copying to clipboard");
+    try {
+      navigator.clipboard.writeText(summary).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    } catch {
+      // Fallback for Safari
+      const textarea = document.createElement("textarea");
+      textarea.value = summary;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleRefresh = () => {
+    console.info("[ai-summary] Refresh clicked");
+    fetchSummary(true);
+  };
 
   if (loading && !summary && !refreshing) return null;
 
@@ -54,24 +80,18 @@ export function AiSummary() {
         <div className="ai-summary-actions">
           {summary && (
             <button
+              type="button"
               className="ai-summary-refresh"
-              onClick={() => {
-                if (summary) {
-                  navigator.clipboard.writeText(summary);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }
-              }}
-              aria-label="Copy summary"
+              onClick={handleCopy}
             >
               {copied ? <Check /> : <Copy />}
             </button>
           )}
           <button
+            type="button"
             className="ai-summary-refresh"
-            onClick={() => fetchSummary(true)}
+            onClick={handleRefresh}
             disabled={refreshing}
-            aria-label="Refresh summary"
           >
             <RefreshCw className={refreshing ? "animate-spin" : ""} />
           </button>
