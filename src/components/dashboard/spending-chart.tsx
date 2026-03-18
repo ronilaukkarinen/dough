@@ -29,7 +29,7 @@ export function SpendingChart({ data }: SpendingChartProps) {
             <p key={index} className="chart-tooltip-value">
               <span style={{ color: entry.dataKey === "spent" ? "var(--chart-1)" : "var(--muted-foreground)" }}>
                 {entry.dataKey === "spent" ? t.dashboard.spent : t.dashboard.budget}:{" "}
-                {entry.value} €
+                {entry.value.toFixed(2)} €
               </span>
             </p>
           ))}

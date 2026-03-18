@@ -34,7 +34,7 @@ export function DailyAllowance({
           <p className="daily-allowance-hero-label">{t.dashboard.dailyBudget}</p>
           <div className="daily-allowance-hero-amount">
             <span className="daily-allowance-hero-value" data-status={status}>
-              {dailyBudget.toFixed(0)} {currency}
+              {dailyBudget.toFixed(2)} {currency}
             </span>
             <span className="daily-allowance-hero-unit">{t.dashboard.perDay}</span>
           </div>
@@ -56,7 +56,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{t.dashboard.available}</p>
-            <p className="metric-card-value">{availableBalance} {currency}</p>
+            <p className="metric-card-value">{availableBalance.toFixed(2)} {currency}</p>
           </div>
         </div>
       </Card>
@@ -68,7 +68,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{t.dashboard.billsDue}</p>
-            <p className="metric-card-value">{upcomingBills} {currency}</p>
+            <p className="metric-card-value">{upcomingBills.toFixed(2)} {currency}</p>
           </div>
         </div>
       </Card>
@@ -80,7 +80,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{t.dashboard.nextIncome}</p>
-            <p className="metric-card-value">{nextIncomeAmount} {currency}</p>
+            <p className="metric-card-value">{nextIncomeAmount.toFixed(2)} {currency}</p>
             <p className="metric-card-note">{nextIncomeDate}</p>
           </div>
         </div>
@@ -94,7 +94,7 @@ export function DailyAllowance({
           <div>
             <p className="metric-card-label">{t.dashboard.cashFlowForecast}</p>
             <p className="metric-card-value">
-              {availableBalance - upcomingBills + nextIncomeAmount} {currency}
+              {(availableBalance - upcomingBills + nextIncomeAmount).toFixed(2)} {currency}
             </p>
             <p className="metric-card-note">{t.dashboard.endOfMonthEstimate}</p>
           </div>

@@ -22,6 +22,10 @@
 * Fix spending chart budget line to use actual spending pace instead of inflated total
 * Add global .icon-sm utility class for consistent small icon sizing
 * Fix Finnish translation for bills still due ("Erääntyy ennen kuun loppua")
+* Fix Finnish debt subtitle ("Seuraa ja lyhennä velkojasi")
+* Normalize all currency values to xxxxx.xx € format across all pages
+* Fix NaN% in debts progress when no debts exist
+* Sync debts from YNAB otherDebt type accounts automatically
 
 ### 0.2.0: 2026-03-18
 

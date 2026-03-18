@@ -110,7 +110,7 @@ export default function TransactionsPage() {
               </div>
               <div className="list-item-amount">
                 <p className="list-item-amount-value" data-positive={tx.amount >= 0 || undefined}>
-                  {tx.amount < 0 ? "-" : "+"}{Math.abs(tx.amount).toFixed(2)} {"€"}
+                  {tx.amount < 0 ? "-" : "+"}{Math.abs(tx.amount).toFixed(2)} €
                 </p>
                 <p className="list-item-amount-date">{relativeDate(tx.date, locale)}</p>
               </div>

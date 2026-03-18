@@ -88,7 +88,7 @@ export default function IncomePage() {
       <div className="page-grid-2-sm">
         <Card className="metric-card">
           <p className="metric-card-label">{t.income.expectedMonthly}</p>
-          <p className="metric-card-value-3xl text-positive">{monthlyTotal} {"€"}</p>
+          <p className="metric-card-value-3xl text-positive">{monthlyTotal.toFixed(2)} €</p>
           <p className="metric-card-note metric-card-note-mt">
             {incomes.filter((i) => i.isActive).length} {t.common.sources}
           </p>
@@ -97,7 +97,7 @@ export default function IncomePage() {
           <div className="page-header-row">
             <div>
               <p className="metric-card-label">{t.income.guaranteedRecurring}</p>
-              <p className="metric-card-value-3xl">{recurringTotal} {"€"}</p>
+              <p className="metric-card-value-3xl">{recurringTotal.toFixed(2)} €</p>
               <p className="metric-card-note metric-card-note-mt">{t.income.reliableMonthlyIncome}</p>
             </div>
             <TrendingUp className="metric-card-icon-standalone text-positive" />
@@ -123,7 +123,7 @@ export default function IncomePage() {
                 </p>
               </div>
               <div className="list-item-actions">
-                <p className="list-item-amount-value" data-positive>+ {income.amount} {"€"}</p>
+                <p className="list-item-amount-value" data-positive>+{income.amount.toFixed(2)} €</p>
                 <Switch checked={income.isActive} onCheckedChange={() => toggleIncome(income.id)} />
               </div>
             </div>

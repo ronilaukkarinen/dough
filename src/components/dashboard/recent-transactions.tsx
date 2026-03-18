@@ -40,7 +40,7 @@ export function RecentTransactions({ transactions, currency = "€" }: RecentTra
             </div>
             <div className="recent-transactions-amount">
               <p className="recent-transactions-amount-value" data-type={tx.amount < 0 ? "expense" : "income"}>
-                {tx.amount < 0 ? "-" : "+"}{Math.abs(tx.amount)} {currency}
+                {tx.amount < 0 ? "-" : "+"}{Math.abs(tx.amount).toFixed(2)} {currency}
               </p>
               <p className="recent-transactions-date">{relativeDate(tx.date, locale)}</p>
             </div>

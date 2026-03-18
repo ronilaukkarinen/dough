@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLocale } from "@/lib/locale-context";
+import { useYnab } from "@/lib/ynab-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,14 +93,28 @@ function calculatePayoff(sortedDebts: Debt[], extraPayment: number) {
 
 export default function DebtsPage() {
   const { t } = useLocale();
-  const [debts] = useState<Debt[]>([]);
+  const { data } = useYnab();
   const [extraPayment, setExtraPayment] = useState(50);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Build debts from YNAB otherDebt accounts
+  const ynabDebts: Debt[] = (data?.summary.accounts ?? [])
+    .filter((a) => a.type === "otherDebt" && a.balance < 0)
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      totalAmount: Math.abs(a.balance),
+      remainingAmount: Math.abs(a.balance),
+      interestRate: 0,
+      minimumPayment: 0,
+    }));
+
+  const debts = ynabDebts;
 
   const totalDebt = debts.reduce((s, d) => s + d.remainingAmount, 0);
   const totalOriginal = debts.reduce((s, d) => s + d.totalAmount, 0);
   const totalPaid = totalOriginal - totalDebt;
-  const progress = (totalPaid / totalOriginal) * 100;
+  const progress = totalOriginal > 0 ? (totalPaid / totalOriginal) * 100 : 0;
 
   const snowball = calculateSnowball(debts, extraPayment);
   const avalanche = calculateAvalanche(debts, extraPayment);
@@ -161,7 +176,7 @@ export default function DebtsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.debts.totalDebt}</p>
-              <p className="metric-card-value">{totalDebt} {"€"}</p>
+              <p className="metric-card-value">{totalDebt.toFixed(2)} €</p>
             </div>
           </div>
         </Card>
@@ -199,12 +214,12 @@ export default function DebtsPage() {
                 <div>
                   <p className="debt-item-name">{debt.name}</p>
                   <p className="debt-item-meta">
-                    {debt.interestRate}% {t.debts.apr} · {debt.minimumPayment} {"€"}{t.debts.moMin}
+                    {debt.interestRate}% {t.debts.apr} · {debt.minimumPayment.toFixed(2)} €{t.debts.moMin}
                   </p>
                 </div>
                 <div className="debt-item-right">
-                  <p className="debt-item-amount">{debt.remainingAmount} {"€"}</p>
-                  <p className="debt-item-total">{t.common.of} {debt.totalAmount} {"€"}</p>
+                  <p className="debt-item-amount">{debt.remainingAmount.toFixed(2)} €</p>
+                  <p className="debt-item-total">{t.common.of} {debt.totalAmount.toFixed(2)} €</p>
                 </div>
               </div>
               <Progress value={pct} className="progress-thin" />
@@ -253,7 +268,7 @@ export default function DebtsPage() {
                   </div>
                   <div>
                     <span className="payoff-stats-label">{t.debts.totalInterest} </span>
-                    <span className="payoff-stats-value" data-color="negative">{data.totalInterest} {"€"}</span>
+                    <span className="payoff-stats-value" data-color="negative">{data.totalInterest.toFixed(2)} €</span>
                   </div>
                 </div>
                 <ChartContainer height={250}>
@@ -267,13 +282,13 @@ export default function DebtsPage() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                       <XAxis dataKey="month" tick={{ fill: "#7a8ba0", fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                      <YAxis tick={{ fill: "#7a8ba0", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k \u20AC`} />
+                      <YAxis tick={{ fill: "#7a8ba0", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v / 1000)}k €`} />
                       <Tooltip
                         content={({ active, payload, label }) =>
                           active && payload?.length ? (
                             <div className="chart-tooltip">
                               <p className="chart-tooltip-label">{label}</p>
-                              <p className="chart-tooltip-value text-foreground">{payload[0].value} {"€"}</p>
+                              <p className="chart-tooltip-value text-foreground">{Number(payload[0].value).toFixed(2)} €</p>
                             </div>
                           ) : null
                         }

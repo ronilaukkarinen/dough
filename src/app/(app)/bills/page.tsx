@@ -91,7 +91,7 @@ export default function BillsPage() {
       <div className="page-grid-2-sm">
         <Card className="metric-card">
           <p className="metric-card-label">{t.bills.monthlyTotal}</p>
-          <p className="metric-card-value-3xl">{monthlyTotal.toFixed(2)} {"€"}</p>
+          <p className="metric-card-value-3xl">{monthlyTotal.toFixed(2)} €</p>
           <p className="metric-card-note metric-card-note-mt">
             {bills.filter((b) => b.isActive).length} {t.common.activeBills}
           </p>
@@ -100,7 +100,7 @@ export default function BillsPage() {
           <div className="page-header-row">
             <div>
               <p className="metric-card-label">{t.bills.remainingThisMonth}</p>
-              <p className="metric-card-value-3xl text-negative">{remainingThisMonth.toFixed(2)} {"€"}</p>
+              <p className="metric-card-value-3xl text-negative">{remainingThisMonth.toFixed(2)} €</p>
               <p className="metric-card-note metric-card-note-mt">{t.bills.stillDueBeforeMonthEnd}</p>
             </div>
             <AlertCircle className="metric-card-icon-standalone text-negative" />
@@ -128,7 +128,7 @@ export default function BillsPage() {
                 </p>
               </div>
               <div className="list-item-actions">
-                <p className="list-item-amount-value">{bill.amount.toFixed(2)} {"€"}</p>
+                <p className="list-item-amount-value">{bill.amount.toFixed(2)} €</p>
                 <Switch checked={bill.isActive} onCheckedChange={() => toggleBill(bill.id)} />
               </div>
             </div>
