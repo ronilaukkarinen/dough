@@ -84,8 +84,9 @@ export default function DashboardPage() {
     .filter((i) => i.is_active && i.expected_day > today)
     .reduce((s, i) => s + i.amount, 0);
 
-  // Daily budget = (balance + upcoming income - saving goal) / days left
-  const spendableBalance = Math.max(0, availableBalance + upcomingIncome - savingRate);
+  // Daily budget = (balance - saving goal) / days left
+  // Only count money you actually HAVE, not upcoming income
+  const spendableBalance = Math.max(0, availableBalance - savingRate);
   const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
   // Burn rate = average daily real spending this month
