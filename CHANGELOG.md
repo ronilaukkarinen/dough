@@ -66,6 +66,11 @@
 * Format debt-free time as Xv Xkk when over 12 months
 * Fix cash flow chart Y-axis width to prevent truncated labels
 * Fix net worth hero value line-height and spacing
+* Wire income sources page to SQLite with CRUD API
+* Add burn rate metric (daily spending rate) to dashboard
+* Add projected month-end balance to dashboard
+* Improve AI summary with burn rate, projected balance, and living-above-means detection
+* Fix income page to load from database and persist form submissions
 
 ### 0.2.0: 2026-03-18
 

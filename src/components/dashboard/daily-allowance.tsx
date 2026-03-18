@@ -11,6 +11,8 @@ interface DailyAllowanceProps {
   nextIncomeAmount: number;
   nextIncomeDate: string;
   daysUntilIncome: number;
+  burnRate?: number;
+  projectedMonthEnd?: number;
   currency?: string;
 }
 
@@ -21,9 +23,11 @@ export function DailyAllowance({
   nextIncomeAmount,
   nextIncomeDate,
   daysUntilIncome,
+  burnRate = 0,
+  projectedMonthEnd = 0,
   currency = "€",
 }: DailyAllowanceProps) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const status =
     dailyBudget > 50 ? "good" : dailyBudget > 20 ? "tight" : "danger";
 
@@ -88,15 +92,15 @@ export function DailyAllowance({
 
       <Card className="metric-card metric-card-half">
         <div className="metric-card-row">
-          <div className="metric-card-icon" data-color="chart-4">
+          <div className="metric-card-icon" data-color="chart-3">
             <CalendarClock />
           </div>
           <div>
-            <p className="metric-card-label">{t.dashboard.cashFlowForecast}</p>
-            <p className="metric-card-value">
-              {(availableBalance - upcomingBills + nextIncomeAmount).toFixed(2)} {currency}
+            <p className="metric-card-label">{locale === "fi" ? "Kulutusvauhti" : "Burn rate"}</p>
+            <p className="metric-card-value">{burnRate.toFixed(2)} {currency}/{locale === "fi" ? "pv" : "day"}</p>
+            <p className="metric-card-note">
+              {locale === "fi" ? "Kuun lopussa" : "End of month"}: {projectedMonthEnd.toFixed(2)} {currency}
             </p>
-            <p className="metric-card-note">{t.dashboard.endOfMonthEstimate}</p>
           </div>
         </div>
       </Card>

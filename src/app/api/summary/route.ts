@@ -93,16 +93,24 @@ export async function GET(request: Request) {
       ? "Respond in Finnish."
       : "Respond in English.";
 
-    const prompt = `${lang} You are a personal finance advisor for a Finnish household. Write 1-4 sentences summarizing their current financial situation. Be direct, specific with numbers, and actionable. Use euro sign. No greeting, no bullet points, no markdown.
+    const daysPassed = now.getDate();
+    const dailyBurnRate = daysPassed > 0 ? Math.round(monthActivity / daysPassed) : 0;
+    const projectedMonthEnd = Math.round(checkingSavings - (dailyBurnRate * daysLeft));
+    const livingAboveMeans = monthActivity > monthIncomeTotal;
+
+    const prompt = `${lang} You are a personal finance advisor for a Finnish household. Write 1-4 sentences summarizing their current financial situation. Be direct, specific with numbers, and actionable. Use euro sign. No greeting, no bullet points, no markdown. If they are living above their means, say so clearly. Include projected month-end balance.
 
 Data:
 - Checking+savings balance: ${Math.round(checkingSavings)} euros
 - This month's real income (excluding transfers): ${Math.round(monthIncomeTotal)} euros
 - This month's real spending (excluding transfers): ${Math.round(monthActivity)} euros
+- Daily burn rate: ${dailyBurnRate} euros/day
+- Projected month-end balance at current pace: ${projectedMonthEnd} euros
+- Living above means: ${livingAboveMeans ? "YES" : "no"}
+- Days passed this month: ${daysPassed}
 - Days left in month: ${daysLeft}
 - Daily budget if spread evenly: ${daysLeft > 0 ? Math.round(checkingSavings / daysLeft) : 0} euros/day
-- Top expenses: ${topExpenses}
-- Total transactions this month: ${transactions.length}`;
+- Top expenses: ${topExpenses}`;
 
     const claudePath = process.env.CLAUDE_PATH || "/home/rolle/.local/bin/claude";
     console.info("[summary] Calling claude CLI");

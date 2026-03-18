@@ -64,6 +64,14 @@ export default function DashboardPage() {
   // Daily budget from available checking+savings balance
   const dailyBudget = daysLeft > 0 ? Math.round((availableBalance / daysLeft) * 100) / 100 : 0;
 
+  // Burn rate = average daily real spending this month
+  const daysPassed = now.getDate();
+  const realSpendingTotal = data.transactions
+    .filter((t) => t.amount < 0 && !t.payee.startsWith("Transfer") && t.category !== "Uncategorized")
+    .reduce((s, t) => s + Math.abs(t.amount), 0);
+  const dailyBurnRate = daysPassed > 0 ? Math.round((realSpendingTotal / daysPassed) * 100) / 100 : 0;
+  const projectedMonthEnd = Math.round((availableBalance - (dailyBurnRate * daysLeft)) * 100) / 100;
+
   // Build spending chart data from transactions (exclude transfers)
   const spendingByDay: Record<string, number> = {};
   const sortedTx = [...data.transactions]
@@ -152,6 +160,8 @@ export default function DashboardPage() {
         nextIncomeAmount={0}
         nextIncomeDate=""
         daysUntilIncome={daysLeft}
+        burnRate={dailyBurnRate}
+        projectedMonthEnd={projectedMonthEnd}
       />
 
       <div className="page-grid-2">
