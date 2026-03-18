@@ -74,8 +74,8 @@ export async function GET(request: Request) {
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const daysLeft = daysInMonth - now.getDate() + 1;
     // Filter out transfers for accurate income/expense
-    const realExpenses = transactions.filter((t: any) => t.amount < 0 && !t.payee.startsWith("Transfer") && t.category !== "Uncategorized");
-    const realIncome = transactions.filter((t: any) => t.amount > 0 && !t.payee.startsWith("Transfer"));
+    const realExpenses = transactions.filter((t: any) => t.amount < 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation") && t.category !== "Uncategorized");
+    const realIncome = transactions.filter((t: any) => t.amount > 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation"));
     const monthActivity = realExpenses.reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
     const monthIncomeTotal = realIncome.reduce((s: number, t: any) => s + t.amount, 0);
 
@@ -88,6 +88,9 @@ export async function GET(request: Request) {
     const lang = requestLocale === "fi"
       ? "Respond in Finnish."
       : "Respond in English.";
+
+    const { getHouseholdSetting } = await import("@/lib/household");
+    const householdProfile = getHouseholdSetting("household_profile") || "";
 
     const daysPassed = now.getDate();
     const dailyBurnRate = daysPassed > 0 ? Math.round(monthActivity / daysPassed) : 0;
@@ -118,7 +121,7 @@ export async function GET(request: Request) {
       ? incomeSources.map((i) => `${i.name}: ${i.amount} euros (day ${i.expected_day})`).join(", ")
       : "No income sources configured";
 
-    const prompt = `${lang} You are a personal finance advisor for a Finnish household. Write 3-5 sentences. Be direct, specific with numbers. Use euro sign. No greeting, no bullet points, no markdown.
+    const prompt = `${lang} You are a personal finance advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} Write 3-5 sentences. Be direct, specific with numbers. Use euro sign. No greeting, no bullet points, no markdown.
 
 Include: current situation summary, whether they can afford anything extra or need to cut spending, specific tips based on their spending categories, and projected month-end balance accounting for upcoming income.
 

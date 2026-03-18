@@ -94,6 +94,10 @@
 * Skip already-received income from upcoming calculations on dashboard
 * Add link button to income list items for managing payee patterns
 * Add payee_matches and monthly_matches tables
+* Add household profile setting for AI context (family size, kids, etc)
+* Feed household profile to all AI prompts (summary, chat, debt suggestion)
+* Treat "Starting Balance" and "Reconciliation Balance Adjustment" as transfers
+* Extract shared isTransfer helper to transaction-utils.ts
 
 ### 0.2.0: 2026-03-18
 

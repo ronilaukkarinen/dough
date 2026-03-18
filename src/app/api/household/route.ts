@@ -16,6 +16,7 @@ export async function GET() {
         ynab_budget_id: settings.ynab_budget_id || null,
         saving_rate: settings.saving_rate ? parseFloat(settings.saving_rate) : 0,
         saving_rate_type: settings.saving_rate_type || "fixed",
+        household_profile: settings.household_profile || "",
         last_ynab_sync: settings.last_ynab_sync || null,
       },
     });

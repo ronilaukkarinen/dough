@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useLocale } from "@/lib/locale-context";
+import { isTransfer } from "@/lib/transaction-utils";
 import { useYnab } from "@/lib/ynab-context";
 import { DailyAllowance } from "@/components/dashboard/daily-allowance";
 import { SpendingChart } from "@/components/dashboard/spending-chart";
@@ -79,7 +80,7 @@ export default function DashboardPage() {
 
   // Real income = positive transactions excluding transfers
   const realIncome = data.transactions
-    .filter((t) => t.amount > 0 && !t.payee.startsWith("Transfer"))
+    .filter((t) => t.amount > 0 && !isTransfer(t.payee, t.category))
     .reduce((s, t) => s + t.amount, 0);
 
   // Available = total checking + savings accounts
@@ -103,7 +104,7 @@ export default function DashboardPage() {
   // Burn rate = average daily real spending this month
   const daysPassed = now.getDate();
   const realSpendingTotal = data.transactions
-    .filter((t) => t.amount < 0 && !t.payee.startsWith("Transfer") && t.category !== "Uncategorized")
+    .filter((t) => t.amount < 0 && !isTransfer(t.payee, t.category))
     .reduce((s, t) => s + Math.abs(t.amount), 0);
   const dailyBurnRate = daysPassed > 0 ? Math.round((realSpendingTotal / daysPassed) * 100) / 100 : 0;
   const projectedMonthEnd = Math.round((availableBalance + upcomingIncome - (dailyBurnRate * daysLeft)) * 100) / 100;
@@ -111,7 +112,7 @@ export default function DashboardPage() {
   // Build spending chart data from transactions (exclude transfers)
   const spendingByDay: Record<string, number> = {};
   const sortedTx = [...data.transactions]
-    .filter((t) => t.amount < 0 && !t.payee.startsWith("Transfer") && t.category !== "Uncategorized")
+    .filter((t) => t.amount < 0 && !isTransfer(t.payee, t.category))
     .sort((a, b) => a.date.localeCompare(b.date));
 
   let cumulative = 0;

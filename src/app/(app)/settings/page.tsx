@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2, PiggyBank } from "lucide-react";
+import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2, PiggyBank, Users } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import type { Locale } from "@/lib/i18n";
 
@@ -41,6 +41,8 @@ export default function SettingsPage() {
   const [budgetsLoading, setBudgetsLoading] = useState(false);
   const [savingRate, setSavingRate] = useState("");
   const [savingRateSaved, setSavingRateSaved] = useState(false);
+  const [householdProfile, setHouseholdProfile] = useState("");
+  const [householdSaved, setHouseholdSaved] = useState(false);
   const { t, locale, setLocale } = useLocale();
 
   useEffect(() => {
@@ -63,6 +65,9 @@ export default function SettingsPage() {
           }
           if (householdData.settings?.saving_rate) {
             setSavingRate(String(householdData.settings.saving_rate));
+          }
+          if (householdData.settings?.household_profile) {
+            setHouseholdProfile(householdData.settings.household_profile);
           }
           if (householdData.settings?.ynab_connected) {
             fetch("/api/ynab/budgets")
@@ -273,6 +278,54 @@ export default function SettingsPage() {
               {langSaved && (
                 <span className="settings-saved">{t.common.saved}</span>
               )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Household profile */}
+        <Card className="settings-card">
+          <CardHeader>
+            <CardTitle className="settings-card-title">
+              <Users />
+              {locale === "fi" ? "Talouden tiedot" : "Household details"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="form-field">
+              <Label>{locale === "fi" ? "Kuvaus AI-neuvontaa varten" : "Description for AI advisor"}</Label>
+              <textarea
+                className="input settings-textarea"
+                value={householdProfile}
+                onChange={(e) => setHouseholdProfile(e.target.value)}
+                placeholder={locale === "fi"
+                  ? "Esim. perhe: 2 aikuista ja 2 lasta (Lotta 16v, Manu 12v). Asumme vuokralla Jyv\u00e4skyl\u00e4ss\u00e4."
+                  : "E.g. Family: 2 adults and 2 kids (Lotta 16, Manu 12). We rent in Jyv\u00e4skyl\u00e4."}
+                rows={3}
+              />
+              <div className="settings-row">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    console.info("[settings] Saving household profile");
+                    await fetch("/api/household", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ household_profile: householdProfile }),
+                    });
+                    setHouseholdSaved(true);
+                    setTimeout(() => setHouseholdSaved(false), 2000);
+                  }}
+                >
+                  {t.common.save}
+                </Button>
+                {householdSaved && <span className="settings-saved">{t.common.saved}</span>}
+              </div>
+              <p className="settings-help">
+                {locale === "fi"
+                  ? "AI-neuvoja k\u00e4ytt\u00e4\u00e4 t\u00e4t\u00e4 antaessaan r\u00e4\u00e4t\u00e4l\u00f6ityj\u00e4 neuvoja"
+                  : "The AI advisor uses this to give tailored advice"}
+              </p>
             </div>
           </CardContent>
         </Card>

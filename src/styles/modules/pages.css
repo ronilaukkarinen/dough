@@ -625,6 +625,33 @@
   max-width: 28rem;
 }
 
+.settings-textarea {
+  max-width: 28rem;
+  width: 100%;
+  min-height: 4.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: vertical;
+  border: 1px solid var(--input);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--foreground);
+}
+
+.dark .settings-textarea {
+  background: color-mix(in srgb, var(--input) 30%, transparent);
+}
+
+.settings-textarea:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.settings-textarea::placeholder {
+  color: var(--muted-foreground);
+}
+
 /* Payoff extra input */
 .input.payoff-extra-input {
   height: 2rem;

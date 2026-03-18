@@ -25,6 +25,8 @@ export async function POST(request: Request) {
       const token = getYnabToken();
       const budgetId = getYnabBudgetId();
       const locale = user.locale || "en";
+      const { getHouseholdSetting } = await import("@/lib/household");
+      const householdProfile = getHouseholdSetting("household_profile") || "";
 
       if (token && budgetId) {
         console.info("[chat] Fetching real YNAB data for context");
@@ -52,11 +54,11 @@ export async function POST(request: Request) {
             .map((a: any) => ({ name: a.name, remaining: Math.abs(a.balance), rate: 0 }));
 
           // Filter transfers
-          const realIncomeTx = transactions.filter((t: any) => t.amount > 0 && !t.payee.startsWith("Transfer"));
-          const realExpenseTx = transactions.filter((t: any) => t.amount < 0 && !t.payee.startsWith("Transfer") && t.category !== "Uncategorized");
+          const realIncomeTx = transactions.filter((t: any) => t.amount > 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation"));
+          const realExpenseTx = transactions.filter((t: any) => t.amount < 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation") && t.category !== "Uncategorized");
 
           const recentTx = [...transactions]
-            .filter((t: any) => !t.payee.startsWith("Transfer"))
+            .filter((t: any) => !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation"))
             .sort((a: any, b: any) => b.date.localeCompare(a.date))
             .slice(0, 10)
             .map((t: any) => ({ date: t.date, payee: t.payee, amount: t.amount, category: t.category }));
@@ -71,6 +73,7 @@ export async function POST(request: Request) {
             dailyBudget,
             daysUntilNextIncome: daysLeft,
             locale,
+            householdProfile,
           };
 
           console.info("[chat] Context built with real data, balance:", context.totalBalance);
@@ -93,6 +96,7 @@ export async function POST(request: Request) {
         dailyBudget: 0,
         daysUntilNextIncome: 0,
         locale: "en",
+        householdProfile: "",
       };
     }
 

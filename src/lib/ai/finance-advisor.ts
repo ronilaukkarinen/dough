@@ -10,6 +10,7 @@ interface FinancialContext {
   dailyBudget: number;
   daysUntilNextIncome: number;
   locale: string;
+  householdProfile: string;
 }
 
 function buildSystemPrompt(ctx: FinancialContext): string {
@@ -17,7 +18,7 @@ function buildSystemPrompt(ctx: FinancialContext): string {
     ? "Respond in Finnish. Be natural and conversational."
     : "Respond in English. Be natural and conversational.";
 
-  return `You are Dough, a personal AI financial advisor for a Finnish family. You have access to their real financial data from YNAB.
+  return `You are Dough, a personal AI financial advisor.${ctx.householdProfile ? ` Household: ${ctx.householdProfile}.` : ""} You have access to their real financial data from YNAB.
 
 ${lang}
 

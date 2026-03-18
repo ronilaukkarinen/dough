@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLocale } from "@/lib/locale-context";
+import { isTransfer } from "@/lib/transaction-utils";
 import { useYnab } from "@/lib/ynab-context";
 import { relativeDate } from "@/lib/date-utils";
 import { Card } from "@/components/ui/card";
@@ -39,11 +40,11 @@ export default function TransactionsPage() {
       if (search && !tx.payee.toLowerCase().includes(search.toLowerCase()) && !tx.category.toLowerCase().includes(search.toLowerCase())) {
         return false;
       }
-      const isTransfer = tx.payee.startsWith("Transfer") || tx.category === "Uncategorized";
-      if (filter === "income" && (tx.amount < 0 || isTransfer)) return false;
-      if (filter === "expenses" && (tx.amount >= 0 || isTransfer)) return false;
-      if (filter === "transfers" && !isTransfer) return false;
-      if (filter === "all" && isTransfer) return false;
+      const txIsTransfer = isTransfer(tx.payee, tx.category);
+      if (filter === "income" && (tx.amount < 0 || txIsTransfer)) return false;
+      if (filter === "expenses" && (tx.amount >= 0 || txIsTransfer)) return false;
+      if (filter === "transfers" && !txIsTransfer) return false;
+      if (filter === "all" && txIsTransfer) return false;
       return true;
     });
 
@@ -102,16 +103,16 @@ export default function TransactionsPage() {
       ) : (
         <Card className="list-card list-card-divider">
           {filtered.map((tx) => {
-            const isTransfer = tx.payee.startsWith("Transfer") || tx.category === "Uncategorized";
+            const txIsTransfer = isTransfer(tx.payee, tx.category);
             return (
             <div key={tx.id} className="list-item">
-              <div className="list-item-icon" data-color={isTransfer ? "chart-3" : tx.amount < 0 ? "negative" : "positive"}>
+              <div className="list-item-icon" data-color={txIsTransfer ? "chart-3" : tx.amount < 0 ? "negative" : "positive"}>
                 {tx.amount < 0 ? <ArrowUpRight className="icon-sm" /> : <ArrowDownLeft className="icon-sm" />}
               </div>
               <div className="list-item-body">
                 <div className="list-item-name-row">
                   <p className="list-item-name">{tx.payee}</p>
-                  {isTransfer && <Badge variant="secondary">{locale === "fi" ? "Siirto" : "Transfer"}</Badge>}
+                  {txIsTransfer && <Badge variant="secondary">{locale === "fi" ? "Siirto" : "Transfer"}</Badge>}
                 </div>
                 <p className="list-item-meta">{tx.category}</p>
               </div>

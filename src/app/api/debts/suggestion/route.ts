@@ -25,8 +25,11 @@ export async function GET() {
 
     if (debts.length === 0) return NextResponse.json({ suggestion: null });
 
+    const { getHouseholdSetting } = await import("@/lib/household");
+    const householdProfile = getHouseholdSetting("household_profile") || "";
+
     const lang = user.locale === "fi" ? "Respond in Finnish." : "Respond in English.";
-    const prompt = `${lang} You are a debt advisor. Given these debts, suggest which to prioritize paying off and why. Be specific and actionable. 2-3 sentences max. No markdown.
+    const prompt = `${lang} You are a debt advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} Given these debts, suggest which to prioritize paying off and why. Be specific and actionable. 2-3 sentences max. No markdown.
 
 Debts:
 ${debts.join("\n")}`;
