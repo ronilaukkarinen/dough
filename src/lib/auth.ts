@@ -1,0 +1,90 @@
+import { SignJWT, jwtVerify } from "jose";
+import { cookies } from "next/headers";
+import { getDb } from "./db";
+import bcrypt from "bcryptjs";
+
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.SESSION_SECRET || "dough-default-secret-change-me"
+);
+const COOKIE_NAME = "dough-session";
+
+export interface SessionUser {
+  id: number;
+  email: string;
+  display_name: string;
+  locale: string;
+}
+
+export async function createSession(userId: number): Promise<string> {
+  const token = await new SignJWT({ userId })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("30d")
+    .sign(JWT_SECRET);
+
+  console.info("[auth] Session created for user", userId);
+  return token;
+}
+
+export async function getSession(): Promise<SessionUser | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(COOKIE_NAME)?.value;
+    if (!token) return null;
+
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const userId = payload.userId as number;
+
+    const db = getDb();
+    const user = db
+      .prepare("SELECT id, email, display_name, locale FROM users WHERE id = ?")
+      .get(userId) as SessionUser | undefined;
+
+    return user || null;
+  } catch (error) {
+    console.debug("[auth] Invalid session:", error);
+    return null;
+  }
+}
+
+export async function login(
+  email: string,
+  password: string
+): Promise<{ user: SessionUser; token: string } | null> {
+  const db = getDb();
+  const row = db
+    .prepare("SELECT id, email, display_name, locale, password_hash FROM users WHERE email = ?")
+    .get(email) as (SessionUser & { password_hash: string }) | undefined;
+
+  if (!row) {
+    console.warn("[auth] Login failed: user not found", email);
+    return null;
+  }
+
+  const valid = await bcrypt.compare(password, row.password_hash);
+  if (!valid) {
+    console.warn("[auth] Login failed: wrong password for", email);
+    return null;
+  }
+
+  const token = await createSession(row.id);
+  console.info("[auth] Login successful for", email);
+
+  return {
+    user: { id: row.id, email: row.email, display_name: row.display_name, locale: row.locale },
+    token,
+  };
+}
+
+export function createUser(email: string, password: string, displayName: string, locale: string = "en") {
+  const db = getDb();
+  const hash = bcrypt.hashSync(password, 10);
+
+  const result = db
+    .prepare("INSERT INTO users (email, password_hash, display_name, locale) VALUES (?, ?, ?, ?)")
+    .run(email, hash, displayName, locale);
+
+  console.info("[auth] User created:", email, "id:", result.lastInsertRowid);
+  return result.lastInsertRowid;
+}
+
+export { COOKIE_NAME };
