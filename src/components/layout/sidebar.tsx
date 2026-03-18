@@ -17,20 +17,22 @@ import {
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "@/lib/locale-context";
 
-const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", labelFi: "Yhteenveto" },
-  { href: "/chat", icon: MessageSquare, label: "AI advisor", labelFi: "AI-neuvoja" },
-  { href: "/transactions", icon: Receipt, label: "Transactions", labelFi: "Tapahtumat" },
-  { href: "/bills", icon: CalendarClock, label: "Bills", labelFi: "Laskut" },
-  { href: "/income", icon: Wallet, label: "Income", labelFi: "Tulot" },
-  { href: "/debts", icon: TrendingDown, label: "Debts", labelFi: "Velat" },
-];
+const navKeys = [
+  { href: "/dashboard", icon: LayoutDashboard, key: "dashboard" },
+  { href: "/chat", icon: MessageSquare, key: "chat" },
+  { href: "/transactions", icon: Receipt, key: "transactions" },
+  { href: "/bills", icon: CalendarClock, key: "bills" },
+  { href: "/income", icon: Wallet, key: "income" },
+  { href: "/debts", icon: TrendingDown, key: "debts" },
+] as const;
 
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const { t } = useLocale();
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -53,7 +55,7 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-3">
-        {navItems.map((item) => {
+        {navKeys.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
@@ -67,7 +69,7 @@ export function Sidebar() {
               )}
             >
               <item.icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
+              {!collapsed && <span>{t.nav[item.key]}</span>}
             </Link>
           );
         })}
@@ -85,14 +87,14 @@ export function Sidebar() {
           )}
         >
           <Settings className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>Settings</span>}
+          {!collapsed && <span>{t.common.settings}</span>}
         </Link>
         <button
           onClick={handleLogout}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <LogOut className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>Log out</span>}
+          {!collapsed && <span>{t.common.logout}</span>}
         </button>
         <button
           onClick={() => setCollapsed(!collapsed)}

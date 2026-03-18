@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/lib/locale-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ const demoIncome: Income[] = [
 ];
 
 export default function IncomePage() {
+  const { t } = useLocale();
   const [incomes, setIncomes] = useState<Income[]>(demoIncome);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -49,7 +51,7 @@ export default function IncomePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Income sources
+            {t.income.title}
           </h1>
           <p className="text-sm text-muted-foreground">
             Track when money comes in

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/lib/locale-context";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ const demoTransactions = [
 type FilterType = "all" | "recurring" | "income" | "expenses";
 
 export default function TransactionsPage() {
+  const { t } = useLocale();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
 
@@ -50,7 +52,7 @@ export default function TransactionsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Transactions
+            {t.transactions.title}
           </h1>
           <p className="text-sm text-muted-foreground">
             Synced from YNAB

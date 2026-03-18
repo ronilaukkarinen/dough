@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/lib/locale-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +95,7 @@ function calculatePayoff(sortedDebts: Debt[], extraPayment: number) {
 }
 
 export default function DebtsPage() {
+  const { t } = useLocale();
   const [debts] = useState<Debt[]>(demoDebts);
   const [extraPayment, setExtraPayment] = useState(50);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -111,7 +113,7 @@ export default function DebtsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Debts
+            {t.debts.title}
           </h1>
           <p className="text-sm text-muted-foreground">
             Track and eliminate your debts

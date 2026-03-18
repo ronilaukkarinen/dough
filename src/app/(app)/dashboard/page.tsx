@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "@/lib/locale-context";
 import { DailyAllowance } from "@/components/dashboard/daily-allowance";
 import { SpendingChart } from "@/components/dashboard/spending-chart";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
@@ -42,16 +43,14 @@ const recentTransactions = [
 ];
 
 export default function DashboardPage() {
+  const { t } = useLocale();
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Dashboard
+          {t.dashboard.title}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          March 2026 — Here&apos;s your financial pulse
-        </p>
       </div>
 
       {/* Daily allowance + key metrics */}

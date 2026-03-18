@@ -1,5 +1,7 @@
 ### 0.1.0: 2026-03-18
 
+* Wire i18n locale context so language switch updates sidebar and all page headings live
+* Add YNAB budget ID field to settings page
 * Load user settings from database on page load so they persist across refreshes
 * Wire sync now button to call YNAB sync API with user's token
 * Fix card gap between header and content in settings cards

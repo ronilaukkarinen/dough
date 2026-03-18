@@ -24,6 +24,12 @@ export async function POST(request: Request) {
         .run(body.ynab_access_token, user.id);
     }
 
+    if (body.ynab_budget_id) {
+      console.info("[api/auth/update] Saving YNAB budget ID for user", user.id);
+      db.prepare("UPDATE users SET ynab_budget_id = ?, updated_at = datetime('now') WHERE id = ?")
+        .run(body.ynab_budget_id, user.id);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[api/auth/update] Error:", error);

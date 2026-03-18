@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/lib/locale-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +46,7 @@ const demoBills: Bill[] = [
 ];
 
 export default function BillsPage() {
+  const { t } = useLocale();
   const [bills, setBills] = useState<Bill[]>(demoBills);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -65,7 +67,7 @@ export default function BillsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Recurring bills
+            {t.bills.title}
           </h1>
           <p className="text-sm text-muted-foreground">
             Manage your monthly obligations

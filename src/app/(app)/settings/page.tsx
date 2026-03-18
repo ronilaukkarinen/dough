@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2 } from "lucide-react";
+import { useLocale } from "@/lib/locale-context";
+import type { Locale } from "@/lib/i18n";
 
 interface UserProfile {
   id: number;
@@ -28,11 +30,13 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [language, setLanguage] = useState("en");
   const [ynabToken, setYnabToken] = useState("");
+  const [ynabBudgetId, setYnabBudgetId] = useState("");
   const [ynabLoading, setYnabLoading] = useState(false);
   const [ynabError, setYnabError] = useState("");
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncResult, setSyncResult] = useState("");
   const [langSaved, setLangSaved] = useState(false);
+  const { setLocale } = useLocale();
 
   useEffect(() => {
     console.debug("[settings] Loading user profile");
@@ -51,6 +55,7 @@ export default function SettingsPage() {
 
   const handleLanguageChange = async (value: string) => {
     setLanguage(value);
+    setLocale(value as Locale);
     console.info("[settings] Saving language:", value);
     try {
       const res = await fetch("/api/auth/update", {
@@ -75,6 +80,10 @@ export default function SettingsPage() {
       setYnabError("Token is required");
       return;
     }
+    if (!ynabBudgetId.trim()) {
+      setYnabError("Budget ID is required");
+      return;
+    }
     setYnabLoading(true);
     setYnabError("");
     console.info("[settings] Connecting YNAB");
@@ -83,7 +92,10 @@ export default function SettingsPage() {
       const res = await fetch("/api/auth/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ynab_access_token: ynabToken.trim() }),
+        body: JSON.stringify({
+          ynab_access_token: ynabToken.trim(),
+          ynab_budget_id: ynabBudgetId.trim(),
+        }),
       });
 
       if (!res.ok) {
@@ -214,6 +226,19 @@ export default function SettingsPage() {
                   />
                   <p className="text-xs text-muted-foreground">
                     Get your token from YNAB settings, developer settings
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label>YNAB budget ID</Label>
+                  <Input
+                    type="text"
+                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                    value={ynabBudgetId}
+                    onChange={(e) => setYnabBudgetId(e.target.value)}
+                    className="max-w-md bg-background/50 border-border/50"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    The UUID from your YNAB URL when viewing the budget
                   </p>
                 </div>
                 {ynabError && <p className="text-sm text-destructive">{ynabError}</p>}
