@@ -1,9 +1,17 @@
 ### 0.2.0: 2026-03-18
 
-* Add custom SMACSS-derivative CSS framework alongside Tailwind
+* Replace Tailwind CSS with custom SMACSS-derivative CSS framework
 * Create theme, base, animations, state, layout foundation CSS files
-* Create CSS modules for all UI components and page components
+* Create CSS modules for all 17 UI components
+* Create CSS modules for dashboard, chat, and page components
+* Migrate app-shell and sidebar to semantic `.l-` layout classes
+* Migrate all UI components from Tailwind utility classes to module CSS
+* Remove CVA (class-variance-authority), use `data-variant` and `data-size` attributes
 * Simplify `cn()` utility to use `clsx` only, remove `tailwind-merge`
+* Migrate all page components (dashboard, transactions, bills, income, debts, settings, chat) to custom CSS
+* Extract login styles from globals.css to `modules/login.css`
+* Remove globals.css, Tailwind PostCSS plugin, components.json
+* Uninstall `tailwindcss`, `@tailwindcss/postcss`, `tailwind-merge`, `tw-animate-css`, `shadcn`, `class-variance-authority`
 
 ### 0.1.0: 2026-03-18
 
