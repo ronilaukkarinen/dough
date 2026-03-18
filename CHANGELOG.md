@@ -43,6 +43,9 @@
 * Fix available balance to show checking+savings total instead of YNAB toBeBudgeted
 * Fix AI chat by resolving claude CLI path and wiring real YNAB data as context
 * Remove all hardcoded demo data from chat API route
+* Fix daily budget to use checking+savings balance instead of YNAB toBeBudgeted
+* Unify metric card value font sizes across mobile and desktop
+* Replace dollar sign favicon with euro coin icon
 
 ### 0.1.0: 2026-03-18
 

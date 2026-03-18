@@ -52,8 +52,8 @@ export default function DashboardPage() {
       .reduce((s, a) => s + a.balance, 0) * 100
   ) / 100;
 
-  // Daily budget from unassigned money
-  const dailyBudget = daysLeft > 0 ? Math.round((toBeBudgeted / daysLeft) * 100) / 100 : 0;
+  // Daily budget from available checking+savings balance
+  const dailyBudget = daysLeft > 0 ? Math.round((availableBalance / daysLeft) * 100) / 100 : 0;
 
   // Build spending chart data from transactions
   const spendingByDay: Record<string, number> = {};
