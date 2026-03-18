@@ -15,6 +15,36 @@
   }
 }
 
+.chat-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.5rem 0.75rem 0;
+}
+
+.chat-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.375rem;
+  background: none;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color 150ms, background-color 150ms;
+}
+
+.chat-clear-btn:hover {
+  background-color: var(--accent);
+  color: var(--destructive);
+}
+
+.chat-clear-btn svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
 .chat-messages {
   flex: 1;
   padding: 1rem;

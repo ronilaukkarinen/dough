@@ -11,6 +11,9 @@
 * Add AI financial summary to dashboard with daily cache and manual refresh
 * Support both English and Finnish summaries stored separately
 * Fix euro sign rendering as \u20AC escape in chart tooltips and page components
+* Add persistent chat messages saved to SQLite database
+* Load chat history on page mount, save new messages automatically
+* Add clear chat button with trash icon
 
 ### 0.2.0: 2026-03-18
 

@@ -1,0 +1,70 @@
+import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+
+export async function GET() {
+  try {
+    const user = await getSession();
+    if (!user) {
+      return NextResponse.json({ messages: [] }, { status: 401 });
+    }
+
+    const db = getDb();
+    const messages = db
+      .prepare("SELECT id, role, content, created_at FROM chat_messages WHERE user_id = ? ORDER BY created_at ASC")
+      .all(user.id) as { id: number; role: string; content: string; created_at: string }[];
+
+    console.debug("[chat/messages] Loaded", messages.length, "messages for user", user.id);
+
+    return NextResponse.json({ messages });
+  } catch (error) {
+    console.error("[chat/messages] GET error:", error);
+    return NextResponse.json({ messages: [] }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const user = await getSession();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const { role, content } = await request.json();
+
+    if (!role || !content) {
+      return NextResponse.json({ error: "Role and content required" }, { status: 400 });
+    }
+
+    const db = getDb();
+    const result = db
+      .prepare("INSERT INTO chat_messages (user_id, role, content) VALUES (?, ?, ?)")
+      .run(user.id, role, content);
+
+    console.debug("[chat/messages] Saved", role, "message for user", user.id, "id:", result.lastInsertRowid);
+
+    return NextResponse.json({ id: result.lastInsertRowid });
+  } catch (error) {
+    console.error("[chat/messages] POST error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function DELETE() {
+  try {
+    const user = await getSession();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const db = getDb();
+    db.prepare("DELETE FROM chat_messages WHERE user_id = ?").run(user.id);
+
+    console.info("[chat/messages] Cleared chat for user", user.id);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[chat/messages] DELETE error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
