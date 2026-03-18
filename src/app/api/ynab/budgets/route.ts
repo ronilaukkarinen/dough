@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { createYnabClient } from "@/lib/ynab/client";
 
 export async function GET() {
   try {
@@ -21,10 +20,18 @@ export async function GET() {
     }
 
     console.info("[api/ynab/budgets] Fetching budgets for user", user.id);
-    const api = createYnabClient(token);
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const response = await (api as any).budgets.getBudgets();
-    const budgets = ((response as any).budgets ?? (response as any).data?.budgets ?? []).map((b: any) => ({
+
+    const res = await fetch("https://api.ynab.com/v1/budgets", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) {
+      console.error("[api/ynab/budgets] YNAB API error:", res.status, await res.text());
+      return NextResponse.json({ error: "YNAB API error" }, { status: res.status });
+    }
+
+    const data = await res.json();
+    const budgets = (data.data?.budgets ?? []).map((b: { id: string; name: string }) => ({
       id: b.id,
       name: b.name,
     }));
