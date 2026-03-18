@@ -1,33 +1,39 @@
-import { api as YnabApi } from "ynab";
+const YNAB_BASE = "https://api.ynab.com/v1";
 
-export function createYnabClient(accessToken?: string) {
-  const token = accessToken || process.env.YNAB_ACCESS_TOKEN;
-  if (!token) throw new Error("YNAB access token not configured");
-  return new YnabApi(token);
+async function ynabFetch(path: string, token: string) {
+  console.debug("[ynab] GET", path);
+  const res = await fetch(`${YNAB_BASE}${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("[ynab] API error:", res.status, text);
+    throw new Error(`YNAB API error ${res.status}: ${text}`);
+  }
+  const json = await res.json();
+  return json.data;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export async function getBudgetSummary(budgetId: string, accessToken?: string) {
-  const api = createYnabClient(accessToken);
+export async function getBudgetSummary(budgetId: string, token: string) {
+  console.info("[ynab] Fetching budget summary for", budgetId);
 
-  const [accountsResponse, categoriesResponse] = await Promise.all([
-    api.accounts.getAccounts(budgetId),
-    api.categories.getCategories(budgetId),
+  const [accountsData, categoriesData] = await Promise.all([
+    ynabFetch(`/budgets/${budgetId}/accounts`, token),
+    ynabFetch(`/budgets/${budgetId}/categories`, token),
   ]);
 
-  const accounts = (accountsResponse as any).accounts?.filter(
+  const accounts = (accountsData.accounts ?? []).filter(
     (a: any) => !a.closed && !a.deleted
-  ) ?? [];
+  );
 
   const totalBalance = accounts.reduce(
-    (sum: number, a: any) => sum + (a.cleared_balance ?? a.clearedBalance ?? 0) + (a.uncleared_balance ?? a.unclearedBalance ?? 0),
+    (sum: number, a: any) => sum + (a.cleared_balance ?? 0) + (a.uncleared_balance ?? 0),
     0
   ) / 1000;
 
-  const categoryGroups = (categoriesResponse as any).categoryGroups ??
-    (categoriesResponse as any).category_groups ?? [];
-
+  const categoryGroups = categoriesData.category_groups ?? [];
   const categories = categoryGroups
     .filter((g: any) => !g.hidden && !g.deleted)
     .flatMap((g: any) =>
@@ -43,14 +49,16 @@ export async function getBudgetSummary(budgetId: string, accessToken?: string) {
         }))
     );
 
+  console.info("[ynab] Budget summary:", accounts.length, "accounts,", categories.length, "categories");
+
   return {
     totalBalance,
     accounts: accounts.map((a: any) => ({
       id: a.id,
       name: a.name,
       type: a.type,
-      balance: ((a.cleared_balance ?? a.clearedBalance ?? 0) + (a.uncleared_balance ?? a.unclearedBalance ?? 0)) / 1000,
-      clearedBalance: (a.cleared_balance ?? a.clearedBalance ?? 0) / 1000,
+      balance: ((a.cleared_balance ?? 0) + (a.uncleared_balance ?? 0)) / 1000,
+      clearedBalance: (a.cleared_balance ?? 0) / 1000,
     })),
     categories,
   };
@@ -59,44 +67,47 @@ export async function getBudgetSummary(budgetId: string, accessToken?: string) {
 export async function getTransactions(
   budgetId: string,
   sinceDate?: string,
-  accessToken?: string
+  token?: string
 ) {
-  const api = createYnabClient(accessToken);
+  if (!token) throw new Error("YNAB token required");
+  console.info("[ynab] Fetching transactions since", sinceDate);
 
-  const response = await (api.transactions as any).getTransactionsByType(
-    budgetId,
-    "uncategorized",
-    sinceDate
-  );
+  const path = sinceDate
+    ? `/budgets/${budgetId}/transactions?since_date=${sinceDate}`
+    : `/budgets/${budgetId}/transactions`;
 
-  const transactions = (response as any).transactions ?? [];
+  const data = await ynabFetch(path, token);
+  const transactions = (data.transactions ?? []).filter((t: any) => !t.deleted);
 
-  return transactions
-    .filter((t: any) => !t.deleted)
-    .map((t: any) => ({
-      id: t.id,
-      date: t.date,
-      amount: t.amount / 1000,
-      payee: t.payee_name ?? t.payeeName ?? "Unknown",
-      category: t.category_name ?? t.categoryName ?? "Uncategorized",
-      memo: t.memo,
-      approved: t.approved,
-      cleared: t.cleared,
-    }));
+  console.info("[ynab] Got", transactions.length, "transactions");
+
+  return transactions.map((t: any) => ({
+    id: t.id,
+    date: t.date,
+    amount: t.amount / 1000,
+    payee: t.payee_name ?? "Unknown",
+    category: t.category_name ?? "Uncategorized",
+    memo: t.memo,
+    approved: t.approved,
+    cleared: t.cleared,
+  }));
 }
 
-export async function getMonthBudget(budgetId: string, month?: string, accessToken?: string) {
-  const api = createYnabClient(accessToken);
+export async function getMonthBudget(budgetId: string, month?: string, token?: string) {
+  if (!token) throw new Error("YNAB token required");
   const targetMonth = month || new Date().toISOString().slice(0, 7) + "-01";
+  console.info("[ynab] Fetching month budget for", targetMonth);
 
-  const response = await api.months.getPlanMonth(budgetId, targetMonth);
-  const monthData = (response as any).month ?? response;
+  const data = await ynabFetch(`/budgets/${budgetId}/months/${targetMonth}`, token);
+  const monthData = data.month ?? {};
+
+  console.info("[ynab] Month budget: income", (monthData.income ?? 0) / 1000, "activity", (monthData.activity ?? 0) / 1000);
 
   return {
     income: (monthData.income ?? 0) / 1000,
     budgeted: (monthData.budgeted ?? 0) / 1000,
     activity: (monthData.activity ?? 0) / 1000,
-    toBeBudgeted: (monthData.to_be_budgeted ?? monthData.toBeBudgeted ?? 0) / 1000,
+    toBeBudgeted: (monthData.to_be_budgeted ?? 0) / 1000,
     categories: (monthData.categories ?? [])
       .filter((c: any) => !c.hidden && !c.deleted)
       .map((c: any) => ({
@@ -106,4 +117,10 @@ export async function getMonthBudget(budgetId: string, month?: string, accessTok
         balance: c.balance / 1000,
       })),
   };
+}
+
+// Keep for backwards compat with budgets route
+export function createYnabClient(token: string) {
+  const { api } = require("ynab");
+  return new api(token);
 }

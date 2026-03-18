@@ -33,9 +33,8 @@ export async function POST() {
     // Import dynamically to avoid issues when ynab isn't configured
     const { getBudgetSummary, getTransactions, getMonthBudget } = await import("@/lib/ynab/client");
 
-    const sinceDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-      .toISOString()
-      .slice(0, 10);
+    const now = new Date();
+    const sinceDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 
     console.info("[api/ynab/sync] Fetching YNAB data since", sinceDate);
 
