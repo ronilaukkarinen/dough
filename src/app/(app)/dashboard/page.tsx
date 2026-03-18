@@ -181,9 +181,25 @@ export default function DashboardPage() {
         dailyBudget={dailyBudget}
         availableBalance={Math.round(availableBalance)}
         upcomingBills={0}
-        nextIncomeAmount={0}
-        nextIncomeDate=""
-        daysUntilIncome={daysLeft}
+        nextIncomeAmount={(() => {
+          const next = incomes
+            .filter((i) => i.is_active && i.expected_day > today)
+            .sort((a, b) => a.expected_day - b.expected_day)[0];
+          return next?.amount ?? 0;
+        })()}
+        nextIncomeDate={(() => {
+          const next = incomes
+            .filter((i) => i.is_active && i.expected_day > today)
+            .sort((a, b) => a.expected_day - b.expected_day)[0];
+          if (!next) return "";
+          return `${next.expected_day}.${now.getMonth() + 1}. — ${next.name}`;
+        })()}
+        daysUntilIncome={(() => {
+          const next = incomes
+            .filter((i) => i.is_active && i.expected_day > today)
+            .sort((a, b) => a.expected_day - b.expected_day)[0];
+          return next ? next.expected_day - today : daysLeft;
+        })()}
         burnRate={dailyBurnRate}
         projectedMonthEnd={projectedMonthEnd}
       />
