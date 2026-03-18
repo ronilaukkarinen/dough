@@ -38,7 +38,7 @@ export function CategoryBreakdown({ categories, total, currency = "€" }: Categ
       <h3 className="category-breakdown-title">{t.dashboard.topCategories}</h3>
       <div className="category-breakdown-body">
         <div className="category-breakdown-donut">
-          <ChartContainer height={200}>
+          <ChartContainer height={220}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={categories} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={2} dataKey="amount">

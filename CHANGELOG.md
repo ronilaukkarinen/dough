@@ -14,6 +14,9 @@
 * Add persistent chat messages saved to SQLite database
 * Load chat history on page mount, save new messages automatically
 * Add clear chat button with trash icon
+* Fix pie chart legend overlap by adding gap, truncation and nowrap on amounts
+* Make pie chart larger on mobile (220px)
+* Increase legend amount font weight to 600
 
 ### 0.2.0: 2026-03-18
 
