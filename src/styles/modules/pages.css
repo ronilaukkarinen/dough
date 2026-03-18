@@ -430,18 +430,18 @@
 
 /* Summary card value — large variant for bills/income/debts summaries */
 .metric-card-value-3xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
+  font-size: 1.75rem;
+  line-height: 1;
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.04em;
   color: var(--foreground);
   margin-top: 0.25rem;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (min-width: 768px) {
   .metric-card-value-3xl {
-    font-size: 1.875rem;
-    line-height: 2.25rem;
+    font-size: 2rem;
   }
 }
 

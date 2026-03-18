@@ -268,22 +268,22 @@
 
 /* Page header pattern */
 .page-heading {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-  font-weight: 600;
-  letter-spacing: -0.025em;
+  font-size: 1.5rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.04em;
   color: var(--foreground);
 }
 
 @media (min-width: 768px) {
   .page-heading {
-    font-size: 1.5rem;
-    line-height: 2rem;
+    font-size: 1.75rem;
   }
 }
 
 .page-subtitle {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   line-height: 1.25rem;
   color: var(--muted-foreground);
+  margin-top: 0.125rem;
 }

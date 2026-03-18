@@ -1,4 +1,4 @@
-/* Module: card — glassmorphism style */
+/* Module: card — 2026 minimal */
 
 .card {
   display: flex;
@@ -12,14 +12,8 @@
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: var(--card-foreground);
-  border: 1px solid var(--glass-border, var(--border));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: border-color 200ms, background-color 200ms;
-}
-
-.card:hover {
-  border-color: var(--glass-hover, var(--border));
+  border: 1px solid transparent;
+  transition: background-color 200ms;
 }
 
 .card:has([data-slot="card-footer"]) {

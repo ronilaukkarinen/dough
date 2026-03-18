@@ -46,6 +46,16 @@
 * Update login page to use new theme tokens and cleaner styling
 * Fix AI chat and summary by piping prompts via stdin instead of CLI arguments
 * Fix pie chart category rendering with fixed donut container dimensions
+* Redesign to 2026 minimal aesthetic inspired by Linear/copilot.money
+* Remove all icon background boxes, use bare colored icons everywhere
+* Remove visible card borders, use transparent/glass backgrounds
+* Make daily budget hero number larger (3.5rem desktop) with tighter letter-spacing
+* Add uppercase small-caps labels with letter-spacing on all section headings
+* Add tabular-nums and font-variant-numeric across all metric values
+* Make legend dots square (2px radius) instead of circles
+* Reduce all mobile card padding for tighter layout
+* Update page headings to be larger and bolder
+* Simplify button hover to subtle glow instead of complex inset shadows
 
 ### 0.2.0: 2026-03-18
 

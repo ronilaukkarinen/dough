@@ -1,31 +1,37 @@
-/* Module: category-breakdown */
+/* Module: category-breakdown — minimal */
 
 .card.category-breakdown-card {
-  border-color: color-mix(in srgb, var(--border) 50%, transparent);
-  background-color: color-mix(in srgb, var(--card) 80%, transparent);
+  border: none;
+  background: var(--glass-bg, rgba(255, 255, 255, 0.02));
+  backdrop-filter: none;
   padding: 0.75rem;
   gap: 0;
 }
 
 @media (min-width: 768px) {
   .card.category-breakdown-card {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
 }
 
+.card.category-breakdown-card:hover {
+  border-color: transparent;
+}
+
 .category-breakdown-title {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .category-breakdown-body {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 @media (min-width: 640px) {
@@ -59,15 +65,18 @@
 }
 
 .category-breakdown-donut-total {
-  font-size: 1.125rem;
-  line-height: 1.75rem;
+  font-size: 1.25rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--foreground);
+  font-variant-numeric: tabular-nums;
 }
 
 .category-breakdown-donut-label {
-  font-size: 10px;
+  font-size: 0.6875rem;
   color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .category-breakdown-legend {
@@ -75,7 +84,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.625rem;
 }
 
 .category-breakdown-legend-item {
@@ -94,14 +103,14 @@
 }
 
 .category-breakdown-legend-dot {
-  width: 0.625rem;
-  height: 0.625rem;
-  border-radius: 9999px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 .category-breakdown-legend-text {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  font-size: 0.8125rem;
   color: var(--foreground);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -109,10 +118,10 @@
 }
 
 .category-breakdown-legend-amount {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--foreground);
   white-space: nowrap;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
