@@ -71,12 +71,12 @@ export async function GET() {
         snowball: snowballTarget ? {
           name: snowballTarget.name,
           balance: snowballTarget.balance,
-          reason: "Smallest balance — quick win",
+          reason: "Smallest balance – quick win",
         } : null,
         avalanche: avalancheTarget ? {
           name: avalancheTarget.name,
           interestRate: avalancheTarget.interestRate,
-          reason: "Highest interest — saves most money",
+          reason: "Highest interest – saves most money",
         } : null,
       },
       totalDebt: debts.reduce((s: number, d: any) => s + d.balance, 0),

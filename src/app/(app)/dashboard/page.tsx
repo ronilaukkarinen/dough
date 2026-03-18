@@ -150,7 +150,7 @@ export default function DashboardPage() {
       amount: tx.amount,
     }));
 
-  // Cash flow — received income + expected upcoming income
+  // Cash flow – received income + expected upcoming income
   const totalExpectedIncome = incomes
     .filter((i) => i.is_active)
     .reduce((s, i) => s + i.amount, 0);
@@ -198,7 +198,7 @@ export default function DashboardPage() {
             .filter((i) => i.is_active && i.expected_day > today)
             .sort((a, b) => a.expected_day - b.expected_day)[0];
           if (!next) return "";
-          return `${next.expected_day}.${now.getMonth() + 1}. — ${next.name}`;
+          return `${next.expected_day}.${now.getMonth() + 1}. – ${next.name}`;
         })()}
         daysUntilIncome={(() => {
           const next = incomes
