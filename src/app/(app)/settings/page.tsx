@@ -37,6 +37,8 @@ export default function SettingsPage() {
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncResult, setSyncResult] = useState("");
   const [langSaved, setLangSaved] = useState(false);
+  const [ynabBudgets, setYnabBudgets] = useState<{ id: string; name: string }[]>([]);
+  const [budgetsLoading, setBudgetsLoading] = useState(false);
   const { setLocale } = useLocale();
 
   useEffect(() => {
@@ -50,6 +52,15 @@ export default function SettingsPage() {
           setLanguage(data.user.locale || "en");
           if (data.user.ynab_budget_id) {
             setYnabBudgetId(data.user.ynab_budget_id);
+          }
+          // Fetch available budgets if connected
+          if (data.user.ynab_connected) {
+            fetch("/api/ynab/budgets")
+              .then((r) => r.json())
+              .then((bd) => {
+                if (bd.budgets?.length) setYnabBudgets(bd.budgets);
+              })
+              .catch(() => {});
           }
         }
       })
@@ -79,13 +90,26 @@ export default function SettingsPage() {
     }
   };
 
+  const fetchBudgets = async () => {
+    setBudgetsLoading(true);
+    try {
+      const res = await fetch("/api/ynab/budgets");
+      const data = await res.json();
+      if (data.budgets?.length) {
+        setYnabBudgets(data.budgets);
+        return data.budgets as { id: string; name: string }[];
+      }
+    } catch (err) {
+      console.error("[settings] Failed to fetch budgets:", err);
+    } finally {
+      setBudgetsLoading(false);
+    }
+    return [];
+  };
+
   const handleYnabConnect = async () => {
     if (!ynabToken.trim()) {
       setYnabError("Token is required");
-      return;
-    }
-    if (!ynabBudgetId.trim()) {
-      setYnabError("Budget ID is required");
       return;
     }
     setYnabLoading(true);
@@ -93,22 +117,35 @@ export default function SettingsPage() {
     console.info("[settings] Connecting YNAB");
 
     try {
+      // Save token first
       const res = await fetch("/api/auth/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ynab_access_token: ynabToken.trim(),
-          ynab_budget_id: ynabBudgetId.trim(),
-        }),
+        body: JSON.stringify({ ynab_access_token: ynabToken.trim() }),
       });
 
       if (!res.ok) {
         setYnabError("Failed to save token");
         console.error("[settings] YNAB token save failed");
-      } else {
-        setProfile((prev) => prev ? { ...prev, ynab_connected: true } : prev);
-        setYnabToken("");
-        console.info("[settings] YNAB connected");
+        return;
+      }
+
+      setProfile((prev) => prev ? { ...prev, ynab_connected: true } : prev);
+      setYnabToken("");
+      console.info("[settings] YNAB token saved");
+
+      // Fetch budgets and auto-select first one
+      const budgets = await fetchBudgets();
+      if (budgets.length > 0) {
+        const firstBudget = budgets[0];
+        setYnabBudgetId(firstBudget.id);
+        await fetch("/api/auth/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ynab_budget_id: firstBudget.id }),
+        });
+        setProfile((prev) => prev ? { ...prev, ynab_budget_id: firstBudget.id } : prev);
+        console.info("[settings] Auto-selected budget:", firstBudget.name);
       }
     } catch (err) {
       setYnabError("Connection error");
@@ -143,17 +180,18 @@ export default function SettingsPage() {
     }
   };
 
-  const handleBudgetIdSave = async () => {
-    if (!ynabBudgetId.trim()) return;
-    console.info("[settings] Saving budget ID");
+  const handleBudgetIdSave = async (budgetId?: string) => {
+    const id = budgetId || ynabBudgetId;
+    if (!id.trim()) return;
+    console.info("[settings] Saving budget ID:", id);
     try {
       const res = await fetch("/api/auth/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ynab_budget_id: ynabBudgetId.trim() }),
+        body: JSON.stringify({ ynab_budget_id: id.trim() }),
       });
       if (res.ok) {
-        setProfile((prev) => prev ? { ...prev, ynab_budget_id: ynabBudgetId.trim() } : prev);
+        setProfile((prev) => prev ? { ...prev, ynab_budget_id: id.trim() } : prev);
         console.info("[settings] Budget ID saved");
       }
     } catch (err) {
@@ -292,19 +330,43 @@ export default function SettingsPage() {
             ) : (
               <div className="form-stack">
                 <div className="form-field">
-                  <Label>YNAB budget ID</Label>
-                  <div className="settings-row">
-                    <Input
-                      type="text"
-                      placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                  <Label>Budget</Label>
+                  {ynabBudgets.length > 0 ? (
+                    <Select
                       value={ynabBudgetId}
-                      onChange={(e) => setYnabBudgetId(e.target.value)}
-                      className="settings-input"
-                    />
-                    <Button size="sm" variant="outline" onClick={handleBudgetIdSave}>
-                      Save
-                    </Button>
-                  </div>
+                      onValueChange={(v) => {
+                        if (v) {
+                          setYnabBudgetId(v);
+                          handleBudgetIdSave(v);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="settings-input">
+                        <SelectValue placeholder="Select a budget" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ynabBudgets.map((b) => (
+                          <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="settings-row">
+                      <Input
+                        type="text"
+                        placeholder="Budget ID"
+                        value={ynabBudgetId}
+                        onChange={(e) => setYnabBudgetId(e.target.value)}
+                        className="settings-input"
+                      />
+                      <Button size="sm" variant="outline" onClick={() => handleBudgetIdSave()}>
+                        Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => fetchBudgets()} disabled={budgetsLoading}>
+                        {budgetsLoading ? "Loading..." : "Fetch"}
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 <div className="settings-row">
                   <Button
