@@ -131,7 +131,7 @@ Kokeile kysyä esimerkiksi:
   },
   debts: {
     title: "Velat",
-    subtitle: "Seuraa ja poista velkojasi",
+    subtitle: "Seuraa ja lyhennä velkojasi",
     addDebt: "Lisää velka",
     name: "Nimi",
     namePlaceholder: "esim. Autolaina",
