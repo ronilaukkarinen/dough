@@ -628,6 +628,7 @@
 .settings-textarea {
   max-width: 28rem;
   width: 100%;
+  height: auto;
   min-height: 4.5rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
@@ -637,6 +638,7 @@
   border-radius: 0.5rem;
   background: transparent;
   color: var(--foreground);
+  font-family: inherit;
 }
 
 .dark .settings-textarea {

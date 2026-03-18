@@ -294,12 +294,12 @@ export default function SettingsPage() {
             <div className="form-field">
               <Label>{locale === "fi" ? "Kuvaus AI-neuvontaa varten" : "Description for AI advisor"}</Label>
               <textarea
-                className="input settings-textarea"
+                className="settings-textarea"
                 value={householdProfile}
                 onChange={(e) => setHouseholdProfile(e.target.value)}
                 placeholder={locale === "fi"
-                  ? "Esim. perhe: 2 aikuista ja 2 lasta (Lotta 16v, Manu 12v). Asumme vuokralla Jyv\u00e4skyl\u00e4ss\u00e4."
-                  : "E.g. Family: 2 adults and 2 kids (Lotta 16, Manu 12). We rent in Jyv\u00e4skyl\u00e4."}
+                  ? "Esim. perhe: 2 aikuista ja 2 lasta. Asumme vuokralla."
+                  : "E.g. Family: 2 adults and 2 kids. We rent."}
                 rows={3}
               />
               <div className="settings-row">
