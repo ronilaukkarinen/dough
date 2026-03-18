@@ -72,7 +72,7 @@ export async function getFinancialAdvice(
   try {
     console.info("[ai] Calling claude CLI for financial advice");
     const claudePath = process.env.CLAUDE_PATH || "/home/rolle/.local/bin/claude";
-    const { stdout } = await execFileAsync(claudePath, ["-p", prompt, "--no-input"], {
+    const { stdout } = await execFileAsync(claudePath, ["-p", prompt], {
       timeout: 60000,
       maxBuffer: 1024 * 1024,
       env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "cli" },

@@ -26,15 +26,11 @@ interface Income {
   isActive: boolean;
 }
 
-const demoIncome: Income[] = [
-  { id: "1", name: "Dude Oy \u2014 Salary", amount: 2800, expectedDay: 15, isRecurring: true, isActive: true },
-  { id: "2", name: "Wife's Salary", amount: 1400, expectedDay: 25, isRecurring: true, isActive: true },
-  { id: "3", name: "Freelance", amount: 500, expectedDay: 10, isRecurring: false, isActive: true },
-];
+// TODO: Load from database
 
 export default function IncomePage() {
   const { t } = useLocale();
-  const [incomes, setIncomes] = useState<Income[]>(demoIncome);
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const monthlyTotal = incomes.filter((i) => i.isActive).reduce((s, i) => s + i.amount, 0);

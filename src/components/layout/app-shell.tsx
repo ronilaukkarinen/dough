@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Sidebar } from "./sidebar";
-import { Menu } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onClick={() => setSidebarOpen(true)}
           aria-label={t.common.openMenu}
         >
-          <Menu />
+          <PanelLeft />
         </button>
         <span className="l-topbar-title">Dough</span>
         <div className="l-topbar-spacer" />

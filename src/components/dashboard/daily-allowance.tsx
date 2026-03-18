@@ -80,7 +80,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{t.dashboard.nextIncome}</p>
-            <p className="metric-card-value metric-card-value-lg">{nextIncomeAmount} {currency}</p>
+            <p className="metric-card-value">{nextIncomeAmount} {currency}</p>
             <p className="metric-card-note">{nextIncomeDate}</p>
           </div>
         </div>
@@ -93,7 +93,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{t.dashboard.cashFlowForecast}</p>
-            <p className="metric-card-value metric-card-value-lg">
+            <p className="metric-card-value">
               {availableBalance - upcomingBills + nextIncomeAmount} {currency}
             </p>
             <p className="metric-card-note">{t.dashboard.endOfMonthEstimate}</p>

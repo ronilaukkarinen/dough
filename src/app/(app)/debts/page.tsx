@@ -42,11 +42,7 @@ interface Debt {
   minimumPayment: number;
 }
 
-const demoDebts: Debt[] = [
-  { id: "1", name: "Car Loan", totalAmount: 12000, remainingAmount: 8400, interestRate: 4.5, minimumPayment: 270 },
-  { id: "2", name: "Tax Debt", totalAmount: 3500, remainingAmount: 2800, interestRate: 7, minimumPayment: 150 },
-  { id: "3", name: "Credit Card", totalAmount: 2000, remainingAmount: 1200, interestRate: 18.5, minimumPayment: 50 },
-];
+// TODO: Load from database
 
 function calculateSnowball(debts: Debt[], extraPayment: number = 0) {
   const sorted = [...debts].sort((a, b) => a.remainingAmount - b.remainingAmount);
@@ -96,7 +92,7 @@ function calculatePayoff(sortedDebts: Debt[], extraPayment: number) {
 
 export default function DebtsPage() {
   const { t } = useLocale();
-  const [debts] = useState<Debt[]>(demoDebts);
+  const [debts] = useState<Debt[]>([]);
   const [extraPayment, setExtraPayment] = useState(50);
   const [dialogOpen, setDialogOpen] = useState(false);
 

@@ -26,22 +26,11 @@ interface Bill {
   isActive: boolean;
 }
 
-const demoBills: Bill[] = [
-  { id: "1", name: "Rent", amount: 850, dueDay: 1, category: "Housing", isActive: true },
-  { id: "2", name: "Electricity (Helen)", amount: 89, dueDay: 12, category: "Utilities", isActive: true },
-  { id: "3", name: "Phone (Elisa)", amount: 30, dueDay: 15, category: "Utilities", isActive: true },
-  { id: "4", name: "Insurance", amount: 120, dueDay: 20, category: "Insurance", isActive: true },
-  { id: "5", name: "Car Loan", amount: 270, dueDay: 28, category: "Debt", isActive: true },
-  { id: "6", name: "Netflix", amount: 17.99, dueDay: 17, category: "Subscriptions", isActive: true },
-  { id: "7", name: "Spotify", amount: 10.99, dueDay: 14, category: "Subscriptions", isActive: true },
-  { id: "8", name: "YouTube Premium", amount: 11.99, dueDay: 5, category: "Subscriptions", isActive: true },
-  { id: "9", name: "iCloud+", amount: 2.99, dueDay: 8, category: "Subscriptions", isActive: true },
-  { id: "10", name: "Tax Debt Payment", amount: 150, dueDay: 25, category: "Tax", isActive: true },
-];
+// TODO: Load from database
 
 export default function BillsPage() {
   const { t } = useLocale();
-  const [bills, setBills] = useState<Bill[]>(demoBills);
+  const [bills, setBills] = useState<Bill[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const today = new Date().getDate();

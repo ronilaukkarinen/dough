@@ -1,3 +1,14 @@
+### 0.3.0: 2026-03-18
+
+* Fix metric card value font sizes to be consistent across all dashboard cards
+* Fix AI advisor by removing unsupported --no-input flag from claude CLI call
+* Make category breakdown pie chart larger (200px, bigger radii)
+* Replace burger menu icon with PanelLeft for modern look
+* Reduce mobile page padding for better space usage
+* Align mobile top bar button more to the left
+* Fix transaction amount spacing (remove space between sign and number)
+* Remove all hardcoded demo data from bills, income and debts pages
+
 ### 0.2.0: 2026-03-18
 
 * Replace Tailwind CSS with custom SMACSS-derivative CSS framework
