@@ -91,22 +91,51 @@ export async function GET(request: Request) {
 
     const daysPassed = now.getDate();
     const dailyBurnRate = daysPassed > 0 ? Math.round(monthActivity / daysPassed) : 0;
-    const projectedMonthEnd = Math.round(checkingSavings - (dailyBurnRate * daysLeft));
-    const livingAboveMeans = monthActivity > monthIncomeTotal;
 
-    const prompt = `${lang} You are a personal finance advisor for a Finnish household. Write 1-4 sentences summarizing their current financial situation. Be direct, specific with numbers, and actionable. Use euro sign. No greeting, no bullet points, no markdown. If they are living above their means, say so clearly. Include projected month-end balance.
+    // Get income sources from DB
+    const incomeSources = db
+      .prepare("SELECT name, amount, expected_day, is_active FROM income_sources WHERE user_id = ? AND is_active = 1 ORDER BY expected_day ASC")
+      .all(user.id) as { name: string; amount: number; expected_day: number; is_active: number }[];
+
+    const upcomingIncome = incomeSources
+      .filter((i) => i.expected_day > now.getDate())
+      .reduce((s, i) => s + i.amount, 0);
+
+    const totalExpectedMonthlyIncome = incomeSources.reduce((s, i) => s + i.amount, 0);
+
+    const projectedMonthEnd = Math.round(checkingSavings + upcomingIncome - (dailyBurnRate * daysLeft));
+    const livingAboveMeans = monthActivity > totalExpectedMonthlyIncome;
+
+    // Category breakdown for spending tips
+    const categoryBreakdown = monthBudget.categories
+      .filter((c: { name: string; activity: number }) => c.activity < 0 && c.name !== "Inflow: Ready to Assign")
+      .sort((a: { activity: number }, b: { activity: number }) => a.activity - b.activity)
+      .slice(0, 8)
+      .map((c: { name: string; activity: number }) => `${c.name}: ${Math.abs(c.activity).toFixed(0)} euros`)
+      .join(", ");
+
+    const incomeList = incomeSources.length > 0
+      ? incomeSources.map((i) => `${i.name}: ${i.amount} euros (day ${i.expected_day})`).join(", ")
+      : "No income sources configured";
+
+    const prompt = `${lang} You are a personal finance advisor for a Finnish household. Write 3-5 sentences. Be direct, specific with numbers. Use euro sign. No greeting, no bullet points, no markdown.
+
+Include: current situation summary, whether they can afford anything extra or need to cut spending, specific tips based on their spending categories, and projected month-end balance accounting for upcoming income.
 
 Data:
 - Checking+savings balance: ${Math.round(checkingSavings)} euros
-- This month's real income (excluding transfers): ${Math.round(monthIncomeTotal)} euros
+- This month's received income so far: ${Math.round(monthIncomeTotal)} euros
+- Expected monthly income: ${totalExpectedMonthlyIncome} euros
+- Upcoming income still expected this month: ${Math.round(upcomingIncome)} euros (${incomeSources.filter((i) => i.expected_day > now.getDate()).map((i) => `${i.name} on day ${i.expected_day}`).join(", ") || "none"})
+- Income sources: ${incomeList}
 - This month's real spending (excluding transfers): ${Math.round(monthActivity)} euros
 - Daily burn rate: ${dailyBurnRate} euros/day
-- Projected month-end balance at current pace: ${projectedMonthEnd} euros
-- Living above means: ${livingAboveMeans ? "YES" : "no"}
-- Days passed this month: ${daysPassed}
-- Days left in month: ${daysLeft}
-- Daily budget if spread evenly: ${daysLeft > 0 ? Math.round(checkingSavings / daysLeft) : 0} euros/day
-- Top expenses: ${topExpenses}`;
+- Projected month-end balance (with upcoming income): ${projectedMonthEnd} euros
+- Living above means: ${livingAboveMeans ? "YES spending exceeds expected income" : "no"}
+- Days passed: ${daysPassed}, days left: ${daysLeft}
+- Daily budget from current balance: ${daysLeft > 0 ? Math.round(checkingSavings / daysLeft) : 0} euros/day
+- Spending by category: ${categoryBreakdown}
+- Top individual expenses: ${topExpenses}`;
 
     const claudePath = process.env.CLAUDE_PATH || "/home/rolle/.local/bin/claude";
     console.info("[summary] Calling claude CLI");
