@@ -19,7 +19,7 @@ interface RecentTransactionsProps {
   currency?: string;
 }
 
-export function RecentTransactions({ transactions, currency = "\u20AC" }: RecentTransactionsProps) {
+export function RecentTransactions({ transactions, currency = "€" }: RecentTransactionsProps) {
   const { t, locale } = useLocale();
 
   return (

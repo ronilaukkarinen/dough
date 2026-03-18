@@ -42,7 +42,7 @@ export function CashFlowChart({ data }: CashFlowProps) {
                   : entry.dataKey === "expenses"
                   ? t.dashboard.expenses
                   : t.dashboard.net}
-                : {Math.abs(entry.value)} {"\u20AC"}
+                : {Math.abs(entry.value)} {"€"}
               </span>
             </p>
           ))}
@@ -60,7 +60,7 @@ export function CashFlowChart({ data }: CashFlowProps) {
           <BarChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <XAxis dataKey="month" tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} \u20AC`} />
+            <YAxis tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} €`} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" />
             <Bar dataKey="income" fill="#00e676" radius={[4, 4, 0, 0]} barSize={20} />

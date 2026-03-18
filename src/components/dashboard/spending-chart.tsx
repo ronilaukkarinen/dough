@@ -29,7 +29,7 @@ export function SpendingChart({ data }: SpendingChartProps) {
             <p key={index} className="chart-tooltip-value">
               <span style={{ color: entry.dataKey === "spent" ? "var(--chart-1)" : "var(--muted-foreground)" }}>
                 {entry.dataKey === "spent" ? t.dashboard.spent : t.dashboard.budget}:{" "}
-                {entry.value} \u20AC
+                {entry.value} €
               </span>
             </p>
           ))}
@@ -57,7 +57,7 @@ export function SpendingChart({ data }: SpendingChartProps) {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <XAxis dataKey="date" tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} \u20AC`} />
+            <YAxis tick={{ fill: "#7a8ba0", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} €`} />
             <Tooltip content={<CustomTooltip />} />
             <Area type="monotone" dataKey="budget" stroke="#7a8ba0" strokeWidth={1.5} strokeDasharray="4 4" fill="url(#budgetGradient)" />
             <Area type="monotone" dataKey="spent" stroke="#4d94ff" strokeWidth={2} fill="url(#spentGradient)" />

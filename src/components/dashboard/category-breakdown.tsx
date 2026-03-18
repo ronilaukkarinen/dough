@@ -23,14 +23,14 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
     return (
       <div className="chart-tooltip">
         <p className="chart-tooltip-value text-foreground">{data.name}</p>
-        <p className="chart-tooltip-label">{data.amount} \u20AC</p>
+        <p className="chart-tooltip-label">{data.amount} €</p>
       </div>
     );
   }
   return null;
 }
 
-export function CategoryBreakdown({ categories, total, currency = "\u20AC" }: CategoryBreakdownProps) {
+export function CategoryBreakdown({ categories, total, currency = "€" }: CategoryBreakdownProps) {
   const { t } = useLocale();
 
   return (

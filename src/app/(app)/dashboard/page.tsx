@@ -7,6 +7,7 @@ import { SpendingChart } from "@/components/dashboard/spending-chart";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { CashFlowChart } from "@/components/dashboard/cash-flow";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
+import { AiSummary } from "@/components/dashboard/ai-summary";
 import { Loader2 } from "lucide-react";
 
 // Chart colors for categories
@@ -121,6 +122,8 @@ export default function DashboardPage() {
       <div>
         <h1 className="page-heading">{t.dashboard.title}</h1>
       </div>
+
+      <AiSummary />
 
       <DailyAllowance
         dailyBudget={dailyBudget}

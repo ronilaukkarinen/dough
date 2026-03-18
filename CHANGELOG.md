@@ -8,6 +8,9 @@
 * Align mobile top bar button more to the left
 * Fix transaction amount spacing (remove space between sign and number)
 * Remove all hardcoded demo data from bills, income and debts pages
+* Add AI financial summary to dashboard with daily cache and manual refresh
+* Support both English and Finnish summaries stored separately
+* Fix euro sign rendering as \u20AC escape in chart tooltips and page components
 
 ### 0.2.0: 2026-03-18
 

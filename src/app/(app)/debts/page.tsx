@@ -161,7 +161,7 @@ export default function DebtsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.debts.totalDebt}</p>
-              <p className="metric-card-value">{totalDebt} {"\u20AC"}</p>
+              <p className="metric-card-value">{totalDebt} {"€"}</p>
             </div>
           </div>
         </Card>
@@ -199,12 +199,12 @@ export default function DebtsPage() {
                 <div>
                   <p className="debt-item-name">{debt.name}</p>
                   <p className="debt-item-meta">
-                    {debt.interestRate}% {t.debts.apr} · {debt.minimumPayment} {"\u20AC"}{t.debts.moMin}
+                    {debt.interestRate}% {t.debts.apr} · {debt.minimumPayment} {"€"}{t.debts.moMin}
                   </p>
                 </div>
                 <div className="debt-item-right">
-                  <p className="debt-item-amount">{debt.remainingAmount} {"\u20AC"}</p>
-                  <p className="debt-item-total">{t.common.of} {debt.totalAmount} {"\u20AC"}</p>
+                  <p className="debt-item-amount">{debt.remainingAmount} {"€"}</p>
+                  <p className="debt-item-total">{t.common.of} {debt.totalAmount} {"€"}</p>
                 </div>
               </div>
               <Progress value={pct} className="progress-thin" />
@@ -253,7 +253,7 @@ export default function DebtsPage() {
                   </div>
                   <div>
                     <span className="payoff-stats-label">{t.debts.totalInterest} </span>
-                    <span className="payoff-stats-value" data-color="negative">{data.totalInterest} {"\u20AC"}</span>
+                    <span className="payoff-stats-value" data-color="negative">{data.totalInterest} {"€"}</span>
                   </div>
                 </div>
                 <ChartContainer height={250}>
@@ -273,7 +273,7 @@ export default function DebtsPage() {
                           active && payload?.length ? (
                             <div className="chart-tooltip">
                               <p className="chart-tooltip-label">{label}</p>
-                              <p className="chart-tooltip-value text-foreground">{payload[0].value} {"\u20AC"}</p>
+                              <p className="chart-tooltip-value text-foreground">{payload[0].value} {"€"}</p>
                             </div>
                           ) : null
                         }

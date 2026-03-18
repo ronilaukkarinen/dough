@@ -21,7 +21,7 @@ export function DailyAllowance({
   nextIncomeAmount,
   nextIncomeDate,
   daysUntilIncome,
-  currency = "\u20AC",
+  currency = "€",
 }: DailyAllowanceProps) {
   const { t } = useLocale();
   const status =
