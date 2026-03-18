@@ -150,13 +150,18 @@ export default function DashboardPage() {
       amount: tx.amount,
     }));
 
-  // Cash flow — we only have current month from the API, show summary
+  // Cash flow — received income + expected upcoming income
+  const totalExpectedIncome = incomes
+    .filter((i) => i.is_active)
+    .reduce((s, i) => s + i.amount, 0);
+  const combinedIncome = Math.max(realIncome, totalExpectedIncome);
+
   const cashFlowData = [
     {
       month: new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString("en", { month: "short" }),
-      income: Math.round(realIncome),
+      income: Math.round(combinedIncome),
       expenses: Math.round(monthActivity),
-      net: Math.round(realIncome - monthActivity),
+      net: Math.round(combinedIncome - monthActivity),
     },
   ];
 
