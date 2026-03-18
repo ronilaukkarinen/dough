@@ -49,7 +49,7 @@ export default function IncomePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Income Sources
+            Income sources
           </h1>
           <p className="text-sm text-muted-foreground">
             Track when money comes in
@@ -58,11 +58,11 @@ export default function IncomePage() {
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={<Button size="sm" className="gap-2" />}>
             <Plus className="h-4 w-4" />
-            Add Income
+            Add income
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Income Source</DialogTitle>
+              <DialogTitle>Add income source</DialogTitle>
             </DialogHeader>
             <form className="space-y-4">
               <div className="space-y-2">
@@ -84,7 +84,7 @@ export default function IncomePage() {
                 <Label htmlFor="recurring">Recurring monthly</Label>
               </div>
               <Button type="submit" className="w-full" onClick={() => setDialogOpen(false)}>
-                Add Income
+                Add income
               </Button>
             </form>
           </DialogContent>
@@ -94,9 +94,9 @@ export default function IncomePage() {
       {/* Summary */}
       <div className="grid gap-4 sm:grid-cols-2">
         <Card className="border-border/50 bg-card/80 p-6">
-          <p className="text-xs font-medium text-muted-foreground">Expected Monthly</p>
+          <p className="text-xs font-medium text-muted-foreground">Expected monthly</p>
           <p className="mt-1 text-3xl font-bold tracking-tight text-positive">
-            €{monthlyTotal.toLocaleString()}
+            {monthlyTotal} €
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             {incomes.filter((i) => i.isActive).length} sources
@@ -105,9 +105,9 @@ export default function IncomePage() {
         <Card className="border-border/50 bg-card/80 p-6">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Guaranteed Recurring</p>
+              <p className="text-xs font-medium text-muted-foreground">Guaranteed recurring</p>
               <p className="mt-1 text-3xl font-bold tracking-tight text-foreground">
-                €{recurringTotal.toLocaleString()}
+                {recurringTotal} €
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Reliable monthly income
@@ -147,7 +147,7 @@ export default function IncomePage() {
               </div>
               <div className="flex items-center gap-3">
                 <p className="text-sm font-semibold tabular-nums text-positive">
-                  +€{income.amount.toLocaleString()}
+                  + {income.amount} €
                 </p>
                 <Switch
                   checked={income.isActive}

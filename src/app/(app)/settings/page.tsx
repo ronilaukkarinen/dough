@@ -13,12 +13,58 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, XCircle, Globe, User, Link } from "lucide-react";
+import { RefreshCw, CheckCircle2, XCircle, Globe, Link } from "lucide-react";
 
 export default function SettingsPage() {
-  const [displayName, setDisplayName] = useState("Roni");
   const [language, setLanguage] = useState("en");
-  const [ynabConnected] = useState(false);
+  const [ynabToken, setYnabToken] = useState("");
+  const [ynabConnected, setYnabConnected] = useState(false);
+  const [ynabLoading, setYnabLoading] = useState(false);
+  const [ynabError, setYnabError] = useState("");
+  const [langSaved, setLangSaved] = useState(false);
+
+  const handleLanguageChange = async (value: string) => {
+    setLanguage(value);
+    try {
+      await fetch("/api/auth/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale: value }),
+      });
+      setLangSaved(true);
+      setTimeout(() => setLangSaved(false), 2000);
+    } catch {
+      console.error("[settings] Failed to save language");
+    }
+  };
+
+  const handleYnabConnect = async () => {
+    if (!ynabToken.trim()) {
+      setYnabError("Token is required");
+      return;
+    }
+    setYnabLoading(true);
+    setYnabError("");
+
+    try {
+      const res = await fetch("/api/auth/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ynab_access_token: ynabToken.trim() }),
+      });
+
+      if (!res.ok) {
+        setYnabError("Failed to save token");
+      } else {
+        setYnabConnected(true);
+        setYnabToken("");
+      }
+    } catch {
+      setYnabError("Connection error");
+    } finally {
+      setYnabLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -27,59 +73,43 @@ export default function SettingsPage() {
           Settings
         </h1>
         <p className="text-sm text-muted-foreground">
-          Manage your account and preferences
+          Manage your preferences
         </p>
       </div>
 
       <div className="grid gap-6 max-w-2xl">
-        {/* Profile */}
-        <Card className="border-border/50 bg-card/80">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <User className="h-4 w-4 text-muted-foreground" />
-              Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Display name</Label>
-              <Input
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="max-w-xs bg-background/50 border-border/50"
-              />
-            </div>
-            <Button size="sm">Save</Button>
-          </CardContent>
-        </Card>
-
         {/* Language */}
         <Card className="border-border/50 bg-card/80">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Globe className="h-4 w-4 text-muted-foreground" />
               Language
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Select value={language} onValueChange={(v) => v && setLanguage(v)}>
-              <SelectTrigger className="max-w-xs bg-background/50 border-border/50">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="fi">Suomi</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-3">
+              <Select value={language} onValueChange={(v) => v && handleLanguageChange(v)}>
+                <SelectTrigger className="max-w-xs bg-background/50 border-border/50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="fi">Suomi</SelectItem>
+                </SelectContent>
+              </Select>
+              {langSaved && (
+                <span className="text-xs text-positive">Saved</span>
+              )}
+            </div>
           </CardContent>
         </Card>
 
         {/* YNAB Integration */}
         <Card className="border-border/50 bg-card/80">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <Link className="h-4 w-4 text-muted-foreground" />
-              YNAB Integration
+              YNAB integration
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -104,17 +134,22 @@ export default function SettingsPage() {
                   Connect your YNAB account to sync transactions, budgets, and account balances.
                 </p>
                 <div className="space-y-2">
-                  <Label>YNAB Personal Access Token</Label>
+                  <Label>YNAB personal access token</Label>
                   <Input
                     type="password"
                     placeholder="Paste your token here"
+                    value={ynabToken}
+                    onChange={(e) => setYnabToken(e.target.value)}
                     className="max-w-md bg-background/50 border-border/50"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Get your token from YNAB Settings → Developer Settings
+                    Get your token from YNAB settings, developer settings
                   </p>
                 </div>
-                <Button size="sm">Connect</Button>
+                {ynabError && <p className="text-sm text-destructive">{ynabError}</p>}
+                <Button size="sm" onClick={handleYnabConnect} disabled={ynabLoading}>
+                  {ynabLoading ? "Connecting..." : "Connect"}
+                </Button>
               </div>
             )}
 
@@ -125,7 +160,7 @@ export default function SettingsPage() {
                   Sync now
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                  Last sync: 5 minutes ago
+                  Last sync: never
                 </span>
               </div>
             )}

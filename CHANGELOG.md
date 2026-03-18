@@ -1,5 +1,17 @@
 ### 0.1.0: 2026-03-18
 
+* Add copilot.money style button hover effects with glow and scale
+* Fix manifest.json redirect by excluding static files from auth middleware
+* Fix chart width/height warnings with mounted check wrapper
+* Fix cash flow chart tooltip cursor for dark theme
+* Wire YNAB connect button to save token to user profile
+* Wire language select to persist preference
+* Remove display name field from settings
+* Use sentence case for all headings and labels
+* Use European style euro format with space before sign
+* Remove comma thousand separators from numbers
+* Make settings card headings more compact
+* Add user profile update API endpoint
 * Fix better-sqlite3 Node version mismatch by pinning systemd service to nvm Node v22
 * Add better-sqlite3 to serverExternalPackages in next.config.ts
 * Add Outfit font for headings, Inter for body text

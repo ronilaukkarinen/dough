@@ -65,7 +65,7 @@ export default function BillsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Recurring Bills
+            Recurring bills
           </h1>
           <p className="text-sm text-muted-foreground">
             Manage your monthly obligations
@@ -74,11 +74,11 @@ export default function BillsPage() {
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={<Button size="sm" className="gap-2" />}>
             <Plus className="h-4 w-4" />
-            Add Bill
+            Add bill
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Recurring Bill</DialogTitle>
+              <DialogTitle>Add recurring bill</DialogTitle>
             </DialogHeader>
             <form className="space-y-4">
               <div className="space-y-2">
@@ -100,7 +100,7 @@ export default function BillsPage() {
                 <Input placeholder="e.g. Subscriptions" />
               </div>
               <Button type="submit" className="w-full" onClick={() => setDialogOpen(false)}>
-                Add Bill
+                Add bill
               </Button>
             </form>
           </DialogContent>
@@ -110,9 +110,9 @@ export default function BillsPage() {
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-2">
         <Card className="border-border/50 bg-card/80 p-6">
-          <p className="text-xs font-medium text-muted-foreground">Monthly Total</p>
+          <p className="text-xs font-medium text-muted-foreground">Monthly total</p>
           <p className="mt-1 text-3xl font-bold tracking-tight text-foreground">
-            €{monthlyTotal.toFixed(2)}
+            {monthlyTotal.toFixed(2)} €
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             {bills.filter((b) => b.isActive).length} active bills
@@ -121,9 +121,9 @@ export default function BillsPage() {
         <Card className="border-border/50 bg-card/80 p-6">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Remaining This Month</p>
+              <p className="text-xs font-medium text-muted-foreground">Remaining this month</p>
               <p className="mt-1 text-3xl font-bold tracking-tight text-negative">
-                €{remainingThisMonth.toFixed(2)}
+                {remainingThisMonth.toFixed(2)} €
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Still due before month end
@@ -163,7 +163,7 @@ export default function BillsPage() {
               </div>
               <div className="flex items-center gap-3">
                 <p className="text-sm font-semibold tabular-nums text-foreground">
-                  €{bill.amount.toFixed(2)}
+                  {bill.amount.toFixed(2)} €
                 </p>
                 <Switch
                   checked={bill.isActive}

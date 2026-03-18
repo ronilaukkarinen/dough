@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", labelFi: "Yhteenveto" },
-  { href: "/chat", icon: MessageSquare, label: "AI Advisor", labelFi: "AI-neuvoja" },
+  { href: "/chat", icon: MessageSquare, label: "AI advisor", labelFi: "AI-neuvoja" },
   { href: "/transactions", icon: Receipt, label: "Transactions", labelFi: "Tapahtumat" },
   { href: "/bills", icon: CalendarClock, label: "Bills", labelFi: "Laskut" },
   { href: "/income", icon: Wallet, label: "Income", labelFi: "Tulot" },

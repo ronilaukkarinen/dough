@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { ChartContainer } from "@/components/ui/chart-container";
 import {
   AreaChart,
   Area,
@@ -29,7 +30,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
               }
             >
               {entry.dataKey === "spent" ? "Spent" : "Budget"}:{" "}
-              €{entry.value.toLocaleString()}
+              {entry.value} €
             </span>
           </p>
         ))}
@@ -39,11 +40,11 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
   return null;
 }
 
-export function SpendingChart({ data, title = "Spending This Month" }: SpendingChartProps) {
+export function SpendingChart({ data, title = "Spending this month" }: SpendingChartProps) {
   return (
     <Card className="border-border/50 bg-card/80 p-6">
       <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-      <div className="mt-4 h-[280px]">
+      <ChartContainer height={280}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <defs>
@@ -71,7 +72,7 @@ export function SpendingChart({ data, title = "Spending This Month" }: SpendingC
               tick={{ fill: "#7a8ba0", fontSize: 11 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v) => `€${v}`}
+              tickFormatter={(v) => `${v} €`}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area
@@ -91,7 +92,7 @@ export function SpendingChart({ data, title = "Spending This Month" }: SpendingC
             />
           </AreaChart>
         </ResponsiveContainer>
-      </div>
+      </ChartContainer>
     </Card>
   );
 }

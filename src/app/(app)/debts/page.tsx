@@ -30,6 +30,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { ChartContainer } from "@/components/ui/chart-container";
 
 interface Debt {
   id: string;
@@ -119,11 +120,11 @@ export default function DebtsPage() {
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={<Button size="sm" className="gap-2" />}>
             <Plus className="h-4 w-4" />
-            Add Debt
+            Add debt
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Debt</DialogTitle>
+              <DialogTitle>Add debt</DialogTitle>
             </DialogHeader>
             <form className="space-y-4">
               <div className="space-y-2">
@@ -151,7 +152,7 @@ export default function DebtsPage() {
                 </div>
               </div>
               <Button type="submit" className="w-full" onClick={() => setDialogOpen(false)}>
-                Add Debt
+                Add debt
               </Button>
             </form>
           </DialogContent>
@@ -166,9 +167,9 @@ export default function DebtsPage() {
               <TrendingDown className="h-5 w-5 text-negative" />
             </div>
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Total Debt</p>
+              <p className="text-xs font-medium text-muted-foreground">Total debt</p>
               <p className="text-2xl font-bold tracking-tight text-foreground">
-                €{totalDebt.toLocaleString()}
+                {totalDebt} €
               </p>
             </div>
           </div>
@@ -212,15 +213,15 @@ export default function DebtsPage() {
                 <div>
                   <p className="text-sm font-medium text-foreground">{debt.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {debt.interestRate}% APR · €{debt.minimumPayment}/mo min
+                    {debt.interestRate}% APR · {debt.minimumPayment} €/mo min
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold tabular-nums text-foreground">
-                    €{debt.remainingAmount.toLocaleString()}
+                    {debt.remainingAmount} €
                   </p>
                   <p className="text-[10px] text-muted-foreground">
-                    of €{debt.totalAmount.toLocaleString()}
+                    of {debt.totalAmount} €
                   </p>
                 </div>
               </div>
@@ -233,7 +234,7 @@ export default function DebtsPage() {
       {/* Payoff strategy */}
       <div className="space-y-4">
         <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold text-foreground">Payoff Strategy</h2>
+          <h2 className="text-lg font-semibold text-foreground">Payoff strategy</h2>
           <div className="flex items-center gap-2">
             <Label className="text-xs text-muted-foreground">Extra monthly:</Label>
             <Input
@@ -271,10 +272,10 @@ export default function DebtsPage() {
                   </div>
                   <div>
                     <span className="text-muted-foreground">Total interest: </span>
-                    <span className="font-semibold text-negative">€{data.totalInterest.toLocaleString()}</span>
+                    <span className="font-semibold text-negative">{data.totalInterest} €</span>
                   </div>
                 </div>
-                <div className="h-[250px]">
+                <ChartContainer height={250}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={data.timeline} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                       <defs>
@@ -285,13 +286,13 @@ export default function DebtsPage() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                       <XAxis dataKey="month" tick={{ fill: "#7a8ba0", fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                      <YAxis tick={{ fill: "#7a8ba0", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `€${(v / 1000).toFixed(0)}k`} />
+                      <YAxis tick={{ fill: "#7a8ba0", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k €`} />
                       <Tooltip
                         content={({ active, payload, label }) =>
                           active && payload?.length ? (
                             <div className="rounded-lg border border-border/50 bg-popover px-3 py-2 shadow-lg">
                               <p className="text-xs text-muted-foreground">{label}</p>
-                              <p className="text-sm font-medium text-foreground">€{payload[0].value?.toLocaleString()}</p>
+                              <p className="text-sm font-medium text-foreground">{payload[0].value} €</p>
                             </div>
                           ) : null
                         }
@@ -299,7 +300,7 @@ export default function DebtsPage() {
                       <Area type="monotone" dataKey="total" stroke="#ff6b6b" strokeWidth={2} fill={`url(#${key}Grad)`} />
                     </AreaChart>
                   </ResponsiveContainer>
-                </div>
+                </ChartContainer>
               </Card>
             </TabsContent>
           ))}

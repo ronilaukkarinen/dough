@@ -45,12 +45,11 @@ export function DailyAllowance({
       >
         <div className="relative z-10">
           <p className="text-sm font-medium text-muted-foreground">
-            Daily Budget
+            Daily budget
           </p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className={`text-5xl font-bold tracking-tight ${statusColor}`}>
-              {currency}
-              {dailyBudget.toFixed(0)}
+              {dailyBudget.toFixed(0)} {currency}
             </span>
             <span className="text-lg text-muted-foreground">/ day</span>
           </div>
@@ -76,8 +75,7 @@ export function DailyAllowance({
               Available
             </p>
             <p className="text-2xl font-bold tracking-tight text-foreground">
-              {currency}
-              {availableBalance.toLocaleString()}
+              {availableBalance} {currency}
             </p>
           </div>
         </div>
@@ -94,8 +92,7 @@ export function DailyAllowance({
               Bills due
             </p>
             <p className="text-2xl font-bold tracking-tight text-foreground">
-              {currency}
-              {upcomingBills.toLocaleString()}
+              {upcomingBills} {currency}
             </p>
           </div>
         </div>
@@ -112,8 +109,7 @@ export function DailyAllowance({
               Next income
             </p>
             <p className="text-xl font-bold tracking-tight text-foreground">
-              {currency}
-              {nextIncomeAmount.toLocaleString()}
+              {nextIncomeAmount} {currency}
             </p>
             <p className="text-xs text-muted-foreground">{nextIncomeDate}</p>
           </div>
@@ -130,8 +126,7 @@ export function DailyAllowance({
               Cash flow forecast
             </p>
             <p className="text-xl font-bold tracking-tight text-foreground">
-              {currency}
-              {(availableBalance - upcomingBills + nextIncomeAmount).toLocaleString()}
+              {availableBalance - upcomingBills + nextIncomeAmount} {currency}
             </p>
             <p className="text-xs text-muted-foreground">End of month estimate</p>
           </div>

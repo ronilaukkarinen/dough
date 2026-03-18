@@ -25,7 +25,7 @@ export function RecentTransactions({
     <Card className="border-border/50 bg-card/80 p-6">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-muted-foreground">
-          Recent Transactions
+          Recent transactions
         </h3>
         <Link
           href="/transactions"
@@ -64,8 +64,7 @@ export function RecentTransactions({
                 }`}
               >
                 {tx.amount < 0 ? "-" : "+"}
-                {currency}
-                {Math.abs(tx.amount).toLocaleString()}
+                {Math.abs(tx.amount)} {currency}
               </p>
               <p className="text-[10px] text-muted-foreground">{tx.date}</p>
             </div>

@@ -125,7 +125,7 @@ export default function TransactionsPage() {
                   tx.amount < 0 ? "text-foreground" : "text-positive"
                 }`}
               >
-                {tx.amount < 0 ? "-" : "+"}€{Math.abs(tx.amount).toFixed(2)}
+                {tx.amount < 0 ? "- " : "+ "}{Math.abs(tx.amount).toFixed(2)} €
               </p>
               <p className="text-[10px] text-muted-foreground">{tx.date}</p>
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { ChartContainer } from "@/components/ui/chart-container";
 import {
   BarChart,
   Bar,
@@ -37,7 +38,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
                 : entry.dataKey === "expenses"
                 ? "Expenses"
                 : "Net"}
-              : €{Math.abs(entry.value).toLocaleString()}
+              : {Math.abs(entry.value)} €
             </span>
           </p>
         ))}
@@ -51,9 +52,9 @@ export function CashFlowChart({ data }: CashFlowProps) {
   return (
     <Card className="border-border/50 bg-card/80 p-6">
       <h3 className="text-sm font-medium text-muted-foreground">
-        Monthly Cash Flow
+        Monthly cash flow
       </h3>
-      <div className="mt-4 h-[280px]">
+      <ChartContainer height={280}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <CartesianGrid
@@ -71,15 +72,15 @@ export function CashFlowChart({ data }: CashFlowProps) {
               tick={{ fill: "#7a8ba0", fontSize: 11 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v) => `€${v}`}
+              tickFormatter={(v) => `${v} €`}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" />
             <Bar dataKey="income" fill="#00e676" radius={[4, 4, 0, 0]} barSize={20} />
             <Bar dataKey="expenses" fill="#ff6b6b" radius={[4, 4, 0, 0]} barSize={20} />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </ChartContainer>
     </Card>
   );
 }
