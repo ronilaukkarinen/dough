@@ -1,0 +1,114 @@
+/* Module: dialog */
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  isolation: isolate;
+  z-index: 50;
+  background-color: rgba(0, 0, 0, 0.1);
+  transition: opacity 100ms;
+}
+
+@supports (backdrop-filter: blur(4px)) {
+  .dialog-overlay {
+    backdrop-filter: blur(4px);
+  }
+}
+
+.dialog-overlay[data-open] {
+  animation: enter 100ms ease forwards;
+  --enter-opacity: 0;
+}
+
+.dialog-overlay[data-closed] {
+  animation: exit 100ms ease forwards;
+  --exit-opacity: 0;
+}
+
+.dialog-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 50;
+  display: grid;
+  width: 100%;
+  max-width: calc(100% - 2rem);
+  transform: translate(-50%, -50%);
+  gap: 1rem;
+  border-radius: 0.75rem;
+  background-color: var(--background);
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent);
+  outline: none;
+}
+
+@media (min-width: 640px) {
+  .dialog-content {
+    max-width: 24rem;
+  }
+}
+
+.dialog-content[data-open] {
+  animation: enter 100ms ease forwards;
+  --enter-opacity: 0;
+  --enter-scale: 0.95;
+}
+
+.dialog-content[data-closed] {
+  animation: exit 100ms ease forwards;
+  --exit-opacity: 0;
+  --exit-scale: 0.95;
+}
+
+.dialog-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.dialog-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dialog-footer {
+  margin: 0 -1rem -1rem;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.5rem;
+  border-radius: 0 0 0.75rem 0.75rem;
+  border-top: 1px solid var(--border);
+  background-color: color-mix(in srgb, var(--muted) 50%, transparent);
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .dialog-footer {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+
+.dialog-title {
+  font-size: 1rem;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.dialog-description {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--muted-foreground);
+}
+
+.dialog-description a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dialog-description a:hover {
+  color: var(--foreground);
+}

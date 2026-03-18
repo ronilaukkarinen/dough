@@ -1,0 +1,45 @@
+/* Module: scroll-area */
+
+.scroll-area {
+  position: relative;
+}
+
+.scroll-area-viewport {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  transition: color 150ms, box-shadow 150ms;
+  outline: none;
+}
+
+.scroll-area-viewport:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent);
+  outline: 1px solid var(--ring);
+}
+
+.scroll-area-scrollbar {
+  display: flex;
+  touch-action: none;
+  padding: 1px;
+  transition: background-color 150ms;
+  user-select: none;
+}
+
+.scroll-area-scrollbar[data-orientation="horizontal"] {
+  height: 0.625rem;
+  flex-direction: column;
+  border-top: 1px solid transparent;
+}
+
+.scroll-area-scrollbar[data-orientation="vertical"] {
+  height: 100%;
+  width: 0.625rem;
+  border-left: 1px solid transparent;
+}
+
+.scroll-area-thumb {
+  position: relative;
+  flex: 1;
+  border-radius: 9999px;
+  background-color: var(--border);
+}

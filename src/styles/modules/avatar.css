@@ -1,0 +1,132 @@
+/* Module: avatar */
+
+.avatar {
+  position: relative;
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  user-select: none;
+}
+
+.avatar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  mix-blend-mode: darken;
+}
+
+.dark .avatar::after {
+  mix-blend-mode: lighten;
+}
+
+.avatar[data-size="sm"] {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.avatar[data-size="lg"] {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.avatar-image {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  object-fit: cover;
+}
+
+.avatar-fallback {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--muted-foreground);
+}
+
+.avatar[data-size="sm"] .avatar-fallback {
+  font-size: 0.75rem;
+}
+
+.avatar-badge {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 0 2px var(--background);
+  user-select: none;
+}
+
+.avatar:not([data-size]) .avatar-badge,
+.avatar[data-size="default"] .avatar-badge {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+.avatar[data-size="sm"] .avatar-badge {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+.avatar[data-size="sm"] .avatar-badge svg {
+  display: none;
+}
+
+.avatar[data-size="default"] .avatar-badge svg {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+.avatar[data-size="lg"] .avatar-badge {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.avatar[data-size="lg"] .avatar-badge svg {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+.avatar-group {
+  display: flex;
+}
+
+.avatar-group > .avatar {
+  margin-left: -0.5rem;
+  box-shadow: 0 0 0 2px var(--background);
+}
+
+.avatar-group > .avatar:first-child {
+  margin-left: 0;
+}
+
+.avatar-group-count {
+  position: relative;
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--muted);
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  box-shadow: 0 0 0 2px var(--background);
+}

@@ -1,0 +1,117 @@
+/* Module: card */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background-color: var(--card);
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--card-foreground);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.card:has([data-slot="card-footer"]) {
+  padding-bottom: 0;
+}
+
+.card:has(> img:first-child) {
+  padding-top: 0;
+}
+
+.card > img:first-child {
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.card > img:last-child {
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+.card[data-size="sm"] {
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.card[data-size="sm"]:has([data-slot="card-footer"]) {
+  padding-bottom: 0;
+}
+
+/* Card header */
+.card-header {
+  display: grid;
+  grid-auto-rows: min-content;
+  align-items: start;
+  gap: 0.25rem;
+  border-radius: 0.75rem 0.75rem 0 0;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.card-header:has([data-slot="card-action"]) {
+  grid-template-columns: 1fr auto;
+}
+
+.card-header:has([data-slot="card-description"]) {
+  grid-template-rows: auto auto;
+}
+
+.card[data-size="sm"] .card-header {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+/* Card title */
+.card-title {
+  font-size: 1rem;
+  line-height: 1.375;
+  font-weight: 500;
+}
+
+.card[data-size="sm"] .card-title {
+  font-size: 0.875rem;
+}
+
+/* Card description */
+.card-description {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--muted-foreground);
+}
+
+/* Card action */
+.card-action {
+  grid-column-start: 2;
+  grid-row: 1 / span 2;
+  align-self: start;
+  justify-self: end;
+}
+
+/* Card content */
+.card-content {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.card[data-size="sm"] .card-content {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+/* Card footer */
+.card-footer {
+  display: flex;
+  align-items: center;
+  border-radius: 0 0 0.75rem 0.75rem;
+  border-top: 1px solid var(--border);
+  background-color: color-mix(in srgb, var(--muted) 50%, transparent);
+  padding: 1rem;
+}
+
+.card[data-size="sm"] .card-footer {
+  padding: 0.75rem;
+}

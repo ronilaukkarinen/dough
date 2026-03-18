@@ -1,3 +1,10 @@
+### 0.2.0: 2026-03-18
+
+* Add custom SMACSS-derivative CSS framework alongside Tailwind
+* Create theme, base, animations, state, layout foundation CSS files
+* Create CSS modules for all UI components and page components
+* Simplify `cn()` utility to use `clsx` only, remove `tailwind-merge`
+
 ### 0.1.0: 2026-03-18
 
 * Wire i18n locale context so language switch updates sidebar and all page headings live

@@ -1,0 +1,14 @@
+/* Module: spending-chart */
+
+.spending-chart-card {
+  border-color: color-mix(in srgb, var(--border) 50%, transparent);
+  background-color: color-mix(in srgb, var(--card) 80%, transparent);
+  padding: 1.5rem;
+}
+
+.spending-chart-title {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}

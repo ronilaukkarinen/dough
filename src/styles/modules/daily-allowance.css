@@ -1,0 +1,186 @@
+/* Module: daily-allowance */
+
+.daily-allowance-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .daily-allowance-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Hero card */
+.daily-allowance-hero {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  box-shadow: none;
+  padding: 2rem;
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+  .daily-allowance-hero {
+    grid-column: span 2;
+  }
+}
+
+.daily-allowance-hero[data-status="good"] {
+  background: linear-gradient(to bottom right,
+    color-mix(in srgb, var(--positive) 10%, transparent),
+    color-mix(in srgb, var(--positive) 5%, transparent));
+}
+
+.daily-allowance-hero[data-status="tight"] {
+  background: linear-gradient(to bottom right,
+    color-mix(in srgb, var(--chart-3) 10%, transparent),
+    color-mix(in srgb, var(--chart-3) 5%, transparent));
+}
+
+.daily-allowance-hero[data-status="danger"] {
+  background: linear-gradient(to bottom right,
+    color-mix(in srgb, var(--negative) 10%, transparent),
+    color-mix(in srgb, var(--negative) 5%, transparent));
+}
+
+.daily-allowance-hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.daily-allowance-hero-label {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.daily-allowance-hero-amount {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.daily-allowance-hero-value {
+  font-size: 3rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.daily-allowance-hero-value[data-status="good"] { color: var(--positive); }
+.daily-allowance-hero-value[data-status="tight"] { color: var(--chart-3); }
+.daily-allowance-hero-value[data-status="danger"] { color: var(--negative); }
+
+.daily-allowance-hero-unit {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  color: var(--muted-foreground);
+}
+
+.daily-allowance-hero-note {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--muted-foreground);
+}
+
+.daily-allowance-hero-bg {
+  position: absolute;
+  bottom: -1rem;
+  right: -1rem;
+  opacity: 0.05;
+}
+
+.daily-allowance-hero-bg svg {
+  width: 8rem;
+  height: 8rem;
+}
+
+/* Metric cards */
+.metric-card {
+  border-color: color-mix(in srgb, var(--border) 50%, transparent);
+  background-color: color-mix(in srgb, var(--card) 80%, transparent);
+  padding: 1.5rem;
+}
+
+.metric-card-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.metric-card-icon {
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+}
+
+.metric-card-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.metric-card-icon[data-color="primary"] {
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary);
+}
+
+.metric-card-icon[data-color="positive"] {
+  background-color: color-mix(in srgb, var(--positive) 10%, transparent);
+  color: var(--positive);
+}
+
+.metric-card-icon[data-color="negative"] {
+  background-color: color-mix(in srgb, var(--negative) 10%, transparent);
+  color: var(--negative);
+}
+
+.metric-card-icon[data-color="chart-4"] {
+  background-color: color-mix(in srgb, var(--chart-4) 10%, transparent);
+  color: var(--chart-4);
+}
+
+.metric-card-icon[data-color="chart-3"] {
+  background-color: color-mix(in srgb, var(--chart-3) 10%, transparent);
+  color: var(--chart-3);
+}
+
+.metric-card-label {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.metric-card-value {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
+}
+
+.metric-card-value-lg {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.metric-card-note {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--muted-foreground);
+}
+
+/* Half-width on md+ */
+@media (min-width: 768px) {
+  .metric-card-half {
+    grid-column: span 2;
+  }
+}

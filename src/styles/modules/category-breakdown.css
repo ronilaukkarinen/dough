@@ -1,0 +1,87 @@
+/* Module: category-breakdown */
+
+.category-breakdown-card {
+  border-color: color-mix(in srgb, var(--border) 50%, transparent);
+  background-color: color-mix(in srgb, var(--card) 80%, transparent);
+  padding: 1.5rem;
+}
+
+.category-breakdown-title {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.category-breakdown-body {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.category-breakdown-donut {
+  position: relative;
+  height: 160px;
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.category-breakdown-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-breakdown-donut-total {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.category-breakdown-donut-label {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+
+.category-breakdown-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.category-breakdown-legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.category-breakdown-legend-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.category-breakdown-legend-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 9999px;
+}
+
+.category-breakdown-legend-text {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--foreground);
+}
+
+.category-breakdown-legend-amount {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: var(--foreground);
+}

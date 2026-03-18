@@ -1,0 +1,38 @@
+/* Module: progress */
+
+.progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.progress-track {
+  position: relative;
+  display: flex;
+  height: 0.25rem;
+  width: 100%;
+  align-items: center;
+  overflow-x: hidden;
+  border-radius: 9999px;
+  background-color: var(--muted);
+}
+
+.progress-indicator {
+  height: 100%;
+  background-color: var(--primary);
+  transition: all 150ms;
+}
+
+.progress-label {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+}
+
+.progress-value {
+  margin-left: auto;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}

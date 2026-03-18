@@ -1,0 +1,114 @@
+/* Module: switch */
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  transition: all 150ms;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Expand click target */
+.switch::after {
+  content: "";
+  position: absolute;
+  inset: -0.5rem -0.75rem;
+}
+
+.switch:focus-visible {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent);
+}
+
+.switch[aria-invalid="true"] {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+
+.dark .switch[aria-invalid="true"] {
+  border-color: color-mix(in srgb, var(--destructive) 50%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 40%, transparent);
+}
+
+/* Default size */
+.switch[data-size="default"],
+.switch:not([data-size]) {
+  height: 18.4px;
+  width: 32px;
+}
+
+.switch[data-size="sm"] {
+  height: 14px;
+  width: 24px;
+}
+
+/* States */
+.switch[data-checked] {
+  background-color: var(--primary);
+}
+
+.switch[data-unchecked] {
+  background-color: var(--input);
+}
+
+.dark .switch[data-unchecked] {
+  background-color: color-mix(in srgb, var(--input) 80%, transparent);
+}
+
+.switch[data-disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Thumb */
+.switch-thumb {
+  pointer-events: none;
+  display: block;
+  border-radius: 9999px;
+  background-color: var(--background);
+  box-shadow: none;
+  transition: transform 150ms;
+}
+
+/* Default size thumb */
+.switch:not([data-size]) .switch-thumb,
+.switch[data-size="default"] .switch-thumb {
+  width: 1rem;
+  height: 1rem;
+}
+
+.switch[data-size="sm"] .switch-thumb {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Thumb checked positions */
+.switch:not([data-size]) .switch-thumb[data-checked],
+.switch[data-size="default"] .switch-thumb[data-checked] {
+  transform: translateX(calc(100% - 2px));
+}
+
+.switch[data-size="sm"] .switch-thumb[data-checked] {
+  transform: translateX(calc(100% - 2px));
+}
+
+.switch:not([data-size]) .switch-thumb[data-unchecked],
+.switch[data-size="default"] .switch-thumb[data-unchecked] {
+  transform: translateX(0);
+}
+
+.switch[data-size="sm"] .switch-thumb[data-unchecked] {
+  transform: translateX(0);
+}
+
+.dark .switch-thumb[data-checked] {
+  background-color: var(--primary-foreground);
+}
+
+.dark .switch-thumb[data-unchecked] {
+  background-color: var(--foreground);
+}

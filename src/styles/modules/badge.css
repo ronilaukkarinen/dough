@@ -1,0 +1,101 @@
+/* Module: badge */
+
+.badge {
+  display: inline-flex;
+  height: 1.25rem;
+  width: fit-content;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  overflow: hidden;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 150ms;
+}
+
+.badge:focus-visible {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent);
+}
+
+.badge > svg {
+  pointer-events: none;
+  width: 0.75rem !important;
+  height: 0.75rem !important;
+}
+
+/* Variants */
+.badge[data-variant="default"],
+.badge:not([data-variant]) {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+a.badge[data-variant="default"]:hover,
+a.badge:not([data-variant]):hover {
+  background-color: color-mix(in srgb, var(--primary) 80%, transparent);
+}
+
+.badge[data-variant="secondary"] {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+a.badge[data-variant="secondary"]:hover {
+  background-color: color-mix(in srgb, var(--secondary) 80%, transparent);
+}
+
+.badge[data-variant="destructive"] {
+  background-color: color-mix(in srgb, var(--destructive) 10%, transparent);
+  color: var(--destructive);
+}
+
+.badge[data-variant="destructive"]:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+
+.dark .badge[data-variant="destructive"] {
+  background-color: color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+
+a.badge[data-variant="destructive"]:hover {
+  background-color: color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+
+.badge[data-variant="outline"] {
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+a.badge[data-variant="outline"]:hover {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.badge[data-variant="ghost"] {
+  background: transparent;
+}
+
+.badge[data-variant="ghost"]:hover {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.dark .badge[data-variant="ghost"]:hover {
+  background-color: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+.badge[data-variant="link"] {
+  color: var(--primary);
+  text-underline-offset: 4px;
+}
+
+.badge[data-variant="link"]:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,25 @@
+/* Module: chart */
+
+.chart-tooltip {
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  background-color: var(--popover);
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-tooltip-label {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--muted-foreground);
+}
+
+.chart-tooltip-value {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+}
+
+.chart-tooltip-value-mb {
+  margin-bottom: 0.25rem;
+}

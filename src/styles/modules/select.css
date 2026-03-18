@@ -1,0 +1,213 @@
+/* Module: select */
+
+.select-group {
+  scroll-margin: 0.25rem;
+  padding: 0.25rem;
+}
+
+.select-value {
+  display: flex;
+  flex: 1;
+  text-align: left;
+}
+
+.select-trigger {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.375rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--input);
+  background-color: transparent;
+  padding: 0.5rem 0.5rem 0.5rem 0.625rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  transition: color 150ms, border-color 150ms, background-color 150ms;
+  outline: none;
+  user-select: none;
+  cursor: pointer;
+}
+
+.select-trigger:focus-visible {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent);
+}
+
+.select-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.select-trigger[aria-invalid="true"] {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+
+.select-trigger[data-placeholder] {
+  color: var(--muted-foreground);
+}
+
+.select-trigger[data-size="default"],
+.select-trigger:not([data-size]) {
+  height: 2rem;
+}
+
+.select-trigger[data-size="sm"] {
+  height: 1.75rem;
+  border-radius: 0.375rem;
+}
+
+.select-trigger svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+.dark .select-trigger {
+  background-color: color-mix(in srgb, var(--input) 30%, transparent);
+}
+
+.dark .select-trigger:hover {
+  background-color: color-mix(in srgb, var(--input) 50%, transparent);
+}
+
+/* Select content/popup */
+.select-positioner {
+  isolation: isolate;
+  z-index: 50;
+}
+
+.select-content {
+  position: relative;
+  isolation: isolate;
+  z-index: 50;
+  max-height: var(--available-height);
+  width: var(--anchor-width);
+  min-width: 9rem;
+  transform-origin: var(--transform-origin);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: 0.5rem;
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  outline: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.select-content[data-open] {
+  animation: enter 100ms ease forwards;
+  --enter-opacity: 0;
+  --enter-scale: 0.95;
+}
+
+.select-content[data-closed] {
+  animation: exit 100ms ease forwards;
+  --exit-opacity: 0;
+  --exit-scale: 0.95;
+}
+
+.select-content[data-side="top"] { --enter-translate-y: 0.5rem; }
+.select-content[data-side="bottom"] { --enter-translate-y: -0.5rem; }
+.select-content[data-side="left"] { --enter-translate-x: 0.5rem; }
+.select-content[data-side="right"] { --enter-translate-x: -0.5rem; }
+
+.select-content[data-align-trigger="true"] {
+  animation: none;
+}
+
+/* Select label */
+.select-label {
+  padding: 0.25rem 0.375rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--muted-foreground);
+}
+
+/* Select item */
+.select-item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  cursor: default;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0.375rem;
+  padding: 0.25rem 2rem 0.25rem 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  outline: none;
+  user-select: none;
+}
+
+.select-item:focus {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.select-item[data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.select-item svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+.select-item-text {
+  display: flex;
+  flex: 1;
+  flex-shrink: 0;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.select-item-indicator {
+  pointer-events: none;
+  position: absolute;
+  right: 0.5rem;
+  display: flex;
+  width: 1rem;
+  height: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Select separator */
+.select-separator {
+  pointer-events: none;
+  margin: 0.25rem -0.25rem;
+  height: 1px;
+  background-color: var(--border);
+}
+
+/* Scroll arrows */
+.select-scroll-up,
+.select-scroll-down {
+  z-index: 10;
+  display: flex;
+  width: 100%;
+  cursor: default;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--popover);
+  padding: 0.25rem 0;
+}
+
+.select-scroll-up svg,
+.select-scroll-down svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.select-icon {
+  pointer-events: none;
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted-foreground);
+}

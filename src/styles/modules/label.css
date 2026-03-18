@@ -1,0 +1,21 @@
+/* Module: label */
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1;
+  font-weight: 500;
+  user-select: none;
+}
+
+[data-disabled="true"] .label {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.label:has(~ :disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

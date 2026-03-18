@@ -1,0 +1,261 @@
+/* Module: dropdown-menu */
+
+.dropdown-menu-positioner {
+  isolation: isolate;
+  z-index: 50;
+  outline: none;
+}
+
+.dropdown-menu-content {
+  z-index: 50;
+  max-height: var(--available-height);
+  width: var(--anchor-width);
+  min-width: 8rem;
+  transform-origin: var(--transform-origin);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: 0.5rem;
+  background-color: var(--popover);
+  padding: 0.25rem;
+  color: var(--popover-foreground);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  outline: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.dropdown-menu-content[data-open] {
+  animation: enter 100ms ease forwards;
+  --enter-opacity: 0;
+  --enter-scale: 0.95;
+}
+
+.dropdown-menu-content[data-closed] {
+  animation: exit 100ms ease forwards;
+  --exit-opacity: 0;
+  --exit-scale: 0.95;
+  overflow: hidden;
+}
+
+.dropdown-menu-content[data-side="top"] { --enter-translate-y: 0.5rem; }
+.dropdown-menu-content[data-side="bottom"] { --enter-translate-y: -0.5rem; }
+.dropdown-menu-content[data-side="left"] { --enter-translate-x: 0.5rem; }
+.dropdown-menu-content[data-side="right"] { --enter-translate-x: -0.5rem; }
+
+/* Label */
+.dropdown-menu-label {
+  padding: 0.25rem 0.375rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.dropdown-menu-label[data-inset] {
+  padding-left: 1.75rem;
+}
+
+/* Item */
+.dropdown-menu-item {
+  position: relative;
+  display: flex;
+  cursor: default;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  outline: none;
+  user-select: none;
+}
+
+.dropdown-menu-item:focus {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.dropdown-menu-item[data-inset] {
+  padding-left: 1.75rem;
+}
+
+.dropdown-menu-item[data-variant="destructive"] {
+  color: var(--destructive);
+}
+
+.dropdown-menu-item[data-variant="destructive"]:focus {
+  background-color: color-mix(in srgb, var(--destructive) 10%, transparent);
+  color: var(--destructive);
+}
+
+.dark .dropdown-menu-item[data-variant="destructive"]:focus {
+  background-color: color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+
+.dropdown-menu-item[data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.dropdown-menu-item svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Sub trigger */
+.dropdown-menu-sub-trigger {
+  display: flex;
+  cursor: default;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  outline: none;
+  user-select: none;
+}
+
+.dropdown-menu-sub-trigger:focus,
+.dropdown-menu-sub-trigger[data-popup-open],
+.dropdown-menu-sub-trigger[data-open] {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.dropdown-menu-sub-trigger[data-inset] {
+  padding-left: 1.75rem;
+}
+
+.dropdown-menu-sub-trigger svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+.dropdown-menu-sub-trigger-chevron {
+  margin-left: auto;
+}
+
+/* Sub content */
+.dropdown-menu-sub-content {
+  width: auto;
+  min-width: 6rem;
+  border-radius: 0.5rem;
+  background-color: var(--popover);
+  padding: 0.25rem;
+  color: var(--popover-foreground);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  outline: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+/* Checkbox item */
+.dropdown-menu-checkbox-item {
+  position: relative;
+  display: flex;
+  cursor: default;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0.375rem;
+  padding: 0.25rem 2rem 0.25rem 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  outline: none;
+  user-select: none;
+}
+
+.dropdown-menu-checkbox-item:focus {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.dropdown-menu-checkbox-item[data-inset] {
+  padding-left: 1.75rem;
+}
+
+.dropdown-menu-checkbox-item[data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.dropdown-menu-checkbox-item svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+.dropdown-menu-checkbox-item-indicator {
+  pointer-events: none;
+  position: absolute;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Radio item */
+.dropdown-menu-radio-item {
+  position: relative;
+  display: flex;
+  cursor: default;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0.375rem;
+  padding: 0.25rem 2rem 0.25rem 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  outline: none;
+  user-select: none;
+}
+
+.dropdown-menu-radio-item:focus {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.dropdown-menu-radio-item[data-inset] {
+  padding-left: 1.75rem;
+}
+
+.dropdown-menu-radio-item[data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.dropdown-menu-radio-item svg {
+  pointer-events: none;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+.dropdown-menu-radio-item-indicator {
+  pointer-events: none;
+  position: absolute;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Separator */
+.dropdown-menu-separator {
+  margin: 0.25rem -0.25rem;
+  height: 1px;
+  background-color: var(--border);
+}
+
+/* Shortcut */
+.dropdown-menu-shortcut {
+  margin-left: auto;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--muted-foreground);
+}
+
+.dropdown-menu-item:focus .dropdown-menu-shortcut {
+  color: var(--accent-foreground);
+}

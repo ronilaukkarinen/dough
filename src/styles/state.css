@@ -1,0 +1,18 @@
+/* State: global state classes */
+
+.is-active {
+  /* Context-specific; overridden in modules */
+}
+
+.is-disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.is-loading {
+  cursor: wait;
+}
+
+.is-hidden {
+  display: none;
+}

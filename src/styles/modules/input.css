@@ -1,0 +1,66 @@
+/* Module: input */
+
+.input {
+  height: 2rem;
+  width: 100%;
+  min-width: 0;
+  border-radius: 0.5rem;
+  border: 1px solid var(--input);
+  background-color: transparent;
+  padding: 0.25rem 0.625rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  transition: color 150ms, border-color 150ms, box-shadow 150ms;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.input:focus-visible {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent);
+}
+
+.input:disabled {
+  pointer-events: none;
+  cursor: not-allowed;
+  background-color: color-mix(in srgb, var(--input) 50%, transparent);
+  opacity: 0.5;
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+
+.input::file-selector-button {
+  display: inline-flex;
+  height: 1.5rem;
+  border: 0;
+  background-color: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+@media (min-width: 768px) {
+  .input {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+.dark .input {
+  background-color: color-mix(in srgb, var(--input) 30%, transparent);
+}
+
+.dark .input:disabled {
+  background-color: color-mix(in srgb, var(--input) 80%, transparent);
+}
+
+.dark .input[aria-invalid="true"] {
+  border-color: color-mix(in srgb, var(--destructive) 50%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 40%, transparent);
+}

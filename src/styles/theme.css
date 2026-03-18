@@ -1,0 +1,76 @@
+/* Theme: CSS custom properties for light and dark modes */
+
+/* Light mode */
+:root {
+  --background: #f9fafc;
+  --foreground: #0a0f1e;
+  --card: #ffffff;
+  --card-foreground: #0a0f1e;
+  --popover: #ffffff;
+  --popover-foreground: #0a0f1e;
+  --primary: #1c6cff;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f2f5;
+  --secondary-foreground: #0a0f1e;
+  --muted: #f0f2f5;
+  --muted-foreground: #6b7280;
+  --accent: #f0f2f5;
+  --accent-foreground: #0a0f1e;
+  --destructive: #ef4444;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #1c6cff;
+  --positive: #00cc4b;
+  --negative: #ef4444;
+  --chart-1: #1c6cff;
+  --chart-2: #00cc4b;
+  --chart-3: #f59e0b;
+  --chart-4: #8b5cf6;
+  --chart-5: #ec4899;
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0a0f1e;
+  --sidebar-primary: #1c6cff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0f2f5;
+  --sidebar-accent-foreground: #0a0f1e;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #1c6cff;
+}
+
+/* Dark mode */
+.dark {
+  --background: #000914;
+  --foreground: #f0f4f8;
+  --card: #0d1b2a;
+  --card-foreground: #f0f4f8;
+  --popover: #0d1b2a;
+  --popover-foreground: #f0f4f8;
+  --primary: #4d94ff;
+  --primary-foreground: #000914;
+  --secondary: #112240;
+  --secondary-foreground: #ccd6e0;
+  --muted: #112240;
+  --muted-foreground: #7a8ba0;
+  --accent: #112240;
+  --accent-foreground: #f0f4f8;
+  --destructive: #ff6b6b;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #4d94ff;
+  --positive: #00e676;
+  --negative: #ff6b6b;
+  --chart-1: #4d94ff;
+  --chart-2: #00e676;
+  --chart-3: #ffb74d;
+  --chart-4: #b388ff;
+  --chart-5: #ff80ab;
+  --sidebar: #060e1f;
+  --sidebar-foreground: #f0f4f8;
+  --sidebar-primary: #4d94ff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #112240;
+  --sidebar-accent-foreground: #f0f4f8;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #4d94ff;
+}

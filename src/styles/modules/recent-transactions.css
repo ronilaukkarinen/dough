@@ -1,0 +1,121 @@
+/* Module: recent-transactions */
+
+.recent-transactions-card {
+  border-color: color-mix(in srgb, var(--border) 50%, transparent);
+  background-color: color-mix(in srgb, var(--card) 80%, transparent);
+  padding: 1.5rem;
+}
+
+.recent-transactions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.recent-transactions-title {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.recent-transactions-link {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  color: var(--primary);
+  transition: color 150ms;
+  text-decoration: none;
+}
+
+.recent-transactions-link:hover {
+  color: color-mix(in srgb, var(--primary) 80%, transparent);
+}
+
+.recent-transactions-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.recent-transactions-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.5rem;
+  transition: background-color 150ms;
+}
+
+.recent-transactions-item:hover {
+  background-color: color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+.recent-transactions-icon {
+  display: flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+}
+
+.recent-transactions-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.recent-transactions-icon[data-type="expense"] {
+  background-color: color-mix(in srgb, var(--negative) 10%, transparent);
+  color: var(--negative);
+}
+
+.recent-transactions-icon[data-type="income"] {
+  background-color: color-mix(in srgb, var(--positive) 10%, transparent);
+  color: var(--positive);
+}
+
+.recent-transactions-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.recent-transactions-payee {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-transactions-category {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--muted-foreground);
+}
+
+.recent-transactions-amount {
+  text-align: right;
+}
+
+.recent-transactions-amount-value {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+}
+
+.recent-transactions-amount-value[data-type="expense"] {
+  color: var(--foreground);
+}
+
+.recent-transactions-amount-value[data-type="income"] {
+  color: var(--positive);
+}
+
+.recent-transactions-date {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}

@@ -1,0 +1,99 @@
+/* Module: login (moved from globals.css) */
+
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #000914;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 360px;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.login-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+.login-subtitle {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 40px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  font-size: 15px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  font-family: inherit;
+}
+
+.login-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.login-input:focus {
+  border-color: rgba(26, 102, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.login-error {
+  font-size: 13px;
+  color: #ff6b6b;
+  text-align: left;
+}
+
+.login-button {
+  width: 100%;
+  height: 48px;
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(rgb(26, 102, 255) 0%, rgb(26, 102, 255) 100%) rgb(26, 102, 255);
+  border: none;
+  border-radius: 20px;
+  box-shadow:
+    rgba(255, 255, 255, 0.16) 4px 4px 16px -4px inset,
+    rgba(0, 0, 0, 0.2) -4px -4px 16px -4px inset,
+    rgba(255, 255, 255, 0.08) 4px 4px 8px 0px inset,
+    rgba(255, 255, 255, 0.4) 1px 1px 1px -0.5px inset;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  font-family: inherit;
+}
+
+.login-button:hover {
+  opacity: 0.92;
+}
+
+.login-button:active {
+  transform: scale(0.98);
+}
+
+.login-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

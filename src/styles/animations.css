@@ -1,0 +1,63 @@
+/* Animations: keyframes and animation utilities */
+
+@keyframes enter {
+  from {
+    opacity: var(--enter-opacity, 1);
+    transform: translate3d(var(--enter-translate-x, 0), var(--enter-translate-y, 0), 0)
+               scale3d(var(--enter-scale, 1), var(--enter-scale, 1), var(--enter-scale, 1));
+  }
+}
+
+@keyframes exit {
+  to {
+    opacity: var(--exit-opacity, 1);
+    transform: translate3d(var(--exit-translate-x, 0), var(--exit-translate-y, 0), 0)
+               scale3d(var(--exit-scale, 1), var(--exit-scale, 1), var(--exit-scale, 1));
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation triggers */
+.animate-in {
+  animation: enter 150ms ease forwards;
+}
+
+.animate-out {
+  animation: exit 150ms ease forwards;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-count-up {
+  animation: countUp 0.4s ease-out forwards;
+}
+
+/* Enter modifiers */
+.fade-in-0 { --enter-opacity: 0; }
+.zoom-in-95 { --enter-scale: 0.95; }
+.slide-in-from-top-2 { --enter-translate-y: -0.5rem; }
+.slide-in-from-bottom-2 { --enter-translate-y: 0.5rem; }
+.slide-in-from-left-2 { --enter-translate-x: -0.5rem; }
+.slide-in-from-right-2 { --enter-translate-x: 0.5rem; }
+
+/* Exit modifiers */
+.fade-out-0 { --exit-opacity: 0; }
+.zoom-out-95 { --exit-scale: 0.95; }

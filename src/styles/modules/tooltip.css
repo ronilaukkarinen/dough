@@ -1,0 +1,76 @@
+/* Module: tooltip */
+
+.tooltip-positioner {
+  isolation: isolate;
+  z-index: 50;
+}
+
+.tooltip-content {
+  z-index: 50;
+  display: inline-flex;
+  width: fit-content;
+  max-width: 20rem;
+  transform-origin: var(--transform-origin);
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 0.375rem;
+  background-color: var(--foreground);
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--background);
+}
+
+/* Slide animations per side */
+.tooltip-content[data-side="top"] { --enter-translate-y: 0.5rem; }
+.tooltip-content[data-side="bottom"] { --enter-translate-y: -0.5rem; }
+.tooltip-content[data-side="left"] { --enter-translate-x: 0.5rem; }
+.tooltip-content[data-side="right"] { --enter-translate-x: -0.5rem; }
+.tooltip-content[data-side="inline-end"] { --enter-translate-x: -0.5rem; }
+.tooltip-content[data-side="inline-start"] { --enter-translate-x: 0.5rem; }
+
+.tooltip-content[data-state="delayed-open"],
+.tooltip-content[data-open] {
+  animation: enter 150ms ease forwards;
+  --enter-opacity: 0;
+  --enter-scale: 0.95;
+}
+
+.tooltip-content[data-closed] {
+  animation: exit 150ms ease forwards;
+  --exit-opacity: 0;
+  --exit-scale: 0.95;
+}
+
+/* Arrow */
+.tooltip-arrow {
+  z-index: 50;
+  width: 0.625rem;
+  height: 0.625rem;
+  transform: translateY(calc(-50% - 2px)) rotate(45deg);
+  border-radius: 2px;
+  background-color: var(--foreground);
+  fill: var(--foreground);
+}
+
+.tooltip-arrow[data-side="bottom"] {
+  top: 0.25rem;
+}
+
+.tooltip-arrow[data-side="top"] {
+  bottom: -0.625rem;
+}
+
+.tooltip-arrow[data-side="left"],
+.tooltip-arrow[data-side="inline-start"] {
+  top: 50% !important;
+  right: -0.25rem;
+  transform: translateY(-50%);
+}
+
+.tooltip-arrow[data-side="right"],
+.tooltip-arrow[data-side="inline-end"] {
+  top: 50% !important;
+  left: -0.25rem;
+  transform: translateY(-50%);
+}
