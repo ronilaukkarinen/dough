@@ -34,6 +34,12 @@
 * Increase button, input, and select sizes for better touch targets
 * Increase metric card value font size from 1.5rem to 1.75rem
 * Fix sidebar logout button rendering as white by resetting native button styles
+* Wire real YNAB data to dashboard replacing all demo data
+* Wire real YNAB data to transactions page
+* Add YNAB context provider for shared data across all pages
+* Add auto-sync on app load when YNAB is connected
+* Show relative dates on transactions (today, yesterday, 3 days ago)
+* Rewrite YNAB client to use REST API directly for reliability
 
 ### 0.1.0: 2026-03-18
 

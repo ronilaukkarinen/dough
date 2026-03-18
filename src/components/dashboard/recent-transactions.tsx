@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
+import { relativeDate } from "@/lib/date-utils";
 import Link from "next/link";
 
 interface Transaction {
@@ -19,7 +20,7 @@ interface RecentTransactionsProps {
 }
 
 export function RecentTransactions({ transactions, currency = "\u20AC" }: RecentTransactionsProps) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   return (
     <Card className="recent-transactions-card">
@@ -41,7 +42,7 @@ export function RecentTransactions({ transactions, currency = "\u20AC" }: Recent
               <p className="recent-transactions-amount-value" data-type={tx.amount < 0 ? "expense" : "income"}>
                 {tx.amount < 0 ? "-" : "+"}{Math.abs(tx.amount)} {currency}
               </p>
-              <p className="recent-transactions-date">{tx.date}</p>
+              <p className="recent-transactions-date">{relativeDate(tx.date, locale)}</p>
             </div>
           </div>
         ))}
