@@ -13,6 +13,8 @@
 * Remove globals.css, Tailwind PostCSS plugin, components.json
 * Uninstall `tailwindcss`, `@tailwindcss/postcss`, `tailwind-merge`, `tw-animate-css`, `shadcn`, `class-variance-authority`
 * Fix login form on Safari iOS by using uncontrolled inputs with FormData to handle autofill
+* Fix Safari iOS login redirect by using window.location instead of router.push
+* Fix Safari iOS cookie not persisting by removing Secure flag (HTTPS handled by Cloudflare tunnel)
 
 ### 0.1.0: 2026-03-18
 
