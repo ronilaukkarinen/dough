@@ -19,7 +19,7 @@ const CATEGORY_COLORS = ["#818cf8", "#4ade80", "#fbbf24", "#c084fc", "#f472b6", 
 
 export default function DashboardPage() {
   const { t, locale } = useLocale();
-  const { data, loading, connected, sync } = useYnab();
+  const { data, loading, connected, sync, savingRate } = useYnab();
 
   if (!connected) {
     return (
@@ -61,8 +61,9 @@ export default function DashboardPage() {
       .reduce((s, a) => s + a.balance, 0) * 100
   ) / 100;
 
-  // Daily budget from available checking+savings balance
-  const dailyBudget = daysLeft > 0 ? Math.round((availableBalance / daysLeft) * 100) / 100 : 0;
+  // Daily budget from available balance minus saving goal
+  const spendableBalance = Math.max(0, availableBalance - savingRate);
+  const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
   // Burn rate = average daily real spending this month
   const daysPassed = now.getDate();

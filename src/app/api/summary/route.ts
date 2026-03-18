@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
+import { getYnabToken, getYnabBudgetId } from "@/lib/household";
 import { getBudgetSummary, getTransactions, getMonthBudget } from "@/lib/ynab/client";
 import { spawn } from "child_process";
 
@@ -49,14 +50,9 @@ export async function GET(request: Request) {
 
     console.info("[summary] Generating fresh AI summary for user", user.id);
 
-    // Get YNAB data
-    const row = db
-      .prepare("SELECT ynab_access_token, ynab_budget_id, locale FROM users WHERE id = ?")
-      .get(user.id) as { ynab_access_token: string | null; ynab_budget_id: string | null; locale: string } | undefined;
-
-    const token = row?.ynab_access_token;
-    const budgetId = row?.ynab_budget_id;
-    const locale = row?.locale || "en";
+    // Get YNAB data from household settings
+    const token = getYnabToken();
+    const budgetId = getYnabBudgetId();
 
     if (!token || !budgetId) {
       return NextResponse.json({ summary: null, error: "YNAB not connected" });

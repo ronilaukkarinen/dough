@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { getYnabToken, getYnabBudgetId, setHouseholdSetting } from "@/lib/household";
 
 export async function POST() {
   try {
@@ -12,13 +12,8 @@ export async function POST() {
 
     console.info("[api/ynab/sync] Starting sync for user", user.id);
 
-    const db = getDb();
-    const row = db
-      .prepare("SELECT ynab_access_token, ynab_budget_id FROM users WHERE id = ?")
-      .get(user.id) as { ynab_access_token: string | null; ynab_budget_id: string | null } | undefined;
-
-    const token = row?.ynab_access_token || process.env.YNAB_ACCESS_TOKEN;
-    const budgetId = row?.ynab_budget_id || process.env.YNAB_BUDGET_ID;
+    const token = getYnabToken();
+    const budgetId = getYnabBudgetId();
 
     if (!token) {
       console.warn("[api/ynab/sync] No YNAB token for user", user.id);
@@ -44,9 +39,30 @@ export async function POST() {
       getMonthBudget(budgetId, undefined, token),
     ]);
 
-    // Update last sync time
-    db.prepare("UPDATE users SET last_ynab_sync = datetime('now'), updated_at = datetime('now') WHERE id = ?")
-      .run(user.id);
+    // Update last sync time in household settings
+    setHouseholdSetting("last_ynab_sync", new Date().toISOString());
+
+    // Auto-take net worth snapshot
+    try {
+      const { getDb } = await import("@/lib/db");
+      const db = getDb();
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      const checking = summary.accounts.filter((a: any) => a.type === "checking").reduce((s: number, a: any) => s + a.balance, 0);
+      const savings = summary.accounts.filter((a: any) => a.type === "savings").reduce((s: number, a: any) => s + a.balance, 0);
+      const investments = summary.accounts.filter((a: any) => a.type === "otherAsset").reduce((s: number, a: any) => s + a.balance, 0);
+      const debtTotal = summary.accounts.filter((a: any) => a.type === "otherDebt").reduce((s: number, a: any) => s + a.balance, 0);
+      const netWorth = checking + savings + investments + debtTotal;
+      const today = new Date().toISOString().slice(0, 10);
+
+      db.prepare(`
+        INSERT INTO net_worth_snapshots (user_id, date, checking, savings, investments, debts, net_worth)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(user_id, date) DO UPDATE SET checking=excluded.checking, savings=excluded.savings, investments=excluded.investments, debts=excluded.debts, net_worth=excluded.net_worth
+      `).run(user.id, today, checking, savings, investments, debtTotal, netWorth);
+      console.info("[api/ynab/sync] Net worth snapshot auto-saved");
+    } catch (err) {
+      console.error("[api/ynab/sync] Failed to save net worth snapshot:", err);
+    }
 
     console.info("[api/ynab/sync] Sync complete. Accounts:", summary.accounts.length, "Transactions:", transactions.length);
 

@@ -71,6 +71,14 @@
 * Add projected month-end balance to dashboard
 * Improve AI summary with burn rate, projected balance, and living-above-means detection
 * Fix income page to load from database and persist form submissions
+* Separate user settings (language) from household settings (YNAB, saving rate)
+* Add household_settings table for shared settings between users
+* Migrate YNAB credentials from user table to household settings automatically
+* Add saving rate setting with monthly goal deducted from daily budget calculation
+* Add transfer filter and yellow badge to transactions page
+* Hide transfers from "all" view, show with dedicated filter button
+* Auto-take net worth snapshot on every YNAB sync
+* Fix spending chart Y-axis width and margins
 
 ### 0.2.0: 2026-03-18
 

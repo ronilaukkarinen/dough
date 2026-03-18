@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2 } from "lucide-react";
+import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2, PiggyBank } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import type { Locale } from "@/lib/i18n";
 
@@ -39,22 +39,32 @@ export default function SettingsPage() {
   const [langSaved, setLangSaved] = useState(false);
   const [ynabBudgets, setYnabBudgets] = useState<{ id: string; name: string }[]>([]);
   const [budgetsLoading, setBudgetsLoading] = useState(false);
-  const { t, setLocale } = useLocale();
+  const [savingRate, setSavingRate] = useState("");
+  const [savingRateSaved, setSavingRateSaved] = useState(false);
+  const { t, locale, setLocale } = useLocale();
 
   useEffect(() => {
-    console.debug("[settings] Loading user profile");
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.user) {
-          console.info("[settings] Profile loaded for", data.user.email);
-          setProfile(data.user);
-          setLanguage(data.user.locale || "en");
-          if (data.user.ynab_budget_id) {
-            setYnabBudgetId(data.user.ynab_budget_id);
+    console.debug("[settings] Loading settings");
+    Promise.all([
+      fetch("/api/auth/me").then((r) => r.json()),
+      fetch("/api/household").then((r) => r.json()),
+    ])
+      .then(([userData, householdData]) => {
+        if (userData.user) {
+          setProfile({
+            ...userData.user,
+            ynab_connected: householdData.settings?.ynab_connected || false,
+            ynab_budget_id: householdData.settings?.ynab_budget_id || null,
+            last_ynab_sync: householdData.settings?.last_ynab_sync || null,
+          });
+          setLanguage(userData.user.locale || "en");
+          if (householdData.settings?.ynab_budget_id) {
+            setYnabBudgetId(householdData.settings.ynab_budget_id);
           }
-          // Fetch available budgets if connected
-          if (data.user.ynab_connected) {
+          if (householdData.settings?.saving_rate) {
+            setSavingRate(String(householdData.settings.saving_rate));
+          }
+          if (householdData.settings?.ynab_connected) {
             fetch("/api/ynab/budgets")
               .then((r) => r.json())
               .then((bd) => {
@@ -64,7 +74,7 @@ export default function SettingsPage() {
           }
         }
       })
-      .catch((err) => console.error("[settings] Failed to load profile:", err))
+      .catch((err) => console.error("[settings] Failed to load:", err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -117,8 +127,8 @@ export default function SettingsPage() {
     console.info("[settings] Connecting YNAB");
 
     try {
-      // Save token first
-      const res = await fetch("/api/auth/update", {
+      // Save token to household settings
+      const res = await fetch("/api/household", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ynab_access_token: ynabToken.trim() }),
@@ -139,7 +149,7 @@ export default function SettingsPage() {
       if (budgets.length > 0) {
         const firstBudget = budgets[0];
         setYnabBudgetId(firstBudget.id);
-        await fetch("/api/auth/update", {
+        await fetch("/api/household", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ynab_budget_id: firstBudget.id }),
@@ -159,12 +169,12 @@ export default function SettingsPage() {
     setYnabLoading(true);
     console.info("[settings] Disconnecting YNAB");
     try {
-      const res = await fetch("/api/auth/update", {
+      const res = await fetch("/api/household", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ynab_access_token: "",
-          ynab_budget_id: "",
+          ynab_access_token: null,
+          ynab_budget_id: null,
         }),
       });
       if (res.ok) {
@@ -185,7 +195,7 @@ export default function SettingsPage() {
     if (!id.trim()) return;
     console.info("[settings] Saving budget ID:", id);
     try {
-      const res = await fetch("/api/auth/update", {
+      const res = await fetch("/api/household", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ynab_budget_id: id.trim() }),
@@ -263,6 +273,56 @@ export default function SettingsPage() {
               {langSaved && (
                 <span className="settings-saved">{t.common.saved}</span>
               )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Saving rate */}
+        <Card className="settings-card">
+          <CardHeader>
+            <CardTitle className="settings-card-title">
+              <PiggyBank />
+              {locale === "fi" ? "Säästötavoite" : "Saving goal"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="form-field">
+              <Label>{locale === "fi" ? "Kuukausittainen säästötavoite (€)" : "Monthly saving goal (€)"}</Label>
+              <div className="settings-row">
+                <Input
+                  type="number"
+                  step="1"
+                  min="0"
+                  value={savingRate}
+                  onChange={(e) => setSavingRate(e.target.value)}
+                  placeholder="0"
+                  className="settings-input"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    console.info("[settings] Saving saving rate:", savingRate);
+                    await fetch("/api/household", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ saving_rate: savingRate || "0" }),
+                    });
+                    setSavingRateSaved(true);
+                    setTimeout(() => setSavingRateSaved(false), 2000);
+                  }}
+                >
+                  {t.common.save}
+                </Button>
+                {savingRateSaved && (
+                  <span className="settings-saved">{t.common.saved}</span>
+                )}
+              </div>
+              <p className="settings-help">
+                {locale === "fi"
+                  ? "Vähennetään käytettävissä olevasta saldosta ennen päiväbudjetin laskemista"
+                  : "Deducted from available balance before calculating daily budget"}
+              </p>
             </div>
           </CardContent>
         </Card>

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getFinancialAdvice } from "@/lib/ai/finance-advisor";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
+import { getYnabToken, getYnabBudgetId } from "@/lib/household";
 import { getBudgetSummary, getTransactions, getMonthBudget } from "@/lib/ynab/client";
 
 export async function POST(request: Request) {
@@ -21,14 +22,9 @@ export async function POST(request: Request) {
     let context;
 
     if (user) {
-      const db = getDb();
-      const row = db
-        .prepare("SELECT ynab_access_token, ynab_budget_id, locale FROM users WHERE id = ?")
-        .get(user.id) as { ynab_access_token: string | null; ynab_budget_id: string | null; locale: string } | undefined;
-
-      const token = row?.ynab_access_token;
-      const budgetId = row?.ynab_budget_id;
-      const locale = row?.locale || "en";
+      const token = getYnabToken();
+      const budgetId = getYnabBudgetId();
+      const locale = user.locale || "en";
 
       if (token && budgetId) {
         console.info("[chat] Fetching real YNAB data for context");

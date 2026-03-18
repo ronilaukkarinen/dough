@@ -16,7 +16,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-type FilterType = "all" | "income" | "expenses";
+type FilterType = "all" | "income" | "expenses" | "transfers";
 
 export default function TransactionsPage() {
   const { t, locale } = useLocale();
@@ -28,6 +28,7 @@ export default function TransactionsPage() {
     all: t.transactions.all,
     expenses: t.transactions.expenses,
     income: t.transactions.income,
+    transfers: locale === "fi" ? "Siirrot" : "Transfers",
   };
 
   const transactions = data?.transactions ?? [];
@@ -38,8 +39,11 @@ export default function TransactionsPage() {
       if (search && !tx.payee.toLowerCase().includes(search.toLowerCase()) && !tx.category.toLowerCase().includes(search.toLowerCase())) {
         return false;
       }
-      if (filter === "income" && tx.amount < 0) return false;
-      if (filter === "expenses" && tx.amount >= 0) return false;
+      const isTransfer = tx.payee.startsWith("Transfer") || tx.category === "Uncategorized";
+      if (filter === "income" && (tx.amount < 0 || isTransfer)) return false;
+      if (filter === "expenses" && (tx.amount >= 0 || isTransfer)) return false;
+      if (filter === "transfers" && !isTransfer) return false;
+      if (filter === "all" && isTransfer) return false;
       return true;
     });
 
@@ -78,7 +82,7 @@ export default function TransactionsPage() {
           />
         </div>
         <div className="filter-bar-buttons">
-          {(["all", "expenses", "income"] as FilterType[]).map((f) => (
+          {(["all", "expenses", "income", "transfers"] as FilterType[]).map((f) => (
             <Button
               key={f}
               variant={filter === f ? "default" : "outline"}
@@ -97,14 +101,17 @@ export default function TransactionsPage() {
         </div>
       ) : (
         <Card className="list-card list-card-divider">
-          {filtered.map((tx) => (
+          {filtered.map((tx) => {
+            const isTransfer = tx.payee.startsWith("Transfer") || tx.category === "Uncategorized";
+            return (
             <div key={tx.id} className="list-item">
-              <div className="list-item-icon" data-color={tx.amount < 0 ? "negative" : "positive"}>
+              <div className="list-item-icon" data-color={isTransfer ? "chart-3" : tx.amount < 0 ? "negative" : "positive"}>
                 {tx.amount < 0 ? <ArrowUpRight className="icon-sm" /> : <ArrowDownLeft className="icon-sm" />}
               </div>
               <div className="list-item-body">
                 <div className="list-item-name-row">
                   <p className="list-item-name">{tx.payee}</p>
+                  {isTransfer && <Badge variant="secondary">{locale === "fi" ? "Siirto" : "Transfer"}</Badge>}
                 </div>
                 <p className="list-item-meta">{tx.category}</p>
               </div>
@@ -115,7 +122,8 @@ export default function TransactionsPage() {
                 <p className="list-item-amount-date">{relativeDate(tx.date, locale)}</p>
               </div>
             </div>
-          ))}
+            );
+          })}
           {filtered.length === 0 && (
             <div className="list-item">
               <p className="list-item-meta">{t.transactions.search}</p>

@@ -53,6 +53,7 @@ interface YnabContextValue {
   loading: boolean;
   error: string | null;
   connected: boolean;
+  savingRate: number;
   sync: () => Promise<void>;
 }
 
@@ -61,6 +62,7 @@ const YnabContext = createContext<YnabContextValue>({
   loading: false,
   error: null,
   connected: false,
+  savingRate: 0,
   sync: async () => {},
 });
 
@@ -69,6 +71,7 @@ export function YnabProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
+  const [savingRate, setSavingRate] = useState(0);
 
   const sync = useCallback(async () => {
     console.info("[ynab-context] Starting sync");
@@ -94,10 +97,13 @@ export function YnabProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     console.debug("[ynab-context] Checking YNAB connection");
-    fetch("/api/auth/me")
+    fetch("/api/household")
       .then((r) => r.json())
       .then((d) => {
-        if (d.user?.ynab_connected && d.user?.ynab_budget_id) {
+        if (d.settings?.saving_rate) {
+          setSavingRate(parseFloat(d.settings.saving_rate));
+        }
+        if (d.settings?.ynab_connected && d.settings?.ynab_budget_id) {
           console.info("[ynab-context] YNAB connected, auto-syncing");
           setConnected(true);
           sync();
@@ -109,7 +115,7 @@ export function YnabProvider({ children }: { children: ReactNode }) {
   }, [sync]);
 
   return (
-    <YnabContext.Provider value={{ data, loading, error, connected, sync }}>
+    <YnabContext.Provider value={{ data, loading, error, connected, savingRate, sync }}>
       {children}
     </YnabContext.Provider>
   );

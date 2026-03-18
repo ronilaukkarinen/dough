@@ -116,7 +116,26 @@ function initializeDb(db: Database.Database) {
     );
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_net_worth_user_date ON net_worth_snapshots(user_id, date);
+
+    CREATE TABLE IF NOT EXISTS household_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
+
+  // Migrate YNAB settings from users to household_settings
+  const existingYnab = db.prepare("SELECT ynab_access_token, ynab_budget_id FROM users WHERE ynab_access_token IS NOT NULL LIMIT 1").get() as { ynab_access_token: string; ynab_budget_id: string | null } | undefined;
+  if (existingYnab) {
+    const hasHousehold = db.prepare("SELECT value FROM household_settings WHERE key = 'ynab_access_token'").get();
+    if (!hasHousehold) {
+      console.info("[db] Migrating YNAB settings from users to household_settings");
+      db.prepare("INSERT OR IGNORE INTO household_settings (key, value) VALUES (?, ?)").run("ynab_access_token", existingYnab.ynab_access_token);
+      if (existingYnab.ynab_budget_id) {
+        db.prepare("INSERT OR IGNORE INTO household_settings (key, value) VALUES (?, ?)").run("ynab_budget_id", existingYnab.ynab_budget_id);
+      }
+    }
+  }
 
   console.info("[db] Schema initialized");
 }
