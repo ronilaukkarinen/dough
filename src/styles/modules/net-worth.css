@@ -56,10 +56,12 @@
 
 .net-worth-hero-value {
   font-size: 2rem;
+  line-height: 1.2;
   font-weight: 700;
   letter-spacing: -0.04em;
   color: var(--negative);
   font-variant-numeric: tabular-nums;
+  padding: 0.25rem 0;
 }
 
 @media (min-width: 768px) {

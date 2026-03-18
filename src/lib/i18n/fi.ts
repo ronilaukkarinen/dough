@@ -42,6 +42,7 @@ export const fi = {
     bills: "Laskut",
     income: "Tulot",
     debts: "Velat",
+    netWorth: "Varallisuus",
     settings: "Asetukset",
   },
   dashboard: {

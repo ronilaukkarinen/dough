@@ -102,6 +102,20 @@ function initializeDb(db: Database.Database) {
     );
 
     CREATE INDEX IF NOT EXISTS idx_chat_messages_user ON chat_messages(user_id, created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS net_worth_snapshots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      checking REAL NOT NULL DEFAULT 0,
+      savings REAL NOT NULL DEFAULT 0,
+      investments REAL NOT NULL DEFAULT 0,
+      debts REAL NOT NULL DEFAULT 0,
+      net_worth REAL NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_net_worth_user_date ON net_worth_snapshots(user_id, date);
   `);
 
   console.info("[db] Schema initialized");

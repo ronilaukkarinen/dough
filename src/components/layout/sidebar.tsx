@@ -9,6 +9,7 @@ import {
   CalendarClock,
   Wallet,
   TrendingDown,
+  LineChart,
   Settings,
   LogOut,
   ChevronLeft,
@@ -27,6 +28,7 @@ const navKeys = [
   { href: "/bills", icon: CalendarClock, key: "bills" },
   { href: "/income", icon: Wallet, key: "income" },
   { href: "/debts", icon: TrendingDown, key: "debts" },
+  { href: "/net-worth", icon: LineChart, key: "netWorth" },
 ] as const;
 
 interface SidebarProps {

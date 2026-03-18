@@ -42,6 +42,7 @@ export const en = {
     bills: "Bills",
     income: "Income",
     debts: "Debts",
+    netWorth: "Net worth",
     settings: "Settings",
   },
   dashboard: {

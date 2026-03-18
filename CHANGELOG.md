@@ -60,6 +60,12 @@
 * Add copy-to-clipboard button on AI summary card
 * Fix duplicate net worth heading, follow hero design pattern
 * Fix Finnish translation "Tulonlähteet"
+* Add net worth page with snapshot history and area chart
+* Add net worth nav item to sidebar
+* Add net_worth_snapshots table to database
+* Format debt-free time as Xv Xkk when over 12 months
+* Fix cash flow chart Y-axis width to prevent truncated labels
+* Fix net worth hero value line-height and spacing
 
 ### 0.2.0: 2026-03-18
 

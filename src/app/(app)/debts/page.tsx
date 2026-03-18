@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLocale } from "@/lib/locale-context";
 import { useYnab } from "@/lib/ynab-context";
+import { formatDuration } from "@/lib/date-utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,7 +93,7 @@ function calculatePayoff(sortedDebts: Debt[], extraPayment: number) {
 }
 
 export default function DebtsPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { data } = useYnab();
   const [extraPayment, setExtraPayment] = useState(50);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -199,7 +200,7 @@ export default function DebtsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.debts.debtFreeIn}</p>
-              <p className="metric-card-value">{snowball.months} {t.debts.months}</p>
+              <p className="metric-card-value">{formatDuration(snowball.months, locale)}</p>
             </div>
           </div>
         </Card>
@@ -264,7 +265,7 @@ export default function DebtsPage() {
                 <div className="payoff-stats">
                   <div>
                     <span className="payoff-stats-label">{t.debts.debtFree} </span>
-                    <span className="payoff-stats-value">{data.months} {t.debts.months}</span>
+                    <span className="payoff-stats-value">{formatDuration(data.months, locale)}</span>
                   </div>
                   <div>
                     <span className="payoff-stats-label">{t.debts.totalInterest} </span>
