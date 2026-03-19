@@ -37,10 +37,11 @@ export default function DashboardPage() {
   const [incomes, setIncomes] = useState<IncomeSource[]>([]);
   const [matchedIncomeIds, setMatchedIncomeIds] = useState<Set<number>>(new Set());
   const [matchedBillIds, setMatchedBillIds] = useState<Set<number>>(new Set());
-  const [bills, setBills] = useState<{ id: number; amount: number; due_day: number; is_active: number }[]>([]);
+  const [bills, setBills] = useState<{ id: number; amount: number; due_day: number; is_active: number; is_paid: boolean }[]>([]);
   const [investmentMonthly, setInvestmentMonthly] = useState(0);
   const [debtMonthly, setDebtMonthly] = useState(0);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
+  const [householdSize, setHouseholdSize] = useState(1);
   const [lastYnabSync, setLastYnabSync] = useState<string | null>(null);
 
   const loadSideData = useCallback(() => {
@@ -55,6 +56,7 @@ export default function DashboardPage() {
     ]).then(([incomeData, matchData, billsData, profileData, householdData, investmentData, debtData]) => {
       if (profileData.linkedAccountIds) setLinkedAccountIds(profileData.linkedAccountIds);
       if (householdData.settings?.last_ynab_sync) setLastYnabSync(householdData.settings.last_ynab_sync);
+      if (householdData.settings?.household_size) setHouseholdSize(parseInt(householdData.settings.household_size, 10) || 1);
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       if (billsData.bills) setBills(billsData.bills);
       if (investmentData.investments) {
@@ -300,7 +302,9 @@ export default function DashboardPage() {
         todaySpentPersonal={todaySpentPersonal}
         todaySpentAll={todaySpentAll}
         dailyBudget={dailyBudget}
+        personalDailyBudget={Math.round((dailyBudget / householdSize) * 100) / 100}
         todayRemaining={todayRemaining}
+        personalRemaining={Math.round((dailyBudget / householdSize - todaySpentPersonal) * 100) / 100}
       />
 
       <AiSummary />
@@ -308,9 +312,9 @@ export default function DashboardPage() {
       <DailyAllowance
         dailyBudget={dailyBudget}
         availableBalance={Math.round(availableBalance)}
-        upcomingBills={bills.filter((b) => b.is_active && b.due_day > today).reduce((s, b) => s + b.amount, 0)}
+        upcomingBills={bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0)}
         accountCount={data.summary.accounts.filter((a) => a.type === "checking" || a.type === "savings").length}
-        billCount={bills.filter((b) => b.is_active && b.due_day > today).length}
+        billCount={bills.filter((b) => b.is_active && !b.is_paid).length}
         nextIncomeAmount={(() => {
           const next = incomes
             .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))

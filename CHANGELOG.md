@@ -1,5 +1,7 @@
 ### 1.0.0: 2026-03-19
 
+* Show personal daily budget in greeting based on household size instead of household total
+* Fix bills due card to include overdue unpaid bills, not just future ones
 * Add comprehensive README.md with install guide, architecture, contributing, and documentation links
 * Pre-calculate available-before-payday and daily spendable in AI chat to prevent treating future salary as available
 * Align AI summary calculations with dashboard: saving goal in daily budget, debt/investment payments in expenses, matching discretionary rounding
