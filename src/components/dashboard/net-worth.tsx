@@ -16,7 +16,7 @@ interface NetWorthProps {
 }
 
 export function NetWorth({ accounts }: NetWorthProps) {
-  const { t } = useLocale();
+  const { t, fmt } = useLocale();
 
   const investments = accounts.filter((a) => a.type === "otherAsset");
   const debts = accounts.filter((a) => a.type === "otherDebt");
@@ -33,7 +33,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
         <Card className="net-worth-hero">
           <p className="net-worth-hero-label">{t.dashboard.netWorth}</p>
           <p className="net-worth-hero-value" data-positive={netWorth >= 0 || undefined}>
-            {netWorth.toFixed(2)} €
+            {fmt(netWorth)} €
           </p>
         </Card>
 
@@ -44,7 +44,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
             </div>
             <div>
               <p className="net-worth-card-label">{t.dashboard.accounts}</p>
-              <p className="net-worth-card-value">{checkingTotal.toFixed(2)} €</p>
+              <p className="net-worth-card-value">{fmt(checkingTotal)} €</p>
             </div>
           </div>
         </Card>
@@ -56,7 +56,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
             </div>
             <div>
               <p className="net-worth-card-label">{t.dashboard.investments}</p>
-              <p className="net-worth-card-value text-positive">{investmentTotal.toFixed(2)} €</p>
+              <p className="net-worth-card-value text-positive">{fmt(investmentTotal)} €</p>
             </div>
           </div>
         </Card>
@@ -68,7 +68,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
             </div>
             <div>
               <p className="net-worth-card-label">{t.debts.title}</p>
-              <p className="net-worth-card-value text-negative">{debtTotal.toFixed(2)} €</p>
+              <p className="net-worth-card-value text-negative">{fmt(debtTotal)} €</p>
             </div>
           </div>
         </Card>
@@ -80,7 +80,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
           {investments.map((a) => (
             <div key={a.id} className="net-worth-list-item">
               <span className="net-worth-list-name">{a.name}</span>
-              <span className="net-worth-list-amount">{a.balance.toFixed(2)} €</span>
+              <span className="net-worth-list-amount">{fmt(a.balance)} €</span>
             </div>
           ))}
         </Card>
@@ -92,7 +92,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
           {debts.map((a) => (
             <div key={a.id} className="net-worth-list-item">
               <span className="net-worth-list-name">{a.name}</span>
-              <span className="net-worth-list-amount net-worth-list-amount-debt">{a.balance.toFixed(2)} €</span>
+              <span className="net-worth-list-amount net-worth-list-amount-debt">{fmt(a.balance)} €</span>
             </div>
           ))}
         </Card>

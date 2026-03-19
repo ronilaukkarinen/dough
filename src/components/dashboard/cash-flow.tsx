@@ -19,7 +19,7 @@ interface CashFlowProps {
 }
 
 export function CashFlowChart({ data }: CashFlowProps) {
-  const { t } = useLocale();
+  const { t, fmt } = useLocale();
 
   function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: string }) {
     if (active && payload && payload.length) {
@@ -42,7 +42,7 @@ export function CashFlowChart({ data }: CashFlowProps) {
                   : entry.dataKey === "expenses"
                   ? t.dashboard.expenses
                   : t.dashboard.net}
-                : {Math.abs(entry.value).toFixed(2)} €
+                : {fmt(Math.abs(entry.value))} €
               </span>
             </p>
           ))}

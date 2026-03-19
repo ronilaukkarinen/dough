@@ -19,7 +19,7 @@ function valueStatus(value: number, budget: number): "good" | "tight" | "danger"
 
 export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudget, todayRemaining }: PersonalGreetingProps) {
   const [name, setName] = useState("");
-  const { locale } = useLocale();
+  const { locale, fmt } = useLocale();
 
   useEffect(() => {
     fetch("/api/profile").then((r) => r.json()).then((data) => {
@@ -37,13 +37,13 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
         {locale === "fi" ? `Hei ${name}! ` : `Hi ${name}! `}
         {locale === "fi" ? "Sinä olet käyttänyt tänään " : "You spent "}
         <span className="personal-greeting-value" data-status={todaySpentPersonal > dailyBudget * 0.3 ? "danger" : todaySpentPersonal > dailyBudget * 0.15 ? "tight" : "good"}>
-          {todaySpentPersonal.toFixed(2)} €
+          {fmt(todaySpentPersonal)} €
         </span>
         {todaySpentAll > todaySpentPersonal && (
           <>
             {locale === "fi" ? ", perhe yhteensä " : ", household total "}
             <span className="personal-greeting-value" data-status={todaySpentAll > dailyBudget * 0.8 ? "danger" : todaySpentAll > dailyBudget * 0.5 ? "tight" : "good"}>
-              {todaySpentAll.toFixed(2)} €
+              {fmt(todaySpentAll)} €
             </span>
           </>
         )}
@@ -51,13 +51,13 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
         {exceeded
           ? <>
               {locale === "fi" ? "Päiväbudjetti ylittynyt " : "Daily budget exceeded by "}
-              <span className="personal-greeting-exceeded">{Math.abs(todayRemaining).toFixed(2)} €</span>
+              <span className="personal-greeting-exceeded">{fmt(Math.abs(todayRemaining))} €</span>
               {locale === "fi" ? " verran. Huomenna parempi kulukuri sitten." : "."}
             </>
           : <>
               {locale === "fi" ? "Päiväbudjetista jäljellä " : "Daily budget remaining "}
               <span className="personal-greeting-value" data-status={valueStatus(todayRemaining, dailyBudget)}>
-                {todayRemaining.toFixed(2)} €
+                {fmt(todayRemaining)} €
               </span>
               {"."}
             </>

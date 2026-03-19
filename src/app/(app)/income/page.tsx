@@ -29,7 +29,7 @@ interface Income {
 }
 
 export default function IncomePage() {
-  const { t, locale } = useLocale();
+  const { t, locale, fmt } = useLocale();
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
@@ -174,7 +174,7 @@ export default function IncomePage() {
 
       <Card className="metric-card">
         <p className="metric-card-label">{t.income.expectedMonthly}</p>
-        <p className="metric-card-value-3xl text-positive">{monthlyTotal.toFixed(2)} €</p>
+        <p className="metric-card-value-3xl text-positive">{fmt(monthlyTotal)} €</p>
         <p className="metric-card-note metric-card-note-mt">{active.length} {t.common.sources}</p>
       </Card>
 
@@ -199,9 +199,9 @@ export default function IncomePage() {
                 </p>
               </div>
               <div className="list-item-end">
-                <p className="list-item-amount-value" data-positive>+{income.amount.toFixed(2)} €</p>
+                <p className="list-item-amount-value" data-positive>+{fmt(income.amount)} €</p>
                 {income.average_amount && income.history_count >= 2 && (
-                  <p className="list-item-meta">{locale === "fi" ? "ka" : "avg"} {income.average_amount.toFixed(2)} €</p>
+                  <p className="list-item-meta">{locale === "fi" ? "ka" : "avg"} {fmt(income.average_amount)} €</p>
                 )}
                 <span onClick={(e) => e.stopPropagation()}>
                   <Switch

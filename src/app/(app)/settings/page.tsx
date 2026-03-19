@@ -51,7 +51,9 @@ export default function SettingsPage() {
   const [allAccounts, setAllAccounts] = useState<{ id: string; name: string; balance: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [accountsSaved, setAccountsSaved] = useState(false);
-  const { t, locale, setLocale } = useLocale();
+  const [decimalPlaces, setDecimalPlaces] = useState("0");
+  const [decimalSaved, setDecimalSaved] = useState(false);
+  const { t, locale, setLocale, setDecimals, fmt } = useLocale();
 
   useEffect(() => {
     console.debug("[settings] Loading settings");
@@ -81,6 +83,9 @@ export default function SettingsPage() {
           }
           if (householdData.settings?.household_size) {
             setHouseholdSize(householdData.settings.household_size);
+          }
+          if (householdData.settings?.decimal_places !== undefined) {
+            setDecimalPlaces(String(householdData.settings.decimal_places));
           }
           if (householdData.settings?.prompt_chat_guidelines) {
             setPrompts((p) => ({ ...p, chat: householdData.settings.prompt_chat_guidelines }));
@@ -345,7 +350,7 @@ export default function SettingsPage() {
                         }}
                       />
                       <span className="settings-account-name">{a.name}</span>
-                      <span className="settings-account-balance">{a.balance.toFixed(2)} €</span>
+                      <span className="settings-account-balance">{fmt(a.balance)} €</span>
                     </label>
                   ))}
                 </div>
@@ -395,6 +400,51 @@ export default function SettingsPage() {
                 <span className="settings-saved">{t.common.saved}</span>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Decimal places */}
+        <Card className="settings-card">
+          <CardHeader>
+            <CardTitle className="settings-card-title">
+              <Globe />
+              {locale === "fi" ? "Desimaalit" : "Decimal places"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="settings-row">
+              <Select
+                value={decimalPlaces}
+                onValueChange={async (v) => {
+                  if (!v) return;
+                  setDecimalPlaces(v);
+                  setDecimals(parseInt(v, 10));
+                  console.info("[settings] Saving decimal places:", v);
+                  await fetch("/api/household", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ decimal_places: v }),
+                  });
+                  setDecimalSaved(true);
+                  setTimeout(() => setDecimalSaved(false), 2000);
+                }}
+              >
+                <SelectTrigger className="settings-input">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">0 (1234 €)</SelectItem>
+                  <SelectItem value="1">1 (1234.5 €)</SelectItem>
+                  <SelectItem value="2">2 (1234.56 €)</SelectItem>
+                </SelectContent>
+              </Select>
+              {decimalSaved && <span className="settings-saved">{t.common.saved}</span>}
+            </div>
+            <p className="settings-help">
+              {locale === "fi"
+                ? "Kuinka monta desimaalia euroissa. Koskee koko sovellusta."
+                : "Number of decimal places for euro amounts. Applies globally."}
+            </p>
           </CardContent>
         </Card>
 

@@ -78,7 +78,7 @@ function calculatePayoff(debts: DebtData[], extraPayment: number, sortFn: (a: De
 }
 
 export default function DebtsPage() {
-  const { t, locale } = useLocale();
+  const { t, locale, fmt } = useLocale();
   const [debts, setDebts] = useState<DebtData[]>([]);
   const [loading, setLoading] = useState(true);
   const [extraPayment, setExtraPayment] = useState(50);
@@ -169,7 +169,7 @@ export default function DebtsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.debts.totalDebt}</p>
-              <p className="metric-card-value">{totalDebt.toFixed(2)} €</p>
+              <p className="metric-card-value">{fmt(totalDebt)} €</p>
             </div>
           </div>
         </Card>
@@ -180,7 +180,7 @@ export default function DebtsPage() {
             </div>
             <div>
               <p className="metric-card-label">{locale === "fi" ? "Kuukausimaksut" : "Monthly payments"}</p>
-              <p className="metric-card-value">{totalMonthly.toFixed(2)} €</p>
+              <p className="metric-card-value">{fmt(totalMonthly)} €</p>
             </div>
           </div>
         </Card>
@@ -226,12 +226,12 @@ export default function DebtsPage() {
                   <p className="debt-item-name">{debt.name}</p>
                   {debt.monthlyPayment > 0 && (
                     <p className="debt-item-meta">
-                      {locale === "fi" ? "Maksettu tässä kuussa" : "Paid this month"}: {debt.monthlyPayment.toFixed(2)} €
+                      {locale === "fi" ? "Maksettu tässä kuussa" : "Paid this month"}: {fmt(debt.monthlyPayment)} €
                     </p>
                   )}
                 </div>
                 <div className="debt-item-right">
-                  <p className="debt-item-amount">{debt.balance.toFixed(2)} €</p>
+                  <p className="debt-item-amount">{fmt(debt.balance)} €</p>
                 </div>
               </div>
               <div className="debt-edit-row">
@@ -313,7 +313,7 @@ export default function DebtsPage() {
                     </div>
                     <div>
                       <span className="payoff-stats-label">{t.debts.totalInterest} </span>
-                      <span className="payoff-stats-value" data-color="negative">{data.totalInterest.toFixed(2)} €</span>
+                      <span className="payoff-stats-value" data-color="negative">{fmt(data.totalInterest)} €</span>
                     </div>
                   </div>
                   {data.timeline.length > 1 && (
@@ -334,7 +334,7 @@ export default function DebtsPage() {
                               active && payload?.length ? (
                                 <div className="chart-tooltip">
                                   <p className="chart-tooltip-label">{label}</p>
-                                  <p className="chart-tooltip-value text-foreground">{Number(payload[0].value).toFixed(2)} €</p>
+                                  <p className="chart-tooltip-value text-foreground">{fmt(Number(payload[0].value))} €</p>
                                 </div>
                               ) : null
                             }

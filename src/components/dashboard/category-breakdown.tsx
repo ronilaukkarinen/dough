@@ -17,21 +17,21 @@ interface CategoryBreakdownProps {
   currency?: string;
 }
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: Category }> }) {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    return (
-      <div className="chart-tooltip">
-        <p className="chart-tooltip-value text-foreground">{data.name}</p>
-        <p className="chart-tooltip-label">{data.amount.toFixed(2)} €</p>
-      </div>
-    );
-  }
-  return null;
-}
-
 export function CategoryBreakdown({ categories, total, currency = "€" }: CategoryBreakdownProps) {
-  const { t } = useLocale();
+  const { t, fmt } = useLocale();
+
+  function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: Category }> }) {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="chart-tooltip">
+          <p className="chart-tooltip-value text-foreground">{data.name}</p>
+          <p className="chart-tooltip-label">{fmt(data.amount)} €</p>
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
     <Card className="category-breakdown-card">
@@ -51,7 +51,7 @@ export function CategoryBreakdown({ categories, total, currency = "€" }: Categ
             </ResponsiveContainer>
           </ChartContainer>
           <div className="category-breakdown-donut-center">
-            <span className="category-breakdown-donut-total">{total.toFixed(2)} {currency}</span>
+            <span className="category-breakdown-donut-total">{fmt(total)} {currency}</span>
             <span className="category-breakdown-donut-label">{t.common.total}</span>
           </div>
         </div>
@@ -62,7 +62,7 @@ export function CategoryBreakdown({ categories, total, currency = "€" }: Categ
                 <div className="category-breakdown-legend-dot" style={{ backgroundColor: cat.color }} />
                 <span className="category-breakdown-legend-text">{cat.name}</span>
               </div>
-              <span className="category-breakdown-legend-amount">{cat.amount.toFixed(2)} {currency}</span>
+              <span className="category-breakdown-legend-amount">{fmt(cat.amount)} {currency}</span>
             </div>
           ))}
         </div>

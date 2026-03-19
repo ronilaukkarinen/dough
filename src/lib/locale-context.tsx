@@ -16,28 +16,42 @@ interface LocaleContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: TranslationObj;
+  decimals: number;
+  setDecimals: (d: number) => void;
+  fmt: (n: number) => string;
 }
 
 const LocaleContext = createContext<LocaleContextValue>({
   locale: "en",
   setLocale: () => {},
   t: en,
+  decimals: 0,
+  setDecimals: () => {},
+  fmt: (n: number) => n.toFixed(0),
 });
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
+  const [decimals, setDecimalsState] = useState(0);
 
   useEffect(() => {
-    console.debug("[locale] Fetching user locale");
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.user?.locale) {
-          console.info("[locale] User locale:", data.user.locale);
-          setLocaleState(data.user.locale as Locale);
+    console.debug("[locale] Fetching user locale and settings");
+    Promise.all([
+      fetch("/api/auth/me").then((r) => r.json()),
+      fetch("/api/household").then((r) => r.json()),
+    ]).then(([userData, householdData]) => {
+      if (userData.user?.locale) {
+        console.info("[locale] User locale:", userData.user.locale);
+        setLocaleState(userData.user.locale as Locale);
+      }
+      if (householdData.settings?.decimal_places !== undefined) {
+        const d = parseInt(householdData.settings.decimal_places, 10);
+        if (d >= 0 && d <= 2) {
+          console.info("[locale] Decimal places:", d);
+          setDecimalsState(d);
         }
-      })
-      .catch((err) => console.error("[locale] Failed to load locale:", err));
+      }
+    }).catch((err) => console.error("[locale] Failed to load settings:", err));
   }, []);
 
   const setLocale = useCallback((newLocale: Locale) => {
@@ -45,10 +59,17 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     setLocaleState(newLocale);
   }, []);
 
+  const setDecimals = useCallback((d: number) => {
+    console.info("[locale] Setting decimals to", d);
+    setDecimalsState(d);
+  }, []);
+
+  const fmt = useCallback((n: number) => n.toFixed(decimals), [decimals]);
+
   const t = translations[locale] || translations.en;
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, t }}>
+    <LocaleContext.Provider value={{ locale, setLocale, t, decimals, setDecimals, fmt }}>
       {children}
     </LocaleContext.Provider>
   );

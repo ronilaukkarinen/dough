@@ -74,7 +74,7 @@ function calculateProjection(
 }
 
 export default function InvestmentsPage() {
-  const { t, locale } = useLocale();
+  const { t, locale, fmt } = useLocale();
   const [investments, setInvestments] = useState<InvestmentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -148,7 +148,7 @@ export default function InvestmentsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.investments.totalValue}</p>
-              <p className="metric-card-value">{totalValue.toFixed(2)} €</p>
+              <p className="metric-card-value">{fmt(totalValue)} €</p>
             </div>
           </div>
         </Card>
@@ -159,7 +159,7 @@ export default function InvestmentsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.investments.totalMonthly}</p>
-              <p className="metric-card-value">{totalMonthly.toFixed(2)} €</p>
+              <p className="metric-card-value">{fmt(totalMonthly)} €</p>
             </div>
           </div>
         </Card>
@@ -170,7 +170,7 @@ export default function InvestmentsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.investments.projectedValue}</p>
-              <p className="metric-card-value">{projection.finalValue.toFixed(0)} €</p>
+              <p className="metric-card-value">{fmt(projection.finalValue)} €</p>
               <p className="metric-card-note">{projectionYears} {locale === "fi" ? "v" : "y"}</p>
             </div>
           </div>
@@ -187,12 +187,12 @@ export default function InvestmentsPage() {
                   <p className="debt-item-name">{inv.name}</p>
                   {inv.monthlyTransferred > 0 && (
                     <p className="debt-item-meta">
-                      {locale === "fi" ? "Siirretty tässä kuussa" : "Transferred this month"}: {inv.monthlyTransferred.toFixed(2)} €
+                      {locale === "fi" ? "Siirretty tässä kuussa" : "Transferred this month"}: {fmt(inv.monthlyTransferred)} €
                     </p>
                   )}
                 </div>
                 <div className="debt-item-right">
-                  <p className="debt-item-amount text-positive">{inv.balance.toFixed(2)} €</p>
+                  <p className="debt-item-amount text-positive">{fmt(inv.balance)} €</p>
                 </div>
               </div>
               <div className="debt-edit-row">
@@ -253,15 +253,15 @@ export default function InvestmentsPage() {
             <div className="payoff-stats">
               <div>
                 <span className="payoff-stats-label">{t.investments.projectedValue} </span>
-                <span className="payoff-stats-value" data-color="positive">{projection.finalValue.toFixed(0)} €</span>
+                <span className="payoff-stats-value" data-color="positive">{fmt(projection.finalValue)} €</span>
               </div>
               <div>
                 <span className="payoff-stats-label">{t.investments.invested} </span>
-                <span className="payoff-stats-value">{projection.totalInvested.toFixed(0)} €</span>
+                <span className="payoff-stats-value">{fmt(projection.totalInvested)} €</span>
               </div>
               <div>
                 <span className="payoff-stats-label">{t.investments.returns} </span>
-                <span className="payoff-stats-value" data-color="positive">+{projection.totalReturns.toFixed(0)} €</span>
+                <span className="payoff-stats-value" data-color="positive">+{fmt(projection.totalReturns)} €</span>
               </div>
             </div>
             {projection.timeline.length > 1 && (
@@ -298,8 +298,8 @@ export default function InvestmentsPage() {
                         active && payload?.length ? (
                           <div className="chart-tooltip">
                             <p className="chart-tooltip-label">{label} {locale === "fi" ? "vuotta" : "years"}</p>
-                            <p className="chart-tooltip-value text-positive">{Number(payload[0].value).toFixed(0)} €</p>
-                            <p className="chart-tooltip-value text-foreground">{locale === "fi" ? "Sijoitettu" : "Invested"}: {Number(payload[1].value).toFixed(0)} €</p>
+                            <p className="chart-tooltip-value text-positive">{fmt(Number(payload[0].value))} €</p>
+                            <p className="chart-tooltip-value text-foreground">{locale === "fi" ? "Sijoitettu" : "Invested"}: {fmt(Number(payload[1].value))} €</p>
                           </div>
                         ) : null
                       }

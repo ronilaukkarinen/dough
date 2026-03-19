@@ -27,7 +27,7 @@ interface Snapshot {
 }
 
 export default function NetWorthPage() {
-  const { t } = useLocale();
+  const { t, fmt } = useLocale();
   const { connected } = useYnab();
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +109,7 @@ export default function NetWorthPage() {
             <div className="net-worth-grid">
               <Card className="net-worth-hero">
                 <p className="net-worth-hero-value" data-positive={latest.net_worth >= 0 || undefined}>
-                  {latest.net_worth.toFixed(2)} €
+                  {fmt(latest.net_worth)} €
                 </p>
               </Card>
 
@@ -120,7 +120,7 @@ export default function NetWorthPage() {
                   </div>
                   <div>
                     <p className="net-worth-card-label">{t.dashboard.investments}</p>
-                    <p className="net-worth-card-value text-positive">{latest.investments.toFixed(2)} €</p>
+                    <p className="net-worth-card-value text-positive">{fmt(latest.investments)} €</p>
                   </div>
                 </div>
               </Card>
@@ -132,7 +132,7 @@ export default function NetWorthPage() {
                   </div>
                   <div>
                     <p className="net-worth-card-label">{t.debts.title}</p>
-                    <p className="net-worth-card-value text-negative">{latest.debts.toFixed(2)} €</p>
+                    <p className="net-worth-card-value text-negative">{fmt(latest.debts)} €</p>
                   </div>
                 </div>
               </Card>
@@ -158,7 +158,7 @@ export default function NetWorthPage() {
                         active && payload?.length ? (
                           <div className="chart-tooltip">
                             <p className="chart-tooltip-label">{label}</p>
-                            <p className="chart-tooltip-value text-foreground">{Number(payload[0].value).toFixed(2)} €</p>
+                            <p className="chart-tooltip-value text-foreground">{fmt(Number(payload[0].value))} €</p>
                           </div>
                         ) : null
                       }

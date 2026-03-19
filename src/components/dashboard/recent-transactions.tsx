@@ -20,7 +20,7 @@ interface RecentTransactionsProps {
 }
 
 export function RecentTransactions({ transactions, currency = "€" }: RecentTransactionsProps) {
-  const { t, locale } = useLocale();
+  const { t, locale, fmt } = useLocale();
 
   return (
     <Card className="recent-transactions-card">
@@ -40,7 +40,7 @@ export function RecentTransactions({ transactions, currency = "€" }: RecentTra
             </div>
             <div className="recent-transactions-amount">
               <p className="recent-transactions-amount-value" data-type={tx.amount < 0 ? "expense" : "income"}>
-                {tx.amount < 0 ? "-" : "+"}{Math.abs(tx.amount).toFixed(2)} {currency}
+                {tx.amount < 0 ? "-" : "+"}{fmt(Math.abs(tx.amount))} {currency}
               </p>
               <p className="recent-transactions-date">{relativeDate(tx.date, locale)}</p>
             </div>

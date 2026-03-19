@@ -83,6 +83,7 @@
 
 - User profile: name, linked spending account
 - Language: English and Finnish with live switching
+- Decimal places: 0-2 decimals for euro amounts (default 0, display-only)
 - Household: size, description for AI, saving goal
 - YNAB: connect/disconnect, budget selection, sync
 - AI prompts: editable chat guidelines, summary instructions, debt advice
