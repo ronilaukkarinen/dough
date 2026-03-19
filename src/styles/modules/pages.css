@@ -626,6 +626,26 @@
   margin-bottom: 0.5rem;
 }
 
+/* Error banner */
+.error-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--negative) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--negative) 20%, transparent);
+  margin-top: 0.5rem;
+}
+
+.error-banner-text {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--negative);
+  font-weight: 500;
+}
+
 .settings-error {
   font-size: 0.875rem;
   line-height: 1.25rem;

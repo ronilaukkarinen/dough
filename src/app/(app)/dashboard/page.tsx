@@ -72,14 +72,29 @@ export default function DashboardPage() {
     );
   }
 
+  if (ynabError && !data) {
+    return (
+      <div className="page-stack">
+        <div>
+          <h1 className="page-heading">{t.dashboard.title}</h1>
+          <div className="error-banner">
+            <p className="error-banner-text">{ynabError}</p>
+            <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
+              <RefreshCw className={loading ? "icon-sm animate-spin" : "icon-sm"} />
+              {locale === "fi" ? "Yritä uudelleen" : "Retry"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!connected && !data) {
     return (
       <div className="page-stack">
         <div>
           <h1 className="page-heading">{t.dashboard.title}</h1>
-          <p className="page-subtitle">
-            {ynabError || t.settings.ynabDescription}
-          </p>
+          <p className="page-subtitle">{t.settings.ynabDescription}</p>
         </div>
       </div>
     );

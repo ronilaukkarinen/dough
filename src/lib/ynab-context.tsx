@@ -76,18 +76,29 @@ export function YnabProvider({ children }: { children: ReactNode }) {
   const [savingRate, setSavingRate] = useState(0);
 
   const sync = useCallback(async () => {
+    // Rate limit protection — don't sync more than once per 2 minutes
+    const lastSync = typeof window !== "undefined" ? parseInt(localStorage.getItem("dough-last-sync") || "0", 10) : 0;
+    if (Date.now() - lastSync < 120000) {
+      console.warn("[ynab-context] Sync throttled, last sync was", Math.round((Date.now() - lastSync) / 1000), "seconds ago");
+      setLoading(false);
+      return;
+    }
+
     console.info("[ynab-context] Starting sync");
     setLoading(true);
     setError(null);
     try {
+      if (typeof window !== "undefined") localStorage.setItem("dough-last-sync", String(Date.now()));
       const res = await fetch("/api/ynab/sync", { method: "POST" });
       const json = await res.json();
       if (json.success && json.data) {
         console.info("[ynab-context] Sync complete, transactions:", json.data.transactions?.length);
         setData(json.data);
+        setError(null);
       } else {
-        console.warn("[ynab-context] Sync failed:", json.error);
-        setError(json.error || "Sync failed");
+        const errMsg = json.error || "Sync failed";
+        console.warn("[ynab-context] Sync failed:", errMsg);
+        setError(errMsg.includes("429") || errMsg.includes("abnormal") ? "YNAB rate limit exceeded. Wait a few minutes and try again." : errMsg);
       }
     } catch (err) {
       console.error("[ynab-context] Sync error:", err);
