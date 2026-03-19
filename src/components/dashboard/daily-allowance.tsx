@@ -54,18 +54,19 @@ export function DailyAllowance({
             {daysUntilIncome} {t.dashboard.daysUntilNextIncome}
             {status === "danger" && ` \u2014 ${t.dashboard.cutNonEssentials}`}
             {status === "tight" && ` \u2014 ${t.dashboard.beCareful}`}
+            {todaySpentAll > 0 && (
+              <>
+                {" \u00B7 "}
+                {locale === "fi" ? "tänään " : "today "}
+                {todaySpentAll.toFixed(2)} {currency}
+                {" \u2014 "}
+                {locale === "fi" ? "jäljellä " : "left "}
+                <span className={todayRemaining <= 0 ? "text-negative" : todayRemaining < dailyBudget * 0.3 ? "text-chart-3" : "text-positive"}>
+                  {todayRemaining.toFixed(2)} {currency}
+                </span>
+              </>
+            )}
           </p>
-          {todaySpentAll > 0 && (
-            <p className="daily-allowance-hero-note">
-              {locale === "fi" ? "Tänään käytetty " : "Spent today "}
-              {todaySpentAll.toFixed(2)} {currency}
-              {" \u2014 "}
-              {locale === "fi" ? "jäljellä " : "remaining "}
-              <span className={todayRemaining <= 0 ? "text-negative" : todayRemaining < dailyBudget * 0.3 ? "text-chart-3" : "text-positive"}>
-                {todayRemaining.toFixed(2)} {currency}
-              </span>
-            </p>
-          )}
         </div>
         <div className="daily-allowance-hero-bg">
           <Wallet />

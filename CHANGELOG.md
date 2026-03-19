@@ -1,5 +1,11 @@
 ### 1.0.0: 2026-03-19
 
+* Add AI auto-categorization for added expenses via Claude CLI
+* Add description/memo field to expense form
+* Add categories API for YNAB category list
+* Merge hero card today spent and remaining into single line
+* Add unread indicator dot on transactions sidebar when data changes
+* Fix Finnish: "Kuukausitulot", "Näkyy tilillä", "Suurimmat kuluerät", "perhe yhteensä"
 * Remove "guaranteed recurring" card from income page, keep single total
 * Add income amount history tracking for variable income averages
 * Show average amount on income list when 2+ months of history exist
