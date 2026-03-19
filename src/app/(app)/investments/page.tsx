@@ -267,7 +267,7 @@ export default function InvestmentsPage() {
             {projection.timeline.length > 1 && (
               <ChartContainer height={250}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={projection.timeline} margin={{ top: 4, right: 4, left: -15, bottom: 0 }}>
+                  <AreaChart data={projection.timeline} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="investGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#4ade80" stopOpacity={0.3} />
@@ -290,7 +290,7 @@ export default function InvestmentsPage() {
                       tick={{ fill: "#71717a", fontSize: 10 }}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M €` : `${Math.round(v / 1000)}k €`}
+                      tickFormatter={(v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M €` : v >= 1000 ? `${(v / 1000).toFixed(0)}k €` : `${Math.round(v)} €`}
                       width={55}
                     />
                     <Tooltip

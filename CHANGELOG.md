@@ -1,5 +1,6 @@
 ### 1.0.0: 2026-03-19
 
+* Fix Y-axis clipping on all charts by removing negative left margin and widening axis
 * Add copy button on AI advisor assistant bubbles
 * Add investments, debt details, and savings goal to AI chat, summary, and debt suggestion prompts
 * Include debt installments in month status expense projection

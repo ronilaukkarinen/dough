@@ -319,7 +319,7 @@ export default function DebtsPage() {
                   {data.timeline.length > 1 && (
                     <ChartContainer height={250}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={data.timeline} margin={{ top: 4, right: 4, left: -15, bottom: 0 }}>
+                        <AreaChart data={data.timeline} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                           <defs>
                             <linearGradient id={`${key}Grad`} x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor="#f87171" stopOpacity={0.3} />
@@ -328,7 +328,7 @@ export default function DebtsPage() {
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                           <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                          <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v / 1000)}k €`} width={50} />
+                          <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k €` : `${Math.round(v)} €`} width={50} />
                           <Tooltip
                             content={({ active, payload, label }) =>
                               active && payload?.length ? (
