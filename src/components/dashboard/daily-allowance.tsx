@@ -163,21 +163,6 @@ export function DailyAllowance({
         </div>
       </Card>
 
-      <Card className="metric-card metric-card-half">
-        <div className="metric-card-row">
-          <div className="metric-card-icon" data-color={projectedMonthEnd >= 0 ? "positive" : "negative"}>
-            {projectedMonthEnd >= 0 ? <ArrowDown /> : <ArrowUp />}
-          </div>
-          <div>
-            <p className="metric-card-label">{locale === "fi" ? "Kuun lopussa (arvio)" : "End of month (est.)"}</p>
-            <p className="metric-card-value">
-              <span className={projectedMonthEnd >= 0 ? "text-positive" : "text-negative"}>
-                {projectedMonthEnd.toFixed(2)} {currency}
-              </span>
-            </p>
-          </div>
-        </div>
-      </Card>
 
       {monthIncome > 0 && (
         <Card className="metric-card metric-card-half">
