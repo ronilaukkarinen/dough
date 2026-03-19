@@ -82,6 +82,11 @@ export async function POST(request: Request) {
             status: paidBillIds.has(b.id) ? "paid" : b.due_day < now.getDate() ? "overdue" : "upcoming",
           }));
 
+          // Load income sources from DB
+          const incomeRows = chatDb
+            .prepare("SELECT name, amount, expected_day FROM income_sources WHERE is_active = 1 ORDER BY expected_day ASC")
+            .all() as { name: string; amount: number; expected_day: number }[];
+
           context = {
             totalBalance: Math.round(checkingSavings * 100) / 100,
             monthlyIncome: Math.round(realIncomeTx.reduce((s: number, t: any) => s + t.amount, 0) * 100) / 100,
@@ -89,6 +94,7 @@ export async function POST(request: Request) {
             upcomingBills: enrichedBills,
             recentTransactions: recentTx,
             debts,
+            incomeSources: incomeRows.map((i) => ({ name: i.name, amount: i.amount, expectedDay: i.expected_day })),
             dailyBudget,
             daysUntilNextIncome: daysLeft,
             locale,
@@ -113,6 +119,7 @@ export async function POST(request: Request) {
         upcomingBills: [],
         recentTransactions: [],
         debts: [],
+        incomeSources: [],
         dailyBudget: 0,
         daysUntilNextIncome: 0,
         locale: "en",

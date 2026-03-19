@@ -169,19 +169,11 @@ export function ChatInterface() {
       }),
     })
       .then((r) => r.json())
-      .then((data) => {
-        if (data.message) {
-          setMessages((prev) => [...prev, {
-            id: (Date.now() + 1).toString(),
-            role: "assistant",
-            content: data.message,
-          }]);
-          messageCountRef.current++;
-          setLoading(false);
-        }
+      .then(() => {
+        // Response handled via SSE broadcast — don't add here to avoid duplicates
       })
       .catch(() => {
-        console.warn("[chat] AI request failed, polling will pick up response");
+        console.warn("[chat] AI request failed, SSE will pick up response if it completes");
       });
   };
 

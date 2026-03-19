@@ -9,6 +9,7 @@ interface FinancialContext {
   upcomingBills: { name: string; amount: number; dueDay: number; status?: string }[];
   recentTransactions: { date: string; payee: string; amount: number; category: string }[];
   debts: { name: string; remaining: number; rate: number }[];
+  incomeSources: { name: string; amount: number; expectedDay: number }[];
   dailyBudget: number;
   daysUntilNextIncome: number;
   locale: string;
@@ -40,7 +41,8 @@ Current financial snapshot:
 - Daily budget (safe to spend per day): ${ctx.dailyBudget} euros
 - Days left in month: ${ctx.daysUntilNextIncome}
 - Income RECEIVED so far this month: ${ctx.monthlyIncome} euros
-- Total EXPECTED monthly income: this is higher, salary may come at end of month
+- Total EXPECTED monthly income: ${ctx.incomeSources.reduce((s, i) => s + i.amount, 0)} euros
+- Income sources: ${ctx.incomeSources.map(i => `${i.name}: ${i.amount} euros (day ${i.expectedDay})`).join(", ") || "none configured"}
 - Monthly expenses so far (excluding transfers): ${ctx.monthlyExpenses} euros
 
 Upcoming bills this month:
