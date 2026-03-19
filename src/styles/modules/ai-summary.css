@@ -110,6 +110,10 @@
   cursor: not-allowed;
 }
 
+.ai-summary-actions .ai-summary-refresh:last-child {
+  margin-right: -0.5rem;
+}
+
 .ai-summary-refresh svg {
   width: 0.75rem;
   height: 0.75rem;

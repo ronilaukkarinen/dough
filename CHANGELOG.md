@@ -1,5 +1,6 @@
 ### 1.0.0: 2026-03-19
 
+* Remove right padding on AI summary last action icon
 * Move personal budget share to per-user profile setting so each user can have their own %
 * Show suggested personal amount and household remaining in greeting
 * Fix bills due card to include overdue unpaid bills, not just future ones
