@@ -23,8 +23,8 @@
     rgba(192, 132, 252, 0.3) 20%,
     transparent 30%,
     transparent 70%,
-    rgba(129, 140, 248, 0.2) 80%,
-    rgba(244, 114, 182, 0.3) 90%,
+    rgba(99, 102, 241, 0.3) 80%,
+    rgba(129, 140, 248, 0.2) 90%,
     transparent 100%
   );
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
