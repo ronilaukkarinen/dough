@@ -139,14 +139,18 @@ export function DailyAllowance({
 
       <Card className="metric-card metric-card-half">
         <div className="metric-card-row">
-          <div className="metric-card-icon" data-color="chart-3">
+          <div className="metric-card-icon" data-color={projectedMonthEnd >= 0 ? "positive" : "negative"}>
             <CalendarClock />
           </div>
           <div>
-            <p className="metric-card-label">{locale === "fi" ? "Kulutusvauhti" : "Burn rate"}</p>
-            <p className="metric-card-value">{burnRate.toFixed(2)} {currency}/{locale === "fi" ? "pv" : "day"}</p>
+            <p className="metric-card-label">{locale === "fi" ? "Kuun lopussa (arvio)" : "End of month (est.)"}</p>
+            <p className="metric-card-value">
+              <span className={projectedMonthEnd >= 0 ? "text-positive" : "text-negative"}>
+                {projectedMonthEnd.toFixed(2)} {currency}
+              </span>
+            </p>
             <p className="metric-card-note">
-              {locale === "fi" ? "Kuun lopussa" : "End of month"}: {projectedMonthEnd.toFixed(2)} {currency}
+              {locale === "fi" ? "Kulutus" : "Spending"} {burnRate.toFixed(0)} {currency}/{locale === "fi" ? "pv" : "day"}
             </p>
           </div>
         </div>
