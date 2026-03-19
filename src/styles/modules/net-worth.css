@@ -91,9 +91,10 @@
 .net-worth-card-row {
   display: flex;
   align-items: flex-start;
+  gap: 0.5rem;
 }
 
-.net-worth-card-row > div {
+.net-worth-card-row > div:last-child {
   display: grid;
   gap: 4px;
   gap: 0.5rem;

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getYnabToken, getYnabBudgetId } from "@/lib/household";
+import { getYnabToken, getYnabBudgetId, setHouseholdSetting } from "@/lib/household";
 import { eventBus } from "@/lib/event-bus";
 import { spawn } from "child_process";
 
@@ -111,6 +111,7 @@ export async function POST(request: Request) {
     const data = await res.json();
     console.info("[ynab/transaction] Transaction created:", data.data?.transaction?.id, "category:", resolvedCategoryId || "uncategorized");
 
+    setHouseholdSetting("last_transaction_added", new Date().toISOString());
     eventBus.emit("data:updated", { source: "transaction-added" });
 
     return NextResponse.json({

@@ -79,13 +79,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   }, [pathname]));
 
-  // SSE: show indicator on transactions when new data synced or expense added
-  useEvent("sync:complete", useCallback(() => {
-    if (pathname !== "/transactions") {
-      setUnreadTx(1);
-    }
-  }, [pathname]));
-
+  // SSE: show indicator on transactions only when expense manually added
   useEvent("data:updated", useCallback((data: unknown) => {
     const d = data as { source?: string };
     if (d.source === "transaction-added" && pathname !== "/transactions") {

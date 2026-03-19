@@ -16,18 +16,18 @@ export async function GET() {
     const lastSeen = db.prepare("SELECT seen_at FROM transactions_last_seen WHERE user_id = ?").get(user.id) as { seen_at: string } | undefined;
 
     if (!lastSeen) {
+      db.prepare("INSERT INTO transactions_last_seen (user_id) VALUES (?)").run(user.id);
       return NextResponse.json({ unread: 0 });
     }
 
-    // Count YNAB sync events after last seen (using household_settings last_ynab_sync)
-    const lastSync = db.prepare("SELECT value FROM household_settings WHERE key = 'last_ynab_sync'").get() as { value: string } | undefined;
-    if (!lastSync) return NextResponse.json({ unread: 0 });
+    // Only show dot when a manual transaction was added (not auto-sync)
+    const lastAdded = db.prepare("SELECT value FROM household_settings WHERE key = 'last_transaction_added'").get() as { value: string } | undefined;
+    if (!lastAdded) return NextResponse.json({ unread: 0 });
 
-    const syncTime = new Date(lastSync.value).getTime();
+    const addedTime = new Date(lastAdded.value).getTime();
     const seenTime = new Date(lastSeen.seen_at + "Z").getTime();
 
-    // If sync happened after last seen, there are new transactions
-    const unread = syncTime > seenTime ? 1 : 0;
+    const unread = addedTime > seenTime ? 1 : 0;
 
     return NextResponse.json({ unread });
   } catch (error) {
