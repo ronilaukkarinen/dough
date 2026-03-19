@@ -3,6 +3,29 @@ import { getSession } from "@/lib/auth";
 import { getYnabToken, getYnabBudgetId, setHouseholdSetting } from "@/lib/household";
 import { eventBus } from "@/lib/event-bus";
 
+export async function GET() {
+  try {
+    const user = await getSession();
+    if (!user) return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
+
+    const { getDb } = await import("@/lib/db");
+    const db = getDb();
+    const cached = db.prepare("SELECT data, synced_at FROM ynab_cache WHERE id = 1").get() as { data: string; synced_at: string } | undefined;
+
+    if (!cached) {
+      console.debug("[api/ynab/sync] No cached data");
+      return NextResponse.json({ success: false, error: "No cached data. Sync first." });
+    }
+
+    const data = JSON.parse(cached.data);
+    console.debug("[api/ynab/sync] Serving cached data from", cached.synced_at);
+    return NextResponse.json({ success: true, data, cached: true });
+  } catch (error) {
+    console.error("[api/ynab/sync] Cache GET error:", error);
+    return NextResponse.json({ success: false, error: "Failed to read cache" }, { status: 500 });
+  }
+}
+
 export async function POST() {
   try {
     const user = await getSession();
@@ -75,21 +98,28 @@ export async function POST() {
       console.error("[api/ynab/sync] Auto-match error:", err);
     }
 
+    const syncedAt = new Date().toISOString();
+    const responseData = { summary, transactions, monthBudget, syncedAt };
+
+    // Cache to SQLite for local-first operation
+    try {
+      const { getDb: getCacheDb } = await import("@/lib/db");
+      const cacheDb = getCacheDb();
+      cacheDb.prepare(`
+        INSERT INTO ynab_cache (id, data, synced_at) VALUES (1, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET data = excluded.data, synced_at = excluded.synced_at
+      `).run(JSON.stringify(responseData), syncedAt);
+      console.info("[api/ynab/sync] Cached sync data to SQLite");
+    } catch (err) {
+      console.error("[api/ynab/sync] Failed to cache:", err);
+    }
+
     console.info("[api/ynab/sync] Sync complete. Accounts:", summary.accounts.length, "Transactions:", transactions.length);
 
-    // Broadcast sync complete to all SSE clients
-    eventBus.emit("sync:complete", { syncedAt: new Date().toISOString() });
+    eventBus.emit("sync:complete", { syncedAt });
     eventBus.emit("data:updated", { source: "ynab-sync" });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        summary,
-        transactions,
-        monthBudget,
-        syncedAt: new Date().toISOString(),
-      },
-    });
+    return NextResponse.json({ success: true, data: responseData });
   } catch (error) {
     console.error("[api/ynab/sync] Error:", error);
     const message = error instanceof Error ? error.message : "Failed to sync with YNAB";

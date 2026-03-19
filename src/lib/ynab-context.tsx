@@ -98,18 +98,36 @@ export function YnabProvider({ children }: { children: ReactNode }) {
       } else {
         const errMsg = json.error || "Sync failed";
         console.warn("[ynab-context] Sync failed:", errMsg);
-        setError(errMsg.includes("429") || errMsg.includes("abnormal") ? "YNAB rate limit exceeded. Wait a few minutes and try again." : errMsg);
+        // Only show error if we have no cached data at all
+        const friendlyError = errMsg.includes("429") || errMsg.includes("abnormal")
+          ? "YNAB rate limit. Using cached data."
+          : errMsg;
+        setError(friendlyError);
+        // Don't clear existing data — keep showing cached
       }
     } catch (err) {
       console.error("[ynab-context] Sync error:", err);
-      setError("Connection error");
+      setError("Sync failed. Using cached data.");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    console.debug("[ynab-context] Checking YNAB connection");
+    console.debug("[ynab-context] Loading cached data + checking connection");
+
+    // Load cached data first (local-first)
+    fetch("/api/ynab/sync")
+      .then((r) => r.json())
+      .then((cached) => {
+        if (cached.success && cached.data) {
+          console.info("[ynab-context] Loaded cached data from", cached.data.syncedAt);
+          setData(cached.data);
+          setLoading(false);
+        }
+      })
+      .catch(() => {});
+
     fetch("/api/household")
       .then((r) => r.json())
       .then((d) => {
@@ -118,13 +136,8 @@ export function YnabProvider({ children }: { children: ReactNode }) {
         }
         if (d.settings?.ynab_connected && d.settings?.ynab_budget_id) {
           setConnected(true);
-          // Only sync if no cached data (first load). Subsequent syncs are manual.
-          if (!data) {
-            console.info("[ynab-context] YNAB connected, initial sync");
-            sync();
-          } else {
-            setLoading(false);
-          }
+          // Try to sync in background (will use cached data if API fails)
+          sync();
         } else {
           console.debug("[ynab-context] YNAB not connected or no budget ID");
           setLoading(false);

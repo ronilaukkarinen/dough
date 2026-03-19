@@ -188,6 +188,12 @@ function initializeDb(db: Database.Database) {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS ynab_cache (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      data TEXT NOT NULL,
+      synced_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS household_settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL,
