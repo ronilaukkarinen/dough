@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useEvent } from "@/lib/use-events";
 import { useLocale } from "@/lib/locale-context";
 import { isTransfer } from "@/lib/transaction-utils";
 import { useYnab } from "@/lib/ynab-context";
@@ -38,7 +39,7 @@ export default function DashboardPage() {
   const [bills, setBills] = useState<{ id: number; amount: number; due_day: number; is_active: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
 
-  useEffect(() => {
+  const loadSideData = useCallback(() => {
     Promise.all([
       fetch("/api/income").then((r) => r.json()),
       fetch("/api/matches").then((r) => r.json()),
@@ -57,6 +58,11 @@ export default function DashboardPage() {
       }
     }).catch(() => {});
   }, []);
+
+  useEffect(() => { loadSideData(); }, [loadSideData]);
+
+  // SSE: re-fetch income/bills when data changes
+  useEvent("data:updated", useCallback(() => { loadSideData(); }, [loadSideData]));
 
   if (loading && !data) {
     return (

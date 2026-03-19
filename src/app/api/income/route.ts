@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
+import { eventBus } from "@/lib/event-bus";
 
 export async function GET() {
   try {
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
       .run(user.id, name, amount, expected_day, is_recurring ? 1 : 0);
 
     console.info("[income] Created income source:", name, "id:", result.lastInsertRowid);
+    eventBus.emit("data:updated", { source: "income-added" });
     return NextResponse.json({ id: result.lastInsertRowid });
   } catch (error) {
     console.error("[income] POST error:", error);
@@ -107,6 +109,7 @@ export async function PUT(request: Request) {
       console.info("[income] Updated income source", id);
     }
 
+    eventBus.emit("data:updated", { source: "income-updated" });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[income] PUT error:", error);
@@ -126,6 +129,7 @@ export async function DELETE(request: Request) {
     db.prepare("DELETE FROM income_sources WHERE id = ? AND user_id = ?").run(id, user.id);
 
     console.info("[income] Deleted income source", id);
+    eventBus.emit("data:updated", { source: "income-deleted" });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[income] DELETE error:", error);
