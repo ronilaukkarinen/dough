@@ -26,7 +26,9 @@ interface Bill {
   category: string;
   is_active: number;
   is_paid: boolean;
+  is_manual_paid: boolean;
   paid_amount: number | null;
+  amount_diff: number | null;
   is_overdue: boolean;
   is_due_soon: boolean;
   patterns: string[];
@@ -130,6 +132,17 @@ export default function BillsPage() {
       });
       setBills((prev) => prev.filter((b) => b.id !== id));
     } catch (err) { console.error("[bills] Delete error:", err); }
+  };
+
+  const togglePaid = async (billId: number, currentPaid: boolean) => {
+    try {
+      await fetch("/api/bills", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: billId, mark_paid: !currentPaid }),
+      });
+      loadBills();
+    } catch (err) { console.error("[bills] Toggle paid error:", err); }
   };
 
   const addPattern = async (billId: number) => {
@@ -245,10 +258,22 @@ export default function BillsPage() {
                   <p className="list-item-amount-value">
                     {bill.is_paid && bill.paid_amount ? bill.paid_amount.toFixed(2) : bill.amount.toFixed(2)} €
                   </p>
-                  {bill.average_amount && bill.history_count >= 2 && (
+                  {bill.amount_diff && (
+                    <p className={`list-item-meta ${bill.amount_diff > 0 ? "text-negative" : "text-positive"}`}>
+                      {bill.amount_diff > 0 ? "+" : ""}{bill.amount_diff.toFixed(2)} € {locale === "fi" ? "vs odotettu" : "vs expected"}
+                    </p>
+                  )}
+                  {bill.average_amount && bill.history_count >= 2 && !bill.amount_diff && (
                     <p className="list-item-meta">{locale === "fi" ? "ka" : "avg"} {bill.average_amount.toFixed(2)} €</p>
                   )}
-                  <span onClick={(e) => e.stopPropagation()}>
+                  <span onClick={(e) => e.stopPropagation()} className="list-item-actions-row">
+                    <button
+                      type="button"
+                      className={`list-item-paid-btn ${bill.is_paid ? "is-paid" : ""}`}
+                      onClick={() => togglePaid(bill.id, bill.is_paid)}
+                    >
+                      <Check />
+                    </button>
                     <Switch checked={!!bill.is_active} onCheckedChange={() => toggleBill(bill.id, bill.is_active)} />
                   </span>
                 </div>

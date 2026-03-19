@@ -263,6 +263,36 @@
   height: 0.625rem;
 }
 
+.list-item-paid-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  border: 2px solid var(--muted-foreground);
+  background: none;
+  color: transparent;
+  cursor: pointer;
+  transition: all 150ms;
+}
+
+.list-item-paid-btn svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.list-item-paid-btn:hover {
+  border-color: var(--positive);
+  color: var(--positive);
+}
+
+.list-item-paid-btn.is-paid {
+  border-color: var(--positive);
+  background-color: var(--positive);
+  color: #fff;
+}
+
 /* Icon — bare, no box, consistent with dashboard */
 .list-item-icon {
   display: flex;

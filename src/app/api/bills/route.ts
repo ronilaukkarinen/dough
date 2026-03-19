@@ -38,18 +38,30 @@ export async function GET() {
       .all() as { bill_id: number; avg_amount: number; count: number }[];
     const avgMap = new Map(averages.map((a) => [a.bill_id, { avg: a.avg_amount, count: a.count }]));
 
+    // Get manual paid status
+    const manualStatuses = db
+      .prepare("SELECT bill_id, is_paid, paid_amount FROM bill_manual_status WHERE month = ?")
+      .all(month) as { bill_id: number; is_paid: number; paid_amount: number | null }[];
+    const manualMap = new Map(manualStatuses.map((m) => [m.bill_id, m]));
+
     const today = now.getDate();
     const enriched = bills.map((b: any) => {
-      const isPaid = matchMap.has(b.id);
-      const paidAmount = matchMap.get(b.id);
+      const manual = manualMap.get(b.id);
+      const autoMatched = matchMap.has(b.id);
+      const isPaid = manual ? !!manual.is_paid : autoMatched;
+      const paidAmount = manual?.paid_amount || matchMap.get(b.id) || null;
       const isOverdue = !isPaid && b.is_active && b.due_day < today;
       const isDueSoon = !isPaid && b.is_active && b.due_day >= today && b.due_day <= today + 3;
       const avg = avgMap.get(b.id);
 
+      const amountDiff = paidAmount && paidAmount !== b.amount ? paidAmount - b.amount : null;
+
       return {
         ...b,
         is_paid: isPaid,
+        is_manual_paid: !!manual?.is_paid,
         paid_amount: paidAmount || null,
+        amount_diff: amountDiff,
         is_overdue: isOverdue,
         is_due_soon: isDueSoon,
         patterns: patternMap.get(b.id) || [],
@@ -103,6 +115,23 @@ export async function PUT(request: Request) {
     if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
 
     const db = getDb();
+
+    // Manual paid/unpaid toggle
+    if (body.mark_paid !== undefined) {
+      const month = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+      if (body.mark_paid) {
+        db.prepare(`
+          INSERT INTO bill_manual_status (bill_id, month, is_paid, paid_amount) VALUES (?, ?, 1, ?)
+          ON CONFLICT(bill_id, month) DO UPDATE SET is_paid = 1, paid_amount = excluded.paid_amount
+        `).run(id, month, body.paid_amount || null);
+        console.info("[bills] Manually marked bill", id, "as paid");
+      } else {
+        db.prepare("DELETE FROM bill_manual_status WHERE bill_id = ? AND month = ?").run(id, month);
+        console.info("[bills] Manually marked bill", id, "as unpaid");
+      }
+      eventBus.emit("data:updated", { source: "bill-status-changed" });
+      return NextResponse.json({ success: true });
+    }
 
     // Toggle active
     if (body.is_active !== undefined && Object.keys(body).length === 2) {

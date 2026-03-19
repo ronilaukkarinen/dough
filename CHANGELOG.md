@@ -1,5 +1,9 @@
 ### 1.0.0: 2026-03-19
 
+* Add manual paid/unpaid toggle button on bills (circle checkmark)
+* Show actual vs expected amount diff when paid amount differs from bill amount
+* Store manual paid status per bill per month in bill_manual_status table
+* Emit SSE events from income API for real-time dashboard updates
 * Add AI auto-categorization for added expenses via Claude CLI
 * Add description/memo field to expense form
 * Add categories API for YNAB category list
