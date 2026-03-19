@@ -51,21 +51,21 @@ export default function DashboardPage() {
     }).catch(() => {});
   }, []);
 
-  if (!connected) {
+  if (loading && !data) {
+    return (
+      <div className="page-loading">
+        <Loader2 className="page-loading-spinner animate-spin" />
+      </div>
+    );
+  }
+
+  if (!connected && !data) {
     return (
       <div className="page-stack">
         <div>
           <h1 className="page-heading">{t.dashboard.title}</h1>
           <p className="page-subtitle">{t.settings.ynabDescription}</p>
         </div>
-      </div>
-    );
-  }
-
-  if (loading && !data) {
-    return (
-      <div className="page-loading">
-        <Loader2 className="page-loading-spinner animate-spin" />
       </div>
     );
   }

@@ -68,7 +68,7 @@ const YnabContext = createContext<YnabContextValue>({
 
 export function YnabProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<YnabData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const [savingRate, setSavingRate] = useState(0);
@@ -109,9 +109,13 @@ export function YnabProvider({ children }: { children: ReactNode }) {
           sync();
         } else {
           console.debug("[ynab-context] YNAB not connected or no budget ID");
+          setLoading(false);
         }
       })
-      .catch((err) => console.error("[ynab-context] Failed to check connection:", err));
+      .catch((err) => {
+        console.error("[ynab-context] Failed to check connection:", err);
+        setLoading(false);
+      });
   }, [sync]);
 
   return (
