@@ -56,18 +56,38 @@ export function DailyAllowance({
           </p>
           <div className="daily-allowance-hero-amount">
             <span className="daily-allowance-hero-value" data-status={overspent ? "danger" : status}>
-              {overspent ? `\u2212${Math.abs(todayRemaining).toFixed(2)}` : effectiveBudget.toFixed(2)} {currency}
+              {overspent ? "0.00" : effectiveBudget.toFixed(2)} {currency}
             </span>
             <span className="daily-allowance-hero-unit">{todaySpentAll > 0 ? "" : t.dashboard.perDay}</span>
           </div>
           <p className="daily-allowance-hero-note">
-            {overspent
-              ? (locale === "fi"
-                ? `Ylitetty! Budjetti oli ${dailyBudget.toFixed(2)} ${currency}, käytetty ${todaySpentAll.toFixed(2)} ${currency}. ${daysUntilIncome > 0 ? `Huomenna käytettävissä ${Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome)).toFixed(2)} ${currency}` : ""}`
-                : `Exceeded! Budget was ${dailyBudget.toFixed(2)} ${currency}, spent ${todaySpentAll.toFixed(2)} ${currency}. ${daysUntilIncome > 0 ? `Tomorrow: ${Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome)).toFixed(2)} ${currency}` : ""}`)
-              : todaySpentAll > 0
-                ? `${locale === "fi" ? "Päiväbudjetti alunperin" : "Original budget"} ${dailyBudget.toFixed(2)} ${currency} \u00B7 ${locale === "fi" ? "käytetty" : "spent"} ${todaySpentAll.toFixed(2)} ${currency}`
-                : `${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`}
+            {overspent ? (
+              <>
+                {locale === "fi" ? "Ylitetty " : "Exceeded by "}
+                <span className="text-negative">{Math.abs(todayRemaining).toFixed(2)} {currency}</span>
+                {locale === "fi" ? "! Budjetti oli " : "! Budget was "}
+                <span className="text-chart-3">{dailyBudget.toFixed(2)} {currency}</span>
+                {locale === "fi" ? ", käytetty " : ", spent "}
+                <span className="text-negative">{todaySpentAll.toFixed(2)} {currency}</span>
+                {daysUntilIncome > 0 && (
+                  <>
+                    {". "}
+                    {locale === "fi" ? "Huomenna " : "Tomorrow "}
+                    <span className="text-positive">{Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome)).toFixed(2)} {currency}</span>
+                  </>
+                )}
+              </>
+            ) : todaySpentAll > 0 ? (
+              <>
+                {locale === "fi" ? "Päiväbudjetti " : "Budget "}
+                <span className="text-chart-3">{dailyBudget.toFixed(2)} {currency}</span>
+                {" \u00B7 "}
+                {locale === "fi" ? "käytetty " : "spent "}
+                <span className="text-negative">{todaySpentAll.toFixed(2)} {currency}</span>
+              </>
+            ) : (
+              `${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`
+            )}
             {!overspent && status === "danger" && ` \u2014 ${t.dashboard.cutNonEssentials}`}
             {!overspent && status === "tight" && ` \u2014 ${t.dashboard.beCareful}`}
           </p>

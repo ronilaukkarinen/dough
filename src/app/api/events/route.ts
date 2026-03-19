@@ -13,53 +13,39 @@ export async function GET() {
 
   const encoder = new TextEncoder();
   let unsubscribe: (() => void) | null = null;
+  let heartbeatId: ReturnType<typeof setInterval> | null = null;
   let closed = false;
 
   const stream = new ReadableStream({
     start(controller) {
-      // Send initial ping
       controller.enqueue(encoder.encode(": connected\n\n"));
 
-      // Heartbeat every 15 seconds to keep connection alive
-      const heartbeat = setInterval(() => {
+      heartbeatId = setInterval(() => {
         if (closed) return;
         try {
           controller.enqueue(encoder.encode(": heartbeat\n\n"));
         } catch {
           closed = true;
-          clearInterval(heartbeat);
+          if (heartbeatId) clearInterval(heartbeatId);
+          if (unsubscribe) unsubscribe();
         }
       }, 15000);
 
-      // Subscribe to events
       unsubscribe = eventBus.subscribe((event) => {
         if (closed) return;
         try {
-          const sseData = `event: ${event.type}\ndata: ${JSON.stringify(event.data)}\n\n`;
-          controller.enqueue(encoder.encode(sseData));
+          controller.enqueue(encoder.encode(`event: ${event.type}\ndata: ${JSON.stringify(event.data)}\n\n`));
         } catch {
           closed = true;
-          clearInterval(heartbeat);
+          if (heartbeatId) clearInterval(heartbeatId);
+          if (unsubscribe) unsubscribe();
         }
       });
-
-      // Cleanup on close
-      const cleanup = () => {
-        closed = true;
-        clearInterval(heartbeat);
-        if (unsubscribe) unsubscribe();
-        console.info("[events] SSE connection closed for user", user.id);
-      };
-
-      // AbortController handles client disconnect
-      // The stream will throw when the client disconnects
-      stream.cancel = () => {
-        cleanup();
-        return Promise.resolve();
-      };
     },
     cancel() {
+      console.info("[events] SSE connection closed for user", user.id);
       closed = true;
+      if (heartbeatId) clearInterval(heartbeatId);
       if (unsubscribe) unsubscribe();
     },
   });
