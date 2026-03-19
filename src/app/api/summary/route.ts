@@ -94,7 +94,6 @@ export async function GET(request: Request) {
     const householdProfile = getHouseholdSetting("household_profile") || "";
 
     const daysPassed = now.getDate();
-    const dailyBurnRate = daysPassed > 0 ? Math.round(monthActivity / daysPassed) : 0;
 
     // Get income sources and bills from DB
     const incomeSources = db
@@ -123,10 +122,9 @@ export async function GET(request: Request) {
       .filter((b) => matchedBillIds.has(b.id) || b.due_day < now.getDate())
       .reduce((s, b) => s + b.amount, 0);
     const unpaidBillsAmount = totalBillsAmount - paidBillsAmount;
-    const discretionarySpending = monthActivity - paidBillsAmount;
-    const dailyDiscretionary = daysPassed > 0 ? Math.round(discretionarySpending / daysPassed) : 0;
+    const discretionarySpending = Math.max(0, monthActivity - paidBillsAmount);
+    const dailyDiscretionary = daysPassed > 0 ? Math.round((discretionarySpending / daysPassed) * 100) / 100 : 0;
     const projectedMonthEnd = Math.round(checkingSavings + upcomingIncome - unpaidBillsAmount - (dailyDiscretionary * daysLeft));
-    const livingAboveMeans = totalExpectedMonthlyIncome < totalBillsAmount + (dailyDiscretionary * 30);
 
     // Category breakdown for spending tips
     const categoryBreakdown = monthBudget.categories
@@ -166,10 +164,18 @@ export async function GET(request: Request) {
 
     const savingGoal = parseFloat(getHouseholdSetting("saving_rate") || "0");
 
+    // Monthly debt and investment payments (same as dashboard)
+    const totalDebtPayments = debtAccounts.reduce((s, d) => s + d.payment, 0);
+    const totalInvestmentContributions = investmentAccounts.reduce((s: number, i: { monthly: number }) => s + i.monthly, 0);
+
     const summaryInstructions = getHouseholdSetting("prompt_summary_instructions") || DEFAULT_SUMMARY_INSTRUCTIONS;
 
     const projectedRemainingExpenses = Math.round(unpaidBillsAmount + (dailyDiscretionary * daysLeft));
-    const projectedTotalExpenses = Math.round(monthActivity + projectedRemainingExpenses);
+    const projectedTotalExpenses = Math.round(monthActivity + projectedRemainingExpenses + totalInvestmentContributions + totalDebtPayments);
+
+    // Daily budget matches dashboard: (balance - saving goal) / days left
+    const spendableBalance = Math.max(0, checkingSavings - savingGoal);
+    const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
     const prompt = `${lang} You are a personal finance advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} ${summaryInstructions}
 
@@ -192,9 +198,11 @@ Pre-calculated analysis:
 - Unpaid bills still due this month: ${Math.round(unpaidBillsAmount)} euros
 - Projected remaining expenses (bills + discretionary): ${projectedRemainingExpenses} euros
 - Projected TOTAL month expenses: ${projectedTotalExpenses} euros
+- Monthly debt payments: ${totalDebtPayments} euros
+- Monthly investment contributions: ${totalInvestmentContributions} euros${savingGoal > 0 ? `\n- Savings goal: ${savingGoal} euros/month` : ""}
 - ** PROJECTED MONTH-END BALANCE: ${projectedMonthEnd} euros ** (USE THIS NUMBER, do not calculate your own)
 - Monthly surplus/deficit: ${totalExpectedMonthlyIncome - projectedTotalExpenses} euros (income minus projected expenses)
-- Daily budget from current balance only: ${daysLeft > 0 ? Math.round(checkingSavings / daysLeft) : 0} euros/day
+- Daily budget (balance minus saving goal, divided by days left): ${dailyBudget} euros/day
 - Spending by category: ${categoryBreakdown}
 - Top individual expenses: ${topExpenses}
 - Bills: ${recurringBills.length > 0 ? recurringBills.map((b) => {
@@ -208,7 +216,7 @@ Pre-calculated analysis:
 - Total debt: ${debtAccounts.reduce((s: number, d: { balance: number }) => s + d.balance, 0)} euros
 - Investments: ${investmentAccounts.length > 0 ? investmentAccounts.map((i) => `${i.name}: ${i.balance} euros${i.monthly > 0 ? `, ${i.monthly} euros/month` : ""}${i.returnPct > 0 ? ` (${i.returnPct}% return)` : ""}`).join(", ") : "none"}
 - Total investment value: ${investmentAccounts.reduce((s: number, i: { balance: number }) => s + i.balance, 0)} euros
-- Monthly investment contributions: ${investmentAccounts.reduce((s: number, i: { monthly: number }) => s + i.monthly, 0)} euros${savingGoal > 0 ? `\n- Savings goal: ${savingGoal} euros/month` : ""}`;
+- Monthly investment contributions: ${investmentAccounts.reduce((s: number, i: { monthly: number }) => s + i.monthly, 0)} euros`;
 
     const claudePath = process.env.CLAUDE_PATH || "claude";
     console.info("[summary] Calling claude CLI");

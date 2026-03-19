@@ -1,5 +1,6 @@
 ### 1.0.0: 2026-03-19
 
+* Align AI summary calculations with dashboard: saving goal in daily budget, debt/investment payments in expenses, matching discretionary rounding
 * Add global decimal places setting (0-2) in settings, default 0 for whole euros
 * Strip markdown formatting from copied text in AI summary and chat
 * Fix Y-axis clipping on all charts by removing negative left margin and widening axis
