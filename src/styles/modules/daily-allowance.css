@@ -44,7 +44,7 @@
   font-weight: 500;
   color: var(--muted-foreground);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
 }
 
 .daily-allowance-hero-amount {
@@ -80,7 +80,8 @@
 
 .daily-allowance-hero-note {
   margin-top: 0.5rem;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--muted-foreground);
 }
 

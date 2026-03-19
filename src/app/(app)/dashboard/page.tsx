@@ -134,7 +134,7 @@ export default function DashboardPage() {
     .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category)
       && (linkedAccountIds.length === 0 || linkedAccountIds.includes(t.account_id || "")))
     .reduce((s, t) => s + Math.abs(t.amount), 0);
-  const todayRemaining = Math.max(0, dailyBudget - todaySpentAll);
+  const todayRemaining = dailyBudget - todaySpentAll;
 
   // Build spending chart data from transactions (exclude transfers)
   const spendingByDay: Record<string, number> = {};
@@ -265,7 +265,7 @@ export default function DashboardPage() {
         todaySpentAll={todaySpentAll}
         todayRemaining={todayRemaining}
         monthIncome={combinedIncome}
-        monthExpenses={Math.round(realSpendingTotal)}
+        monthExpenses={Math.round(dailyBurnRate * daysInMonth)}
       />
 
       <div className="page-grid-2">

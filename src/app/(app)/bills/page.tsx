@@ -330,21 +330,22 @@ export default function BillsPage() {
                   </div>
                 )}
               </div>
+              <Button
+                type="button"
+                variant={editTarget.is_paid ? "outline" : "secondary"}
+                size="sm"
+                onClick={() => { togglePaid(editTarget.id, editTarget.is_paid); setEditOpen(false); }}
+              >
+                {editTarget.is_paid
+                  ? (locale === "fi" ? "Merkitse maksamattomaksi" : "Mark unpaid")
+                  : (locale === "fi" ? "Merkitse maksetuksi" : "Mark paid")}
+              </Button>
               <div className="form-grid-2">
-                <Button
-                  type="button"
-                  variant={editTarget.is_paid ? "outline" : "default"}
-                  onClick={() => { togglePaid(editTarget.id, editTarget.is_paid); setEditOpen(false); }}
-                >
-                  {editTarget.is_paid
-                    ? (locale === "fi" ? "Merkitse maksamattomaksi" : "Mark unpaid")
-                    : (locale === "fi" ? "Merkitse maksetuksi" : "Mark paid")}
-                </Button>
                 <Button type="button" variant="destructive" onClick={() => { deleteBill(editTarget.id); setEditOpen(false); }}>
                   {t.common.delete}
                 </Button>
+                <Button type="submit">{t.common.save}</Button>
               </div>
-              <Button type="submit">{t.common.save}</Button>
             </form>
           )}
         </DialogContent>

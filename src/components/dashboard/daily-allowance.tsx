@@ -63,10 +63,10 @@ export function DailyAllowance({
           <p className="daily-allowance-hero-note">
             {overspent
               ? (locale === "fi"
-                ? `Budjetti ylitetty! Alkuperäinen ${dailyBudget.toFixed(2)} ${currency}, käytetty ${todaySpentAll.toFixed(2)} ${currency}`
-                : `Budget exceeded! Original ${dailyBudget.toFixed(2)} ${currency}, spent ${todaySpentAll.toFixed(2)} ${currency}`)
+                ? `Ylitetty! Budjetti oli ${dailyBudget.toFixed(2)} ${currency}, käytetty ${todaySpentAll.toFixed(2)} ${currency}. ${daysUntilIncome > 0 ? `Huomenna käytettävissä ${Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome)).toFixed(2)} ${currency}` : ""}`
+                : `Exceeded! Budget was ${dailyBudget.toFixed(2)} ${currency}, spent ${todaySpentAll.toFixed(2)} ${currency}. ${daysUntilIncome > 0 ? `Tomorrow: ${Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome)).toFixed(2)} ${currency}` : ""}`)
               : todaySpentAll > 0
-                ? `${locale === "fi" ? "Budjetti" : "Budget"} ${dailyBudget.toFixed(2)} ${currency} \u00B7 ${locale === "fi" ? "käytetty" : "spent"} ${todaySpentAll.toFixed(2)} ${currency}`
+                ? `${locale === "fi" ? "Päiväbudjetti alunperin" : "Original budget"} ${dailyBudget.toFixed(2)} ${currency} \u00B7 ${locale === "fi" ? "käytetty" : "spent"} ${todaySpentAll.toFixed(2)} ${currency}`
                 : `${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`}
             {!overspent && status === "danger" && ` \u2014 ${t.dashboard.cutNonEssentials}`}
             {!overspent && status === "tight" && ` \u2014 ${t.dashboard.beCareful}`}
