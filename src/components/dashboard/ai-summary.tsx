@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { RefreshCw, Sparkles, Copy, Check } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
+import ReactMarkdown from "react-markdown";
 
 export function AiSummary() {
   const [summary, setSummary] = useState<string | null>(null);
@@ -107,7 +108,7 @@ export function AiSummary() {
           <div className="skeleton-line skeleton-line-narrow" />
         </div>
       ) : summary ? (
-        <p className="ai-summary-text">{summary}</p>
+        <div className="ai-summary-text"><ReactMarkdown>{summary}</ReactMarkdown></div>
       ) : null}
     </Card>
   );

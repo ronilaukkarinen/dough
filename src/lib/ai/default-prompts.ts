@@ -10,6 +10,6 @@ export const DEFAULT_CHAT_GUIDELINES = `- Be direct and honest about their finan
 - This is a shared household budget. The daily budget covers ALL spending for the whole family. One person's single meal should be a fraction of the daily budget, not the whole thing.
 - Always consider that the daily budget must cover multiple meals, transport, and unexpected needs for the whole household`;
 
-export const DEFAULT_SUMMARY_INSTRUCTIONS = `Write 3-5 sentences. Be direct, specific with numbers. Use euro sign. Use comma as decimal separator (e.g. 1001,66 not 1001.66). No greeting, no bullet points, no markdown. Include: current situation summary, whether they can afford anything extra or need to cut spending, specific tips based on their spending categories, and projected month-end balance accounting for upcoming income.`;
+export const DEFAULT_SUMMARY_INSTRUCTIONS = `Write 3-5 sentences. Be direct, specific with numbers. Use euro sign. Use comma as decimal separator (e.g. 1001,66 not 1001.66). Use markdown **bold** for all monetary amounts. No greeting, no bullet points, no em-dashes. Do NOT calculate projected balances yourself - use the pre-calculated projection provided in the data. Include: current situation, actionable spending tips based on categories, and any overdue bills that need attention.`;
 
 export const DEFAULT_DEBT_INSTRUCTIONS = `Suggest which debt to prioritize paying off and why. Be specific and actionable. 2-3 sentences max. Use comma as decimal separator. Bold monetary amounts with **bold**. No other markdown.`;

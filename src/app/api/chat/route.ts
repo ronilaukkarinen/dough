@@ -5,7 +5,6 @@ import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { getYnabToken, getYnabBudgetId } from "@/lib/household";
 import { eventBus } from "@/lib/event-bus";
-import { getBudgetSummary, getTransactions, getMonthBudget } from "@/lib/ynab/client";
 
 export async function POST(request: Request) {
   try {
@@ -30,16 +29,15 @@ export async function POST(request: Request) {
       const householdProfile = getHouseholdSetting("household_profile") || "";
 
       if (token && budgetId) {
-        console.info("[chat] Fetching real YNAB data for context");
+        console.info("[chat] Loading YNAB data from cache");
         try {
           const now = new Date();
-          const sinceDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 
-          const [summary, transactions, monthBudget] = await Promise.all([
-            getBudgetSummary(budgetId, token),
-            getTransactions(budgetId, sinceDate, token),
-            getMonthBudget(budgetId, undefined, token),
-          ]);
+          // Use cached data instead of calling YNAB API directly
+          const cached = getDb().prepare("SELECT data FROM ynab_cache WHERE id = 1").get() as { data: string } | undefined;
+          if (!cached) throw new Error("No cached YNAB data");
+          const ynabData = JSON.parse(cached.data);
+          const { summary, transactions, monthBudget } = ynabData;
 
           const checkingSavings = summary.accounts
             .filter((a: any) => a.type === "checking" || a.type === "savings")

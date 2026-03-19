@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { getYnabToken, getYnabBudgetId, getHouseholdSetting } from "@/lib/household";
+import { getYnabToken, getYnabBudgetId } from "@/lib/household";
 import { DEFAULT_SUMMARY_INSTRUCTIONS } from "@/lib/ai/default-prompts";
-import { getBudgetSummary, getTransactions, getMonthBudget } from "@/lib/ynab/client";
 import { spawn } from "child_process";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -60,13 +59,14 @@ export async function GET(request: Request) {
     }
 
     const now = new Date();
-    const sinceDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 
-    const [summary, transactions, monthBudget] = await Promise.all([
-      getBudgetSummary(budgetId, token),
-      getTransactions(budgetId, sinceDate, token),
-      getMonthBudget(budgetId, undefined, token),
-    ]);
+    // Use cached data instead of calling YNAB API directly
+    const cached = db.prepare("SELECT data FROM ynab_cache WHERE id = 1").get() as { data: string } | undefined;
+    if (!cached) {
+      return NextResponse.json({ summary: null, error: "No cached data. Sync first." });
+    }
+    const ynabData = JSON.parse(cached.data);
+    const { summary, transactions, monthBudget } = ynabData;
 
     const checkingSavings = summary.accounts
       .filter((a: any) => a.type === "checking" || a.type === "savings")
@@ -117,8 +117,16 @@ export async function GET(request: Request) {
 
     const totalExpectedMonthlyIncome = incomeSources.reduce((s, i) => s + i.amount, 0);
 
-    const projectedMonthEnd = Math.round(checkingSavings + upcomingIncome - (dailyBurnRate * daysLeft));
-    const livingAboveMeans = monthActivity > totalExpectedMonthlyIncome;
+    // Better projection: separate bills from discretionary spending
+    const totalBillsAmount = recurringBills.reduce((s, b) => s + b.amount, 0);
+    const paidBillsAmount = recurringBills
+      .filter((b) => matchedBillIds.has(b.id) || b.due_day < now.getDate())
+      .reduce((s, b) => s + b.amount, 0);
+    const unpaidBillsAmount = totalBillsAmount - paidBillsAmount;
+    const discretionarySpending = monthActivity - paidBillsAmount;
+    const dailyDiscretionary = daysPassed > 0 ? Math.round(discretionarySpending / daysPassed) : 0;
+    const projectedMonthEnd = Math.round(checkingSavings + upcomingIncome - unpaidBillsAmount - (dailyDiscretionary * daysLeft));
+    const livingAboveMeans = totalExpectedMonthlyIncome < totalBillsAmount + (dailyDiscretionary * 30);
 
     // Category breakdown for spending tips
     const categoryBreakdown = monthBudget.categories

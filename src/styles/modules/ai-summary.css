@@ -80,6 +80,15 @@
   color: var(--foreground);
 }
 
+.ai-summary-text p {
+  margin: 0;
+}
+
+.ai-summary-text strong {
+  font-weight: 700;
+  color: var(--primary);
+}
+
 /* Skeleton loading */
 .skeleton-lines {
   display: flex;
