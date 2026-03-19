@@ -2,12 +2,19 @@
 
 .entry-reminder {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
+  padding: 0.75rem;
   border-radius: var(--radius);
   background: color-mix(in srgb, var(--chart-3) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--chart-3) 15%, transparent);
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .entry-reminder {
+    align-items: center;
+  }
 }
 
 .entry-reminder-content {
@@ -47,6 +54,12 @@
   height: 0.75rem;
 }
 
+@media (max-width: 767px) {
+  .entry-reminder-content {
+    padding-right: 1.5rem;
+  }
+}
+
 .entry-reminder-close {
   display: flex;
   align-items: center;
@@ -60,6 +73,15 @@
   border-radius: 0.25rem;
   cursor: pointer;
   transition: color 150ms;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .entry-reminder-close {
+    position: static;
+  }
 }
 
 .entry-reminder-close:hover {

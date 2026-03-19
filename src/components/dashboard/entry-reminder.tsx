@@ -32,8 +32,8 @@ export function EntryReminder({ lastTransactionDate, onAddExpense }: EntryRemind
       <div className="entry-reminder-content">
         <p className="entry-reminder-text">
           {locale === "fi"
-            ? `Viimeisestä kirjauksesta on ${timeAgo}. Oletko lisännyt kulut?`
-            : `It's been ${timeAgo} since your last entry. Have you added your expenses?`}
+            ? `Viimeisestä kirjauksesta on ${timeAgo}. Onko kaikki menot varmasti lisätty?`
+            : `It's been ${timeAgo} since your last entry. Have you added all your expenses?`}
         </p>
         <button type="button" className="entry-reminder-add" onClick={onAddExpense}>
           <Plus />
