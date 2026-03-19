@@ -7,9 +7,7 @@ interface PersonalGreetingProps {
   todaySpentPersonal: number;
   todaySpentAll: number;
   dailyBudget: number;
-  personalDailyBudget: number;
   todayRemaining: number;
-  personalRemaining: number;
 }
 
 function valueStatus(value: number, budget: number): "good" | "tight" | "danger" {
@@ -19,7 +17,7 @@ function valueStatus(value: number, budget: number): "good" | "tight" | "danger"
   return "danger";
 }
 
-export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudget, personalDailyBudget, todayRemaining, personalRemaining }: PersonalGreetingProps) {
+export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudget, todayRemaining }: PersonalGreetingProps) {
   const [name, setName] = useState("");
   const { locale, fmt } = useLocale();
 
@@ -31,14 +29,14 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
 
   if (!name) return null;
 
-  const personalExceeded = personalRemaining <= 0;
+  const exceeded = todayRemaining <= 0;
 
   return (
     <div className="personal-greeting">
       <p className="personal-greeting-text">
         {locale === "fi" ? `Hei ${name}! ` : `Hi ${name}! `}
         {locale === "fi" ? "Sinä olet käyttänyt tänään " : "You spent "}
-        <span className="personal-greeting-value" data-status={todaySpentPersonal > personalDailyBudget * 0.5 ? "danger" : todaySpentPersonal > personalDailyBudget * 0.25 ? "tight" : "good"}>
+        <span className="personal-greeting-value" data-status={todaySpentPersonal > dailyBudget * 0.3 ? "danger" : todaySpentPersonal > dailyBudget * 0.15 ? "tight" : "good"}>
           {fmt(todaySpentPersonal)} €
         </span>
         {todaySpentAll > todaySpentPersonal && (
@@ -50,18 +48,18 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
           </>
         )}
         {". "}
-        {personalExceeded
+        {exceeded
           ? <>
-              {locale === "fi" ? "Oma päiväbudjettisi ylittynyt " : "Your daily budget exceeded by "}
-              <span className="personal-greeting-exceeded">{fmt(Math.abs(personalRemaining))} €</span>
+              {locale === "fi" ? "Päiväbudjetti ylittynyt " : "Daily budget exceeded by "}
+              <span className="personal-greeting-exceeded">{fmt(Math.abs(todayRemaining))} €</span>
               {locale === "fi" ? " verran. Huomenna parempi kulukuri sitten." : "."}
             </>
           : <>
-              {locale === "fi" ? "Sinulla on vielä " : "You can still spend "}
-              <span className="personal-greeting-value" data-status={valueStatus(personalRemaining, personalDailyBudget)}>
-                {fmt(personalRemaining)} €
+              {locale === "fi" ? "Käytettävissä vielä " : "Still available "}
+              <span className="personal-greeting-value" data-status={valueStatus(todayRemaining, dailyBudget)}>
+                {fmt(todayRemaining)} €
               </span>
-              {locale === "fi" ? " käytettävissä tänään." : " today."}
+              {locale === "fi" ? " tänään." : " today."}
             </>
         }
       </p>

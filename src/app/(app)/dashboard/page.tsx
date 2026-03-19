@@ -302,9 +302,7 @@ export default function DashboardPage() {
         todaySpentPersonal={todaySpentPersonal}
         todaySpentAll={todaySpentAll}
         dailyBudget={dailyBudget}
-        personalDailyBudget={Math.round((dailyBudget / householdSize) * 100) / 100}
         todayRemaining={todayRemaining}
-        personalRemaining={Math.round((dailyBudget / householdSize - todaySpentPersonal) * 100) / 100}
       />
 
       <AiSummary />
