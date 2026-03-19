@@ -8,6 +8,7 @@ import { Send, Bot, User, Copy, Check } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import { useEvent } from "@/lib/use-events";
 import ReactMarkdown from "react-markdown";
+import { copyToClipboard } from "@/lib/clipboard";
 
 interface Message {
   id: string;
@@ -229,21 +230,10 @@ export function ChatInterface() {
                     className="chat-copy-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      try {
-                        navigator.clipboard.writeText(message.content).then(() => {
-                          setCopiedId(message.id);
-                          setTimeout(() => setCopiedId(null), 2000);
-                        });
-                      } catch {
-                        const ta = document.createElement("textarea");
-                        ta.value = message.content;
-                        document.body.appendChild(ta);
-                        ta.select();
-                        document.execCommand("copy");
-                        document.body.removeChild(ta);
+                      copyToClipboard(message.content).then(() => {
                         setCopiedId(message.id);
                         setTimeout(() => setCopiedId(null), 2000);
-                      }
+                      });
                     }}
                   >
                     {copiedId === message.id ? <Check /> : <Copy />}

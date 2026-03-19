@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { RefreshCw, Sparkles, Copy, Check } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import ReactMarkdown from "react-markdown";
+import { copyToClipboard } from "@/lib/clipboard";
 
 export function AiSummary() {
   const [summary, setSummary] = useState<string | null>(null);
@@ -47,22 +48,10 @@ export function AiSummary() {
   const handleCopy = () => {
     if (!summary) return;
     console.info("[ai-summary] Copying to clipboard");
-    try {
-      navigator.clipboard.writeText(summary).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      });
-    } catch {
-      // Fallback for Safari
-      const textarea = document.createElement("textarea");
-      textarea.value = summary;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
+    copyToClipboard(summary).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    }
+    });
   };
 
   const handleRefresh = () => {
