@@ -251,7 +251,14 @@ export default function DashboardPage() {
         <div className="sync-row">
           {data?.syncedAt && (
             <span className="sync-time">
-              {formatDistanceToNow(new Date(data.syncedAt), { addSuffix: true, locale: locale === "fi" ? fiFns : enUS })}
+              {(() => {
+                const syncDate = new Date(data.syncedAt);
+                const mins = Math.round((Date.now() - syncDate.getTime()) / 60000);
+                if (mins < 1) return locale === "fi" ? "juuri nyt" : "just now";
+                if (mins < 60) return `${mins} min`;
+                const hours = Math.round(mins / 60);
+                return `${hours}h`;
+              })()}
             </span>
           )}
           <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
