@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, TrendingUp, Loader2, Check } from "lucide-react";
+import { Plus, Loader2, Check } from "lucide-react";
 
 interface Income {
   id: number;
@@ -24,6 +24,8 @@ interface Income {
   expected_day: number;
   is_recurring: number;
   is_active: number;
+  average_amount: number | null;
+  history_count: number;
 }
 
 export default function IncomePage() {
@@ -84,7 +86,7 @@ export default function IncomePage() {
       const res = await fetch("/api/income", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
       if (data.id) {
-        setIncomes((prev) => [...prev, { id: data.id, ...body, is_recurring: 1, is_active: 1 }]);
+        setIncomes((prev) => [...prev, { id: data.id, ...body, is_recurring: 1, is_active: 1, average_amount: null, history_count: 0 }]);
         setAddOpen(false);
         form.reset();
       }
@@ -130,7 +132,6 @@ export default function IncomePage() {
 
   const active = incomes.filter((i) => i.is_active);
   const monthlyTotal = active.reduce((s, i) => s + i.amount, 0);
-  const recurringTotal = active.filter((i) => i.is_recurring).reduce((s, i) => s + i.amount, 0);
 
   if (loading) {
     return <div className="page-loading"><Loader2 className="page-loading-spinner animate-spin" /></div>;
@@ -171,23 +172,11 @@ export default function IncomePage() {
         </Dialog>
       </div>
 
-      <div className="page-grid-2-sm">
-        <Card className="metric-card">
-          <p className="metric-card-label">{t.income.expectedMonthly}</p>
-          <p className="metric-card-value-3xl text-positive">{monthlyTotal.toFixed(2)} €</p>
-          <p className="metric-card-note metric-card-note-mt">{active.length} {t.common.sources}</p>
-        </Card>
-        <Card className="metric-card">
-          <div className="page-header-row">
-            <div>
-              <p className="metric-card-label">{t.income.guaranteedRecurring}</p>
-              <p className="metric-card-value-3xl">{recurringTotal.toFixed(2)} €</p>
-              <p className="metric-card-note metric-card-note-mt">{t.income.reliableMonthlyIncome}</p>
-            </div>
-            <TrendingUp className="metric-card-icon-standalone text-positive" />
-          </div>
-        </Card>
-      </div>
+      <Card className="metric-card">
+        <p className="metric-card-label">{t.income.expectedMonthly}</p>
+        <p className="metric-card-value-3xl text-positive">{monthlyTotal.toFixed(2)} €</p>
+        <p className="metric-card-note metric-card-note-mt">{active.length} {t.common.sources}</p>
+      </Card>
 
       {incomes.length > 0 && (
         <Card className="list-card list-card-divider">
@@ -201,7 +190,6 @@ export default function IncomePage() {
                 <div className="list-item-name-row">
                   <p className={`list-item-name ${!income.is_active ? "is-inactive" : ""}`}>{income.name}</p>
                   {monthlyMatches[income.id] && <Badge className="badge-matched"><Check className="icon-xs" />{locale === "fi" ? "Saatu" : "Received"}</Badge>}
-                  {income.is_recurring ? <Badge variant="secondary">{t.income.recurring}</Badge> : null}
                 </div>
                 <p className="list-item-meta">
                   {t.income.expectedAround} {formatDay(income.expected_day)}
@@ -212,6 +200,9 @@ export default function IncomePage() {
               </div>
               <div className="list-item-end">
                 <p className="list-item-amount-value" data-positive>+{income.amount.toFixed(2)} €</p>
+                {income.average_amount && income.history_count >= 2 && (
+                  <p className="list-item-meta">{locale === "fi" ? "ka" : "avg"} {income.average_amount.toFixed(2)} €</p>
+                )}
                 <span onClick={(e) => e.stopPropagation()}>
                   <Switch
                     checked={!!income.is_active}

@@ -10,10 +10,25 @@ export async function GET() {
     const db = getDb();
     const incomes = db
       .prepare("SELECT id, name, amount, expected_day, is_recurring, is_active FROM income_sources ORDER BY expected_day ASC")
-      .all();
+      .all() as { id: number; name: string; amount: number; expected_day: number; is_recurring: number; is_active: number }[];
 
-    console.debug("[income] Loaded", (incomes as unknown[]).length, "income sources for user", user.id);
-    return NextResponse.json({ incomes });
+    // Get averages from history
+    const averages = db
+      .prepare("SELECT income_id, AVG(amount) as avg_amount, COUNT(*) as count FROM income_amount_history GROUP BY income_id")
+      .all() as { income_id: number; avg_amount: number; count: number }[];
+    const avgMap = new Map(averages.map((a) => [a.income_id, { avg: Math.round(a.avg_amount * 100) / 100, count: a.count }]));
+
+    const enriched = incomes.map((i) => {
+      const avg = avgMap.get(i.id);
+      return {
+        ...i,
+        average_amount: avg?.avg || null,
+        history_count: avg?.count || 0,
+      };
+    });
+
+    console.debug("[income] Loaded", incomes.length, "income sources");
+    return NextResponse.json({ incomes: enriched });
   } catch (error) {
     console.error("[income] GET error:", error);
     return NextResponse.json({ incomes: [] }, { status: 500 });
@@ -70,7 +85,17 @@ export async function PUT(request: Request) {
     const values: (string | number)[] = [];
 
     if (body.name !== undefined) { updates.push("name = ?"); values.push(body.name); }
-    if (body.amount !== undefined) { updates.push("amount = ?"); values.push(body.amount); }
+    if (body.amount !== undefined) {
+      const newAmount = parseFloat(String(body.amount).replace(",", "."));
+      updates.push("amount = ?");
+      values.push(newAmount);
+      // Record amount history
+      const month = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+      db.prepare(`
+        INSERT INTO income_amount_history (income_id, amount, month) VALUES (?, ?, ?)
+        ON CONFLICT(income_id, month) DO UPDATE SET amount = excluded.amount
+      `).run(id, newAmount, month);
+    }
     if (body.expected_day !== undefined) { updates.push("expected_day = ?"); values.push(body.expected_day); }
     if (body.is_recurring !== undefined) { updates.push("is_recurring = ?"); values.push(body.is_recurring ? 1 : 0); }
     if (body.is_active !== undefined) { updates.push("is_active = ?"); values.push(body.is_active ? 1 : 0); }

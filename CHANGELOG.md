@@ -1,5 +1,9 @@
 ### 1.0.0: 2026-03-19
 
+* Remove "guaranteed recurring" card from income page, keep single total
+* Add income amount history tracking for variable income averages
+* Show average amount on income list when 2+ months of history exist
+* Remove recurring badge from income list items
 * Fix dashboard grid by moving today remaining into hero card
 * Remove hardcoded /home/rolle path from claude CLI fallback
 * Fix Finnish translations: "Varma kuukausitulo", "perhe yhteensä", "Suurimmat kuluerät"
