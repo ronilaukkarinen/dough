@@ -38,8 +38,8 @@ export async function POST(request: Request) {
           date: date || new Date().toISOString().slice(0, 10),
           amount: milliunits,
           payee_name,
-          cleared: "uncleared",
-          approved: false,
+          cleared: "cleared",
+          approved: true,
         },
       }),
     });
