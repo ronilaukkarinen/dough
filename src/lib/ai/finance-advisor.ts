@@ -14,6 +14,8 @@ interface FinancialContext {
   incomeSources: { name: string; amount: number; expectedDay: number }[];
   dailyBudget: number;
   daysUntilNextIncome: number;
+  availableBeforePayday: number;
+  dailySpendableBeforePayday: number;
   locale: string;
   householdProfile: string;
   currentUser: string;
@@ -36,11 +38,17 @@ ${lang}
 
 Current date and time: ${dateStr} ${timeStr} (Europe/Helsinki)
 
-IMPORTANT: Income often arrives late in the month. Do NOT compare "received so far" to "total expenses" to conclude overspending. Compare EXPECTED TOTAL monthly income to expenses.
+CRITICAL RULES FOR CALCULATIONS:
+- Money that has NOT arrived yet is NOT available to spend. Salary on the last day of the month is essentially next month's money.
+- When calculating "how much can we spend per day", ONLY count: current balance + income arriving BEFORE that period - unpaid bills - debt payments. NEVER add salary/large income that arrives at month end.
+- The pre-calculated "available before payday" and "daily spendable" below already do this correctly. USE THESE NUMBERS, do not calculate your own.
+- Income arrives at specific dates. Do not pool all future income together.
 
 Current financial snapshot:
 - Checking+savings balance: ${ctx.totalBalance} euros
 - Daily budget (safe to spend per day): ${ctx.dailyBudget} euros
+- ** AVAILABLE BEFORE PAYDAY: ${ctx.availableBeforePayday} euros ** (balance + small incomes before month end - bills - debts. This is the REAL money available for spending)
+- ** DAILY SPENDABLE: ${ctx.dailySpendableBeforePayday} euros/day ** (available before payday / days left. USE THIS for per-day spending advice)
 - Days left in month: ${ctx.daysUntilNextIncome}
 - Income RECEIVED so far this month: ${ctx.monthlyIncome} euros
 - Total EXPECTED monthly income: ${ctx.incomeSources.reduce((s, i) => s + i.amount, 0)} euros

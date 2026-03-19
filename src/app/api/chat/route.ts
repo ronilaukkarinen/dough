@@ -109,6 +109,22 @@ export async function POST(request: Request) {
             .prepare("SELECT name, amount, expected_day FROM income_sources WHERE is_active = 1 ORDER BY expected_day ASC")
             .all() as { name: string; amount: number; expected_day: number }[];
 
+          // Pre-calculate time-sequenced cash flow for AI
+          const today = now.getDate();
+          const unpaidBills = enrichedBills.filter((b) => b.status !== "paid");
+          const unpaidBillsTotal = unpaidBills.reduce((s, b) => s + b.amount, 0);
+          const debtPaymentsTotal = debts.reduce((s: number, d: any) => s + (d.minimumPayment || 0), 0);
+
+          // Income arriving before last day of month (before salary)
+          const incomeBeforePayday = incomeRows
+            .filter((i) => i.expected_day > today && i.expected_day < daysInMonth)
+            .reduce((s, i) => s + i.amount, 0);
+
+          // Available before payday = current balance + small incomes before payday - bills - debts
+          const availableBeforePayday = Math.round((checkingSavings + incomeBeforePayday - unpaidBillsTotal - debtPaymentsTotal) * 100) / 100;
+          const daysBeforePayday = daysInMonth - today;
+          const dailySpendableBeforePayday = daysBeforePayday > 0 ? Math.round((Math.max(0, availableBeforePayday) / daysBeforePayday) * 100) / 100 : 0;
+
           context = {
             totalBalance: Math.round(checkingSavings * 100) / 100,
             monthlyIncome: Math.round(realIncomeTx.reduce((s: number, t: any) => s + t.amount, 0) * 100) / 100,
@@ -121,6 +137,8 @@ export async function POST(request: Request) {
             incomeSources: incomeRows.map((i) => ({ name: i.name, amount: i.amount, expectedDay: i.expected_day })),
             dailyBudget,
             daysUntilNextIncome: daysLeft,
+            availableBeforePayday,
+            dailySpendableBeforePayday,
             locale,
             householdProfile,
             currentUser: user.display_name || user.email,
@@ -148,6 +166,8 @@ export async function POST(request: Request) {
         incomeSources: [],
         dailyBudget: 0,
         daysUntilNextIncome: 0,
+        availableBeforePayday: 0,
+        dailySpendableBeforePayday: 0,
         locale: "en",
         householdProfile: "",
         currentUser: "unknown",
