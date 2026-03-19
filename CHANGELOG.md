@@ -118,6 +118,11 @@
 * Remove duplicate net worth title on net worth page
 * Add markdown rendering for AI chat assistant messages
 * Fix chat scroll overflow with min-height: 0 on messages area
+* Filter transfers from dashboard recent transactions widget
+* Fix debt list color showing green instead of red on dashboard
+* Fix net worth chart Y-axis to show negative values with wider width
+* Fix chat scroll-to-bottom on load
+* Clear duplicate chat messages
 
 ### 0.2.0: 2026-03-18
 

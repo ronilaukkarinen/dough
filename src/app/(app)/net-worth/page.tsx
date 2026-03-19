@@ -152,7 +152,7 @@ export default function NetWorthPage() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                     <XAxis dataKey="date" tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} />
-                    <YAxis tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v)} €`} width={55} />
+                    <YAxis tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v)} €`} width={65} domain={["auto", "auto"]} />
                     <Tooltip
                       content={({ active, payload, label }) =>
                         active && payload?.length ? (

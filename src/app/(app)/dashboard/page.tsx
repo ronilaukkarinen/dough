@@ -152,8 +152,9 @@ export default function DashboardPage() {
 
   const totalCategorySpending = categorySpending.reduce((s, c) => s + c.amount, 0);
 
-  // Recent transactions (last 7)
+  // Recent transactions (last 7, no transfers)
   const recentTransactions = [...data.transactions]
+    .filter((tx) => !isTransfer(tx.payee, tx.category))
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 7)
     .map((tx) => ({

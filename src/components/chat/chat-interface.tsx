@@ -27,8 +27,15 @@ export function ChatInterface() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const scrollToBottom = useCallback(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    // Try multiple scroll targets since ScrollArea wraps content
+    const el = scrollRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+      // Also try the viewport child
+      const viewport = el.querySelector("[data-slot=scroll-area-viewport]") || el.firstElementChild;
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
     }
   }, []);
 
@@ -64,7 +71,10 @@ export function ChatInterface() {
       .catch(() => {
         setMessages([{ id: "greeting", role: "assistant", content: t.chat.greeting }]);
       })
-      .finally(() => setInitialLoading(false));
+      .finally(() => {
+        setInitialLoading(false);
+        setTimeout(scrollToBottom, 100);
+      });
   }, []);
 
   // Poll for new messages when waiting for AI response

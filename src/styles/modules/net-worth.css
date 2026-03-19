@@ -172,14 +172,14 @@
   padding: 1rem;
 }
 
-.net-worth-list-amount-debt {
-  color: var(--negative);
-}
-
 .net-worth-list-amount {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--positive);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+.net-worth-list-amount.net-worth-list-amount-debt {
+  color: var(--negative);
 }
