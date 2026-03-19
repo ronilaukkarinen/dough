@@ -142,30 +142,42 @@ export async function GET(request: Request) {
 
     const summaryInstructions = getHouseholdSetting("prompt_summary_instructions") || DEFAULT_SUMMARY_INSTRUCTIONS;
 
+    const projectedRemainingExpenses = Math.round(unpaidBillsAmount + (dailyDiscretionary * daysLeft));
+    const projectedTotalExpenses = Math.round(monthActivity + projectedRemainingExpenses);
+
     const prompt = `${lang} You are a personal finance advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} ${summaryInstructions}
 
-IMPORTANT: Do NOT compare "received income so far" to "total expenses" to conclude they are overspending. Income arrives at specific dates (see below). Compare EXPECTED TOTAL monthly income to expenses for the full picture. The family may receive most income late in the month.
+CRITICAL RULES:
+- Use the PRE-CALCULATED projected month-end balance below. Do NOT calculate your own projection.
+- The projection already accounts for: current balance + upcoming income - unpaid bills - projected discretionary spending.
+- Income arrives at specific dates, not all at once. Do not treat upcoming income as already available.
+- The daily burn rate EXCLUDES fixed bills (rent etc) - it only reflects discretionary spending like groceries, restaurants, transport.
 
-Data:
-- Checking+savings balance: ${Math.round(checkingSavings)} euros
-- Income ALREADY received this month: ${Math.round(monthIncomeTotal)} euros
-- TOTAL expected monthly income (all sources): ${totalExpectedMonthlyIncome} euros
-- Income still coming this month: ${Math.round(upcomingIncome)} euros (${incomeSources.filter((i) => i.expected_day > now.getDate()).map((i) => `${i.name}: ${i.amount} euros on day ${i.expected_day}`).join(", ") || "none"})
-- Income sources: ${incomeList}
-- This month's real spending (excluding transfers): ${Math.round(monthActivity)} euros
-- Daily burn rate: ${dailyBurnRate} euros/day
-- Projected month-end balance (with upcoming income): ${projectedMonthEnd} euros
-- Living above means: ${livingAboveMeans ? "YES spending exceeds expected income" : "no"}
-- Days passed: ${daysPassed}, days left: ${daysLeft}
-- Daily budget from current balance: ${daysLeft > 0 ? Math.round(checkingSavings / daysLeft) : 0} euros/day
+Pre-calculated analysis:
+- Current checking+savings balance: ${Math.round(checkingSavings)} euros
+- Days passed: ${daysPassed}, days left in month: ${daysLeft}
+- Income received so far: ${Math.round(monthIncomeTotal)} euros
+- Income still coming: ${Math.round(upcomingIncome)} euros (${incomeSources.filter((i) => i.expected_day > now.getDate()).map((i) => `${i.name}: ${i.amount} euros on day ${i.expected_day}`).join(", ") || "none"})
+- Total expected monthly income: ${totalExpectedMonthlyIncome} euros
+- Spending so far this month: ${Math.round(monthActivity)} euros
+- Of which fixed bills already paid: ${Math.round(paidBillsAmount)} euros
+- Of which discretionary (groceries, restaurants, etc): ${Math.round(discretionarySpending)} euros
+- Daily discretionary burn rate: ${dailyDiscretionary} euros/day
+- Unpaid bills still due this month: ${Math.round(unpaidBillsAmount)} euros
+- Projected remaining expenses (bills + discretionary): ${projectedRemainingExpenses} euros
+- Projected TOTAL month expenses: ${projectedTotalExpenses} euros
+- ** PROJECTED MONTH-END BALANCE: ${projectedMonthEnd} euros ** (USE THIS NUMBER, do not calculate your own)
+- Monthly surplus/deficit: ${totalExpectedMonthlyIncome - projectedTotalExpenses} euros (income minus projected expenses)
+- Daily budget from current balance only: ${daysLeft > 0 ? Math.round(checkingSavings / daysLeft) : 0} euros/day
 - Spending by category: ${categoryBreakdown}
 - Top individual expenses: ${topExpenses}
-- Recurring bills: ${recurringBills.length > 0 ? recurringBills.map((b) => {
+- Bills: ${recurringBills.length > 0 ? recurringBills.map((b) => {
       const isPaid = matchedBillIds.has(b.id);
       const isOverdue = !isPaid && b.due_day < now.getDate();
-      return `${b.name}: ${b.amount} euros (due day ${b.due_day}${isPaid ? " - PAID" : isOverdue ? " - OVERDUE" : " - upcoming"})`;
+      return `${b.name}: ${b.amount} euros (due ${b.due_day}th${isPaid ? " - PAID" : isOverdue ? " - OVERDUE" : " - upcoming"})`;
     }).join(", ") : "none configured"}
-- Total monthly bills: ${recurringBills.reduce((s, b) => s + b.amount, 0)} euros`;
+- Total monthly bills: ${recurringBills.reduce((s, b) => s + b.amount, 0)} euros
+- Income sources: ${incomeList}`;
 
     const claudePath = process.env.CLAUDE_PATH || "claude";
     console.info("[summary] Calling claude CLI");
