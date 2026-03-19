@@ -64,15 +64,15 @@ export function DailyAllowance({
             {overspent ? (
               <>
                 {locale === "fi" ? "Ylitetty " : "Exceeded by "}
-                <span className="text-negative">{Math.abs(todayRemaining).toFixed(2)} {currency}</span>
-                {locale === "fi" ? "! Budjetti oli " : "! Budget was "}
+                <span className="text-negative">{Math.abs(todayRemaining).toFixed(2)} {currency}!</span>
+                {locale === "fi" ? " Budjetti oli " : " Budget was "}
                 <span className="text-chart-3">{dailyBudget.toFixed(2)} {currency}</span>
                 {locale === "fi" ? ", käytetty " : ", spent "}
                 <span className="text-negative">{todaySpentAll.toFixed(2)} {currency}</span>
                 {daysUntilIncome > 0 && (
                   <>
                     {". "}
-                    {locale === "fi" ? "Huomenna " : "Tomorrow "}
+                    {locale === "fi" ? "Huomiselle käytössä on " : "Available tomorrow "}
                     <span className="text-positive">{Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome)).toFixed(2)} {currency}</span>
                   </>
                 )}
@@ -80,7 +80,7 @@ export function DailyAllowance({
             ) : todaySpentAll > 0 ? (
               <>
                 {locale === "fi" ? "Päiväbudjetti " : "Budget "}
-                <span className="text-chart-3">{dailyBudget.toFixed(2)} {currency}</span>
+                <span className={status === "good" ? "text-positive" : status === "tight" ? "text-chart-3" : "text-negative"}>{dailyBudget.toFixed(2)} {currency}</span>
                 {" \u00B7 "}
                 {locale === "fi" ? "käytetty " : "spent "}
                 <span className="text-negative">{todaySpentAll.toFixed(2)} {currency}</span>
