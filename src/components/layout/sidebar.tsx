@@ -17,7 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/locale-context";
 
@@ -40,7 +40,19 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [unreadChat, setUnreadChat] = useState(0);
   const { t } = useLocale();
+
+  useEffect(() => {
+    const checkUnread = () => {
+      fetch("/api/chat/unread").then((r) => r.json()).then((d) => {
+        setUnreadChat(d.unread || 0);
+      }).catch(() => {});
+    };
+    checkUnread();
+    const interval = setInterval(checkUnread, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     // Use GET redirect — works on all browsers including iOS Orion
@@ -79,6 +91,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             >
               <item.icon className="l-sidebar-link-icon" />
               {!collapsed && <span>{t.nav[item.key]}</span>}
+              {item.key === "chat" && unreadChat > 0 && !isActive && (
+                <span className="l-sidebar-badge">{unreadChat}</span>
+              )}
             </Link>
           );
         })}
