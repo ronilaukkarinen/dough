@@ -1,5 +1,11 @@
 ### 1.0.0: 2026-03-19
 
+* Add "Today remaining" card showing daily budget minus all household spending
+* Fix personal greeting to show personal + household spending separately
+* Daily budget remaining subtracts ALL household spending, not just personal
+* Bold and colorize monetary amounts in AI chat with indigo
+* Use comma decimal separator in all AI prompts
+* Fix AI to not mislead about income timing (salary at end of month)
 * Fix metric card value font sizes to be consistent across all dashboard cards
 * Fix AI advisor by removing unsupported --no-input flag from claude CLI call
 * Make category breakdown pie chart larger (200px, bigger radii)

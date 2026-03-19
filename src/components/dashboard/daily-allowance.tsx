@@ -15,6 +15,8 @@ interface DailyAllowanceProps {
   projectedMonthEnd?: number;
   accountCount?: number;
   billCount?: number;
+  todaySpentAll?: number;
+  todayRemaining?: number;
   currency?: string;
 }
 
@@ -29,6 +31,8 @@ export function DailyAllowance({
   projectedMonthEnd = 0,
   accountCount = 0,
   billCount = 0,
+  todaySpentAll = 0,
+  todayRemaining = 0,
   currency = "€",
 }: DailyAllowanceProps) {
   const { t, locale } = useLocale();
@@ -54,6 +58,23 @@ export function DailyAllowance({
         </div>
         <div className="daily-allowance-hero-bg">
           <Wallet />
+        </div>
+      </Card>
+
+      <Card className="metric-card">
+        <div className="metric-card-row">
+          <div className="metric-card-icon" data-color={todayRemaining > 0 ? "positive" : "negative"}>
+            <CalendarClock />
+          </div>
+          <div>
+            <p className="metric-card-label">{locale === "fi" ? "Tänään jäljellä" : "Today remaining"}</p>
+            <p className="metric-card-value" data-status={todayRemaining > dailyBudget * 0.5 ? undefined : todayRemaining > 0 ? undefined : undefined}>
+              <span className={todayRemaining <= 0 ? "text-negative" : todayRemaining < dailyBudget * 0.3 ? "text-chart-3" : "text-positive"}>
+                {todayRemaining.toFixed(2)} {currency}
+              </span>
+            </p>
+            <p className="metric-card-note">{locale === "fi" ? "käytetty" : "spent"} {todaySpentAll.toFixed(2)} {currency}</p>
+          </div>
         </div>
       </Card>
 

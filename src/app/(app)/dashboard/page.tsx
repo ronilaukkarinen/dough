@@ -119,12 +119,16 @@ export default function DashboardPage() {
   const dailyBurnRate = daysPassed > 0 ? Math.round((realSpendingTotal / daysPassed) * 100) / 100 : 0;
   const projectedMonthEnd = Math.round((availableBalance + upcomingIncome - (dailyBurnRate * daysLeft)) * 100) / 100;
 
-  // Today's spending — personal (from linked accounts only)
+  // Today's spending
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const todaySpentAll = data.transactions
+    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category))
+    .reduce((s, t) => s + Math.abs(t.amount), 0);
   const todaySpentPersonal = data.transactions
     .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category)
       && (linkedAccountIds.length === 0 || linkedAccountIds.includes(t.account_id || "")))
     .reduce((s, t) => s + Math.abs(t.amount), 0);
+  const todayRemaining = Math.max(0, dailyBudget - todaySpentAll);
 
   // Build spending chart data from transactions (exclude transfers)
   const spendingByDay: Record<string, number> = {};
@@ -217,8 +221,10 @@ export default function DashboardPage() {
       />
 
       <PersonalGreeting
-        todaySpent={todaySpentPersonal}
+        todaySpentPersonal={todaySpentPersonal}
+        todaySpentAll={todaySpentAll}
         dailyBudget={dailyBudget}
+        todayRemaining={todayRemaining}
       />
 
       <AiSummary />
@@ -250,6 +256,8 @@ export default function DashboardPage() {
         })()}
         burnRate={dailyBurnRate}
         projectedMonthEnd={projectedMonthEnd}
+        todaySpentAll={todaySpentAll}
+        todayRemaining={todayRemaining}
       />
 
       <div className="page-grid-2">

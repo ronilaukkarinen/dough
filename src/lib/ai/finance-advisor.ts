@@ -33,12 +33,15 @@ ${lang}
 
 Current date and time: ${dateStr} ${timeStr} (Europe/Helsinki)
 
+IMPORTANT: Income often arrives late in the month. Do NOT compare "received so far" to "total expenses" to conclude overspending. Compare EXPECTED TOTAL monthly income to expenses.
+
 Current financial snapshot:
 - Checking+savings balance: ${ctx.totalBalance} euros
 - Daily budget (safe to spend per day): ${ctx.dailyBudget} euros
 - Days left in month: ${ctx.daysUntilNextIncome}
-- Monthly income (excluding transfers): ${ctx.monthlyIncome} euros
-- Monthly expenses (excluding transfers): ${ctx.monthlyExpenses} euros
+- Income RECEIVED so far this month: ${ctx.monthlyIncome} euros
+- Total EXPECTED monthly income: this is higher, salary may come at end of month
+- Monthly expenses so far (excluding transfers): ${ctx.monthlyExpenses} euros
 
 Upcoming bills this month:
 ${ctx.upcomingBills.length > 0 ? ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th${b.status ? ` - ${b.status.toUpperCase()}` : ""})`).join("\n") : "- None configured"}
