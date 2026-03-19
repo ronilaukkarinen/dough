@@ -36,13 +36,16 @@ export default function DashboardPage() {
   const [incomes, setIncomes] = useState<IncomeSource[]>([]);
   const [matchedIncomeIds, setMatchedIncomeIds] = useState<Set<number>>(new Set());
   const [bills, setBills] = useState<{ id: number; amount: number; due_day: number; is_active: number }[]>([]);
+  const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
 
   useEffect(() => {
     Promise.all([
       fetch("/api/income").then((r) => r.json()),
       fetch("/api/matches").then((r) => r.json()),
       fetch("/api/bills").then((r) => r.json()),
-    ]).then(([incomeData, matchData, billsData]) => {
+      fetch("/api/profile").then((r) => r.json()),
+    ]).then(([incomeData, matchData, billsData, profileData]) => {
+      if (profileData.linkedAccountIds) setLinkedAccountIds(profileData.linkedAccountIds);
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       if (billsData.bills) setBills(billsData.bills);
       if (matchData.monthlyMatches) {
@@ -116,10 +119,11 @@ export default function DashboardPage() {
   const dailyBurnRate = daysPassed > 0 ? Math.round((realSpendingTotal / daysPassed) * 100) / 100 : 0;
   const projectedMonthEnd = Math.round((availableBalance + upcomingIncome - (dailyBurnRate * daysLeft)) * 100) / 100;
 
-  // Today's spending (use local date, not UTC)
+  // Today's spending — personal (from linked accounts only)
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  const todaySpent = data.transactions
-    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category))
+  const todaySpentPersonal = data.transactions
+    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category)
+      && (linkedAccountIds.length === 0 || linkedAccountIds.includes(t.account_id || "")))
     .reduce((s, t) => s + Math.abs(t.amount), 0);
 
   // Build spending chart data from transactions (exclude transfers)
@@ -213,7 +217,7 @@ export default function DashboardPage() {
       />
 
       <PersonalGreeting
-        todaySpent={todaySpent}
+        todaySpent={todaySpentPersonal}
         dailyBudget={dailyBudget}
       />
 

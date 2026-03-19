@@ -61,7 +61,7 @@ export function PersonalGreeting({ todaySpent, dailyBudget }: PersonalGreetingPr
         {". "}
         {exceeded
           ? <span className="personal-greeting-exceeded">
-              {locale === "fi" ? `Budjetti ylitetty ${Math.abs(remaining).toFixed(2)} € !` : `Budget exceeded by ${Math.abs(remaining).toFixed(2)} €!`}
+              {locale === "fi" ? `Budjetti ylitetty ${Math.abs(remaining).toFixed(2)} €!` : `Budget exceeded by ${Math.abs(remaining).toFixed(2)} €!`}
             </span>
           : <>
               {locale === "fi" ? "Jäljellä " : "Remaining "}

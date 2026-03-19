@@ -90,6 +90,7 @@ export async function getTransactions(
     memo: t.memo,
     approved: t.approved,
     cleared: t.cleared,
+    account_id: t.account_id,
   }));
 }
 
