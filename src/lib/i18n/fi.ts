@@ -63,7 +63,7 @@ export const fi = {
     topCategories: "Suurimmat kuluerät",
     recentTransactions: "Viimeisimmät tapahtumat",
     spent: "Kulutettu",
-    savingsTarget: "Säästötavoite",
+    savingsTarget: "Vakaa talous",
     budget: "Budjetti",
     income: "Tulot",
     expenses: "Menot",

@@ -1,5 +1,6 @@
 ### 1.1.0: 2026-03-20
 
+* Change savings target label to "Vakaa talous" in Finnish
 * Add monthly snapshots table for historical spending data, backfill 3 months on first sync
 * Replace spending chart budget line with green savings target dashed line
 * Show 4 months in cash flow chart (current + 3 historical)
