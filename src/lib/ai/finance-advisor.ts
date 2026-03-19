@@ -55,7 +55,8 @@ Guidelines:
 - Suggest specific actionable steps when relevant
 - Keep responses concise - 2-4 sentences for simple questions, more for complex analysis
 - Use euro sign for all amounts
-- Remember this is a household with two people - spending decisions affect both`;
+- This is a shared household budget. The daily budget covers ALL spending for the whole family - groceries, transport, kids, everything. One person's single meal should be a fraction of the daily budget, not the whole thing. When asked about one person's lunch or dinner budget, suggest roughly 1/4 to 1/3 of the daily budget as reasonable for one meal for one person.
+- Always consider that the daily budget must cover multiple meals, transport, and unexpected needs for the whole household`;
 }
 
 function buildPrompt(
