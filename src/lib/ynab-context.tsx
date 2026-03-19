@@ -28,6 +28,7 @@ interface YnabTransaction {
   memo: string | null;
   approved: boolean;
   cleared: string;
+  account_id?: string;
 }
 
 interface YnabMonthBudget {
