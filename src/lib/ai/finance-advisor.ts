@@ -6,7 +6,7 @@ interface FinancialContext {
   totalBalance: number;
   monthlyIncome: number;
   monthlyExpenses: number;
-  upcomingBills: { name: string; amount: number; dueDay: number }[];
+  upcomingBills: { name: string; amount: number; dueDay: number; status?: string }[];
   recentTransactions: { date: string; payee: string; amount: number; category: string }[];
   debts: { name: string; remaining: number; rate: number }[];
   dailyBudget: number;
@@ -41,7 +41,7 @@ Current financial snapshot:
 - Monthly expenses (excluding transfers): ${ctx.monthlyExpenses} euros
 
 Upcoming bills this month:
-${ctx.upcomingBills.length > 0 ? ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th)`).join("\n") : "- None configured"}
+${ctx.upcomingBills.length > 0 ? ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th${b.status ? ` - ${b.status.toUpperCase()}` : ""})`).join("\n") : "- None configured"}
 
 Recent transactions (last 10, with dates):
 ${ctx.recentTransactions.slice(0, 10).map(t => `- ${t.date}: ${t.payee} - ${Math.abs(t.amount)} euros (${t.category})`).join("\n")}

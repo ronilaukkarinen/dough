@@ -102,8 +102,14 @@ export async function GET(request: Request) {
       .all(user.id) as { name: string; amount: number; expected_day: number; is_active: number }[];
 
     const recurringBills = db
-      .prepare("SELECT name, amount, due_day, is_active FROM recurring_bills WHERE user_id = ? AND is_active = 1 ORDER BY due_day ASC")
-      .all(user.id) as { name: string; amount: number; due_day: number; is_active: number }[];
+      .prepare("SELECT id, name, amount, due_day, is_active FROM recurring_bills WHERE user_id = ? AND is_active = 1 ORDER BY due_day ASC")
+      .all(user.id) as { id: number; name: string; amount: number; due_day: number; is_active: number }[];
+
+    const billMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const billMatches = db
+      .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'bill' AND month = ?")
+      .all(billMonth) as { source_id: number }[];
+    const matchedBillIds = new Set(billMatches.map((m) => m.source_id));
 
     const upcomingIncome = incomeSources
       .filter((i) => i.expected_day > now.getDate())
@@ -144,7 +150,11 @@ Data:
 - Daily budget from current balance: ${daysLeft > 0 ? Math.round(checkingSavings / daysLeft) : 0} euros/day
 - Spending by category: ${categoryBreakdown}
 - Top individual expenses: ${topExpenses}
-- Recurring bills: ${recurringBills.length > 0 ? recurringBills.map((b) => `${b.name}: ${b.amount} euros (due day ${b.due_day}${b.due_day > now.getDate() ? " - upcoming" : " - paid"})`).join(", ") : "none configured"}
+- Recurring bills: ${recurringBills.length > 0 ? recurringBills.map((b) => {
+      const isPaid = matchedBillIds.has(b.id);
+      const isOverdue = !isPaid && b.due_day < now.getDate();
+      return `${b.name}: ${b.amount} euros (due day ${b.due_day}${isPaid ? " - PAID" : isOverdue ? " - OVERDUE" : " - upcoming"})`;
+    }).join(", ") : "none configured"}
 - Total monthly bills: ${recurringBills.reduce((s, b) => s + b.amount, 0)} euros`;
 
     const claudePath = process.env.CLAUDE_PATH || "/home/rolle/.local/bin/claude";

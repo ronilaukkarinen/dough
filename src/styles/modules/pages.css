@@ -291,6 +291,8 @@
 .list-item-body {
   flex: 1;
   min-width: 0;
+  display: grid;
+  gap: 4px;
 }
 
 .list-item-name-row {

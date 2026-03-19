@@ -133,6 +133,15 @@
 * Add real-time documentation in docs/real-time.md
 * Differentiate chat bubbles: self (right, solid), other user (left, warm amber), AI (left, cool neutral)
 * Show sender name only on other users' bubbles, not on own
+* Overhaul bills with overdue detection, paid status from YNAB matching, and amount history
+* Show "Myöhässä" badge when bill due date has passed without matching YNAB transaction
+* Show "Maksettu" badge when bill is matched to YNAB transaction this month
+* Show average amount below bill amount when 2+ months of history exist
+* Add tap-to-edit on bills with name, amount, due day, category, and payee matching
+* Track bill amount changes in bill_amount_history table for averages
+* Feed bill paid/overdue status to AI summary and chat advisor
+* Add list-item-body grid layout with 4px gap
+* Bills page auto-refreshes via SSE on data changes
 
 ### 0.2.0: 2026-03-18
 

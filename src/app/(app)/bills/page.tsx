@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocale } from "@/lib/locale-context";
+import { useEvent } from "@/lib/use-events";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, CalendarClock, AlertCircle, Loader2 } from "lucide-react";
+import { Plus, AlertCircle, Loader2, Check, Link2, X } from "lucide-react";
 
 interface Bill {
   id: number;
@@ -24,16 +25,28 @@ interface Bill {
   due_day: number;
   category: string;
   is_active: number;
+  is_paid: boolean;
+  paid_amount: number | null;
+  is_overdue: boolean;
+  is_due_soon: boolean;
+  patterns: string[];
+  average_amount: number | null;
+  history_count: number;
 }
 
 export default function BillsPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<Bill | null>(null);
+  const [patternOpen, setPatternOpen] = useState<number | null>(null);
+  const [newPattern, setNewPattern] = useState("");
+  const addFormRef = useRef<HTMLFormElement>(null);
+  const editFormRef = useRef<HTMLFormElement>(null);
 
-  useEffect(() => {
+  const loadBills = useCallback(() => {
     console.debug("[bills] Loading bills");
     fetch("/api/bills")
       .then((r) => r.json())
@@ -47,71 +60,100 @@ export default function BillsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => { loadBills(); }, [loadBills]);
+
+  // SSE: reload when data changes
+  useEvent("data:updated", useCallback(() => { loadBills(); }, [loadBills]));
+  useEvent("sync:complete", useCallback(() => { loadBills(); }, [loadBills]));
+
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    const form = formRef.current;
+    const form = addFormRef.current;
     if (!form) return;
-
     const fd = new FormData(form);
-    const body = {
-      name: fd.get("name") as string,
-      amount: (fd.get("amount") as string).replace(",", "."),
-      due_day: parseInt(fd.get("due_day") as string, 10),
-      category: fd.get("category") as string,
-    };
-
-    console.info("[bills] Adding bill:", body.name);
-
     try {
-      const res = await fetch("/api/bills", {
+      await fetch("/api/bills", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          name: fd.get("name"),
+          amount: (fd.get("amount") as string).replace(",", "."),
+          due_day: parseInt(fd.get("due_day") as string, 10),
+          category: fd.get("category"),
+        }),
       });
-      const data = await res.json();
-      if (data.id) {
-        setBills((prev) => [...prev, {
-          id: data.id,
-          name: body.name,
-          amount: parseFloat(body.amount),
-          due_day: body.due_day,
-          category: body.category || "",
-          is_active: 1,
-        }]);
-        setDialogOpen(false);
-        form.reset();
-      }
-    } catch (err) {
-      console.error("[bills] Add error:", err);
-    }
+      setAddOpen(false);
+      form.reset();
+      loadBills();
+    } catch (err) { console.error("[bills] Add error:", err); }
   };
 
-  const toggleBill = async (id: number, currentActive: number) => {
-    const newActive = currentActive ? 0 : 1;
-    setBills((prev) => prev.map((b) => b.id === id ? { ...b, is_active: newActive } : b));
-    console.info("[bills] Toggling bill", id, "active:", newActive);
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTarget || !editFormRef.current) return;
+    const fd = new FormData(editFormRef.current);
     try {
       await fetch("/api/bills", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, is_active: newActive }),
+        body: JSON.stringify({
+          id: editTarget.id,
+          name: fd.get("name"),
+          amount: (fd.get("amount") as string).replace(",", "."),
+          due_day: parseInt(fd.get("due_day") as string, 10),
+          category: fd.get("category"),
+        }),
       });
-    } catch (err) {
-      console.error("[bills] Toggle error:", err);
-    }
+      setEditOpen(false);
+      setEditTarget(null);
+      loadBills();
+    } catch (err) { console.error("[bills] Edit error:", err); }
   };
 
-  const today = new Date().getDate();
+  const toggleBill = async (id: number, currentActive: number) => {
+    setBills((prev) => prev.map((b) => b.id === id ? { ...b, is_active: currentActive ? 0 : 1 } : b));
+    try {
+      await fetch("/api/bills", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, is_active: currentActive ? 0 : 1 }),
+      });
+    } catch (err) { console.error("[bills] Toggle error:", err); }
+  };
+
+  const deleteBill = async (id: number) => {
+    try {
+      await fetch("/api/bills", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      setBills((prev) => prev.filter((b) => b.id !== id));
+    } catch (err) { console.error("[bills] Delete error:", err); }
+  };
+
+  const addPattern = async (billId: number) => {
+    if (!newPattern.trim()) return;
+    try {
+      await fetch("/api/matches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source_type: "bill", source_id: billId, payee_pattern: newPattern.trim() }),
+      });
+      setNewPattern("");
+      setPatternOpen(null);
+      loadBills();
+    } catch (err) { console.error("[bills] Add pattern error:", err); }
+  };
+
   const active = bills.filter((b) => b.is_active);
   const monthlyTotal = active.reduce((s, b) => s + b.amount, 0);
-  const remainingThisMonth = active.filter((b) => b.due_day >= today).reduce((s, b) => s + b.amount, 0);
+  const remainingUnpaid = active.filter((b) => !b.is_paid).reduce((s, b) => s + b.amount, 0);
+  const overdueCount = active.filter((b) => b.is_overdue).length;
+  const paidCount = active.filter((b) => b.is_paid).length;
 
   if (loading) {
-    return (
-      <div className="page-loading">
-        <Loader2 className="page-loading-spinner animate-spin" />
-      </div>
-    );
+    return <div className="page-loading"><Loader2 className="page-loading-spinner animate-spin" /></div>;
   }
 
   return (
@@ -121,16 +163,14 @@ export default function BillsPage() {
           <h1 className="page-heading">{t.bills.title}</h1>
           <p className="page-subtitle">{t.bills.subtitle}</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogTrigger render={<Button size="sm" />}>
             <Plus className="icon-sm" />
             {t.bills.addBill}
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t.bills.addRecurringBill}</DialogTitle>
-            </DialogHeader>
-            <form ref={formRef} onSubmit={handleAdd} className="form-stack">
+            <DialogHeader><DialogTitle>{t.bills.addRecurringBill}</DialogTitle></DialogHeader>
+            <form ref={addFormRef} onSubmit={handleAdd} className="form-stack">
               <div className="form-field">
                 <Label>{t.bills.name}</Label>
                 <Input name="name" placeholder={t.bills.namePlaceholder} required />
@@ -149,9 +189,7 @@ export default function BillsPage() {
                 <Label>{t.bills.category}</Label>
                 <Input name="category" placeholder={t.bills.categoryPlaceholder} />
               </div>
-              <Button type="submit">
-                {t.bills.addBill}
-              </Button>
+              <Button type="submit">{t.bills.addBill}</Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -162,49 +200,128 @@ export default function BillsPage() {
           <p className="metric-card-label">{t.bills.monthlyTotal}</p>
           <p className="metric-card-value-3xl">{monthlyTotal.toFixed(2)} €</p>
           <p className="metric-card-note metric-card-note-mt">
-            {active.length} {t.common.activeBills}
+            {paidCount}/{active.length} {locale === "fi" ? "maksettu" : "paid"}
           </p>
         </Card>
         <Card className="metric-card">
           <div className="page-header-row">
             <div>
-              <p className="metric-card-label">{t.bills.remainingThisMonth}</p>
-              <p className="metric-card-value-3xl text-negative">{remainingThisMonth.toFixed(2)} €</p>
-              <p className="metric-card-note metric-card-note-mt">{t.bills.stillDueBeforeMonthEnd}</p>
+              <p className="metric-card-label">{locale === "fi" ? "Maksamatta" : "Unpaid"}</p>
+              <p className="metric-card-value-3xl text-negative">{remainingUnpaid.toFixed(2)} €</p>
+              <p className="metric-card-note metric-card-note-mt">
+                {overdueCount > 0
+                  ? `${overdueCount} ${locale === "fi" ? "myöhässä" : "overdue"}`
+                  : t.bills.stillDueBeforeMonthEnd}
+              </p>
             </div>
-            <AlertCircle className="metric-card-icon-standalone text-negative" />
+            {overdueCount > 0 && <AlertCircle className="metric-card-icon-standalone text-negative" />}
           </div>
         </Card>
       </div>
 
       {bills.length > 0 && (
         <Card className="list-card list-card-divider">
-          {[...bills]
-            .sort((a, b) => a.due_day - b.due_day)
-            .map((bill) => (
-              <div key={bill.id} className="list-item">
-                <div className="list-item-icon" data-color="chart-4">
-                  <CalendarClock />
-                </div>
+          {[...bills].sort((a, b) => a.due_day - b.due_day).map((bill) => (
+            <div key={bill.id} className="list-item list-item-col">
+              <div
+                className="list-item-main"
+                onClick={() => { setEditTarget(bill); setEditOpen(true); }}
+              >
                 <div className="list-item-body">
                   <div className="list-item-name-row">
                     <p className={`list-item-name ${!bill.is_active ? "is-inactive" : ""}`}>{bill.name}</p>
-                    {bill.due_day >= today && bill.due_day <= today + 3 && bill.is_active ? (
-                      <Badge variant="destructive">{t.bills.dueSoon}</Badge>
-                    ) : null}
+                    {bill.is_paid && <Badge className="badge-matched"><Check className="icon-xs" />{locale === "fi" ? "Maksettu" : "Paid"}</Badge>}
+                    {bill.is_overdue && <Badge variant="destructive">{locale === "fi" ? "Myöhässä" : "Overdue"}</Badge>}
+                    {bill.is_due_soon && !bill.is_paid && <Badge variant="secondary">{t.bills.dueSoon}</Badge>}
                   </div>
                   <p className="list-item-meta">
                     {bill.category ? `${bill.category} · ` : ""}{t.bills.dueOn} {bill.due_day}.
+                    {bill.patterns.length > 0 && (
+                      <span className="list-item-patterns"> – {bill.patterns.join(", ")}</span>
+                    )}
                   </p>
                 </div>
-                <div className="list-item-actions">
-                  <p className="list-item-amount-value">{bill.amount.toFixed(2)} €</p>
-                  <Switch checked={!!bill.is_active} onCheckedChange={() => toggleBill(bill.id, bill.is_active)} />
+                <div className="list-item-end">
+                  <p className="list-item-amount-value">
+                    {bill.is_paid && bill.paid_amount ? bill.paid_amount.toFixed(2) : bill.amount.toFixed(2)} €
+                  </p>
+                  {bill.average_amount && bill.history_count >= 2 && (
+                    <p className="list-item-meta">{locale === "fi" ? "ka" : "avg"} {bill.average_amount.toFixed(2)} €</p>
+                  )}
+                  <span onClick={(e) => e.stopPropagation()}>
+                    <Switch checked={!!bill.is_active} onCheckedChange={() => toggleBill(bill.id, bill.is_active)} />
+                  </span>
                 </div>
               </div>
-            ))}
+              {patternOpen === bill.id && (
+                <div className="match-pattern-row">
+                  <Input
+                    value={newPattern}
+                    onChange={(e) => setNewPattern(e.target.value)}
+                    placeholder={locale === "fi" ? "esim. *Elisa* tai Helen Oy" : "e.g. *Netflix* or Company Name"}
+                    className="match-pattern-input"
+                  />
+                  <Button type="button" size="sm" onClick={() => addPattern(bill.id)}>{locale === "fi" ? "Lisää" : "Add"}</Button>
+                </div>
+              )}
+            </div>
+          ))}
         </Card>
       )}
+
+      {/* Edit dialog */}
+      <Dialog open={editOpen} onOpenChange={(open) => { setEditOpen(open); if (!open) setEditTarget(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{locale === "fi" ? "Muokkaa laskua" : "Edit bill"}</DialogTitle></DialogHeader>
+          {editTarget && (
+            <form ref={editFormRef} onSubmit={handleEdit} className="form-stack">
+              <div className="form-field">
+                <Label>{t.bills.name}</Label>
+                <Input name="name" defaultValue={editTarget.name} required />
+              </div>
+              <div className="form-grid-2">
+                <div className="form-field">
+                  <Label>{t.bills.amountEur}</Label>
+                  <Input name="amount" type="text" inputMode="decimal" defaultValue={editTarget.amount} required />
+                </div>
+                <div className="form-field">
+                  <Label>{t.bills.dueDay}</Label>
+                  <Input name="due_day" type="number" min="1" max="31" defaultValue={editTarget.due_day} required />
+                </div>
+              </div>
+              <div className="form-field">
+                <Label>{t.bills.category}</Label>
+                <Input name="category" defaultValue={editTarget.category} placeholder={t.bills.categoryPlaceholder} />
+              </div>
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Yhdistä maksajaan" : "Match payee"}</Label>
+                <div className="match-pattern-row">
+                  <Input
+                    value={newPattern}
+                    onChange={(e) => setNewPattern(e.target.value)}
+                    placeholder={locale === "fi" ? "esim. *Elisa*" : "e.g. *Netflix*"}
+                    className="match-pattern-input"
+                  />
+                  <Button type="button" size="sm" variant="outline" onClick={() => { addPattern(editTarget.id); }}>{locale === "fi" ? "Lisää" : "Add"}</Button>
+                </div>
+                {editTarget.patterns.length > 0 && (
+                  <div className="match-pattern-list">
+                    {editTarget.patterns.map((p, i) => (
+                      <span key={i} className="match-pattern-tag">{p}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="form-grid-2">
+                <Button type="submit">{t.common.save}</Button>
+                <Button type="button" variant="destructive" onClick={() => { deleteBill(editTarget.id); setEditOpen(false); }}>
+                  {t.common.delete}
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

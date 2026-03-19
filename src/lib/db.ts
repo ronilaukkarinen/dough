@@ -139,6 +139,16 @@ function initializeDb(db: Database.Database) {
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_monthly_matches_unique ON monthly_matches(source_type, source_id, month, ynab_transaction_id);
 
+    CREATE TABLE IF NOT EXISTS bill_amount_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      bill_id INTEGER NOT NULL,
+      amount REAL NOT NULL,
+      month TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_bill_amount_month ON bill_amount_history(bill_id, month);
+
     CREATE TABLE IF NOT EXISTS debt_overrides (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       ynab_account_id TEXT UNIQUE NOT NULL,

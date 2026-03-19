@@ -65,17 +65,30 @@ export async function POST(request: Request) {
             .slice(0, 10)
             .map((t: any) => ({ date: t.date, payee: t.payee, amount: t.amount, category: t.category }));
 
-          // Load recurring bills from DB
+          // Load recurring bills with paid/overdue status
           const chatDb = getDb();
           const bills = chatDb
-            .prepare("SELECT name, amount, due_day FROM recurring_bills WHERE user_id = ? AND is_active = 1 ORDER BY due_day ASC")
-            .all(user.id) as { name: string; amount: number; due_day: number }[];
+            .prepare("SELECT id, name, amount, due_day FROM recurring_bills WHERE user_id = ? AND is_active = 1 ORDER BY due_day ASC")
+            .all(user.id) as { id: number; name: string; amount: number; due_day: number }[];
+
+          const chatMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+          const chatBillMatches = chatDb
+            .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'bill' AND month = ?")
+            .all(chatMonth) as { source_id: number }[];
+          const paidBillIds = new Set(chatBillMatches.map((m) => m.source_id));
+
+          const enrichedBills = bills.map((b) => ({
+            name: b.name,
+            amount: b.amount,
+            dueDay: b.due_day,
+            status: paidBillIds.has(b.id) ? "paid" : b.due_day < now.getDate() ? "overdue" : "upcoming",
+          }));
 
           context = {
             totalBalance: Math.round(checkingSavings * 100) / 100,
             monthlyIncome: Math.round(realIncomeTx.reduce((s: number, t: any) => s + t.amount, 0) * 100) / 100,
             monthlyExpenses: Math.round(realExpenseTx.reduce((s: number, t: any) => s + Math.abs(t.amount), 0) * 100) / 100,
-            upcomingBills: bills.map((b) => ({ name: b.name, amount: b.amount, dueDay: b.due_day })),
+            upcomingBills: enrichedBills,
             recentTransactions: recentTx,
             debts,
             dailyBudget,
