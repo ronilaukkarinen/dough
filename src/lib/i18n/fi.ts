@@ -112,6 +112,7 @@ export const fi = {
     stillDueBeforeMonthEnd: "Erääntyy ennen kuun loppua",
     dueSoon: "Erääntyy pian",
     dueOn: "Eräpäivä",
+    dayOfMonth: "päivä",
     nextDue: "Seuraava eräpäivä",
   },
   income: {

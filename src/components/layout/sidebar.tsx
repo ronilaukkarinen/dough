@@ -103,9 +103,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     >
       {/* Logo */}
       <div className="l-sidebar-logo">
-        <span className="l-sidebar-logo-text">
-          {collapsed ? "D" : "Dough"}
-        </span>
+        {collapsed ? (
+          <img src="/favicon.png" alt="Dough" className="l-sidebar-logo-icon" />
+        ) : (
+          <span className="l-sidebar-logo-text">Dough</span>
+        )}
       </div>
 
       {/* Navigation */}

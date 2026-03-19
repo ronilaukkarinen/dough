@@ -1,5 +1,17 @@
 ### 1.0.0: 2026-03-19
 
+* Change bill due text to "Erääntyy X. päivä" in Finnish
+* Fix greeting value colors to only apply to euro amounts
+* Align sidebar collapse button to left
+* Show euro coin favicon when sidebar is collapsed
+* Show YNAB error message on dashboard instead of generic connect prompt
+* Fix transaction unread indicator to only trigger on manual expense adds
+* Fix SSE circular reference error
+* Show 0 in hero when overspent with colored note amounts
+* Fix Y-axis with k suffix for thousands
+* Remove hover background change on cash flow card
+* Fix income edit button order (Poista left, Tallenna right)
+* Add month status reasoning with income and projected expenses
 * Add comprehensive documentation: setup guide, features, API reference
 * Update architecture docs with database tables, data flow, AI integration
 * Add manual paid/unpaid toggle button on bills (circle checkmark)

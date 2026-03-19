@@ -112,6 +112,7 @@ export const en = {
     stillDueBeforeMonthEnd: "Still due before month end",
     dueSoon: "Due soon",
     dueOn: "Due on",
+    dayOfMonth: "",
     nextDue: "Next due",
   },
   income: {

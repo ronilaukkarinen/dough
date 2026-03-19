@@ -33,7 +33,7 @@ interface IncomeSource {
 
 export default function DashboardPage() {
   const { t, locale } = useLocale();
-  const { data, loading, connected, sync, savingRate } = useYnab();
+  const { data, loading, connected, error: ynabError, sync, savingRate } = useYnab();
   const [incomes, setIncomes] = useState<IncomeSource[]>([]);
   const [matchedIncomeIds, setMatchedIncomeIds] = useState<Set<number>>(new Set());
   const [bills, setBills] = useState<{ id: number; amount: number; due_day: number; is_active: number }[]>([]);
@@ -77,7 +77,9 @@ export default function DashboardPage() {
       <div className="page-stack">
         <div>
           <h1 className="page-heading">{t.dashboard.title}</h1>
-          <p className="page-subtitle">{t.settings.ynabDescription}</p>
+          <p className="page-subtitle">
+            {ynabError || t.settings.ynabDescription}
+          </p>
         </div>
       </div>
     );

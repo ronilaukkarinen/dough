@@ -248,7 +248,7 @@ export default function BillsPage() {
                     {bill.is_due_soon && !bill.is_paid && <Badge variant="secondary">{t.bills.dueSoon}</Badge>}
                   </div>
                   <p className="list-item-meta">
-                    {bill.category ? `${bill.category} · ` : ""}{t.bills.dueOn} {bill.due_day}.
+                    {bill.category ? `${bill.category} · ` : ""}{locale === "fi" ? "Erääntyy" : t.bills.dueOn} {bill.due_day}. {t.bills.dayOfMonth}
                     {bill.patterns.length > 0 && (
                       <span className="list-item-patterns"> – {bill.patterns.join(", ")}</span>
                     )}
