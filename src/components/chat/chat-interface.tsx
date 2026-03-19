@@ -45,7 +45,14 @@ export function ChatInterface() {
             }))
           );
         } else {
-          setMessages([{ id: "greeting", role: "assistant", content: t.chat.greeting }]);
+          // Save greeting to DB so it persists
+          const greeting = t.chat.greeting;
+          setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
+          fetch("/api/chat/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ role: "assistant", content: greeting }),
+          }).catch(() => {});
         }
       })
       .catch(() => {
