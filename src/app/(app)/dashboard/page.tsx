@@ -142,6 +142,28 @@ export default function DashboardPage() {
   const dailyBurnRate = daysPassed > 0 ? Math.round((realSpendingTotal / daysPassed) * 100) / 100 : 0;
   const projectedMonthEnd = Math.round((availableBalance + upcomingIncome - (dailyBurnRate * daysLeft)) * 100) / 100;
 
+  // Week-over-week spending trend
+  const thisWeekStart = today - ((today - 1) % 7);
+  const lastWeekStart = thisWeekStart - 7;
+  const lastWeekEnd = thisWeekStart - 1;
+  const thisWeekDays = today - thisWeekStart + 1;
+
+  const spendInRange = (start: number, end: number) =>
+    data.transactions
+      .filter((t) => {
+        const day = parseInt(t.date.split("-")[2], 10);
+        return day >= start && day <= end && t.amount < 0 && !isTransfer(t.payee, t.category);
+      })
+      .reduce((s, t) => s + Math.abs(t.amount), 0);
+
+  const thisWeekSpend = spendInRange(thisWeekStart, today);
+  const lastWeekSpend = lastWeekStart >= 1 ? spendInRange(lastWeekStart, lastWeekEnd) : 0;
+
+  // Normalize to daily average for fair comparison
+  const thisWeekDaily = thisWeekDays > 0 ? thisWeekSpend / thisWeekDays : 0;
+  const lastWeekDaily = lastWeekStart >= 1 ? lastWeekSpend / 7 : 0;
+  const trendPercent = lastWeekDaily > 0 ? Math.round(((thisWeekDaily - lastWeekDaily) / lastWeekDaily) * 100) : 0;
+
   // Today's spending
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const todaySpentAll = data.transactions
@@ -283,6 +305,7 @@ export default function DashboardPage() {
         todayRemaining={todayRemaining}
         monthIncome={combinedIncome}
         monthExpenses={Math.round(dailyBurnRate * daysInMonth)}
+        trendPercent={trendPercent}
       />
 
       <div className="page-grid-2">

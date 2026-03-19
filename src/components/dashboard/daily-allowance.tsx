@@ -19,6 +19,7 @@ interface DailyAllowanceProps {
   todayRemaining?: number;
   monthIncome?: number;
   monthExpenses?: number;
+  trendPercent?: number;
   currency?: string;
 }
 
@@ -37,6 +38,7 @@ export function DailyAllowance({
   todayRemaining = 0,
   monthIncome = 0,
   monthExpenses = 0,
+  trendPercent = 0,
   currency = "€",
 }: DailyAllowanceProps) {
   const { t, locale } = useLocale();
@@ -150,7 +152,16 @@ export function DailyAllowance({
               </span>
             </p>
             <p className="metric-card-note">
-              {locale === "fi" ? "Kulutus" : "Spending"} {burnRate.toFixed(0)} {currency}/{locale === "fi" ? "pv" : "day"}
+              {burnRate.toFixed(0)} {currency}/{locale === "fi" ? "pv" : "day"}
+              {trendPercent !== 0 && (
+                <>
+                  {" \u00B7 "}
+                  <span className={trendPercent > 0 ? "text-negative" : "text-positive"}>
+                    {trendPercent > 0 ? "+" : ""}{trendPercent}%
+                  </span>
+                  {" "}{locale === "fi" ? "vs ed. viikko" : "vs last week"}
+                </>
+              )}
             </p>
           </div>
         </div>
