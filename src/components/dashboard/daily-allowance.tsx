@@ -65,17 +65,18 @@ export function DailyAllowance({
               <>
                 {locale === "fi" ? "Ylitetty " : "Exceeded by "}
                 <span className="text-negative">{Math.abs(todayRemaining).toFixed(2)} {currency}!</span>
-                {locale === "fi" ? " Budjetti oli " : " Budget was "}
-                <span className="text-chart-3">{dailyBudget.toFixed(2)} {currency}</span>
+                {locale === "fi" ? " Alkuperäinen päiväbudjetti oli " : " Original daily budget was "}
+                <span className={status === "good" ? "text-positive" : status === "tight" ? "text-chart-3" : "text-negative"}>{dailyBudget.toFixed(2)} {currency}</span>
                 {locale === "fi" ? ", käytetty " : ", spent "}
                 <span className="text-negative">{todaySpentAll.toFixed(2)} {currency}</span>
                 {daysUntilIncome > 0 && (
                   <>
                     {". "}
                     {locale === "fi" ? "Huomiselle käytössä on " : "Available tomorrow "}
-                    <span className="text-positive">{Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome)).toFixed(2)} {currency}</span>
+                    <span className="text-positive">{Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome)).toFixed(2)} {currency}.</span>
                   </>
                 )}
+                {daysUntilIncome <= 0 && "."}
               </>
             ) : todaySpentAll > 0 ? (
               <>
