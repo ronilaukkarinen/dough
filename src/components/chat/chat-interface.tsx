@@ -208,7 +208,19 @@ export function ChatInterface() {
                   <div className="chat-message-sender">{message.sender}</div>
                 )}
                 <div className="chat-message-text">
-                  {message.role === "assistant" ? <ReactMarkdown>{message.content}</ReactMarkdown> : message.content}
+                  {message.role === "assistant" ? (
+                    <ReactMarkdown components={{
+                      strong: ({ children }) => {
+                        const text = String(children);
+                        const hasEuro = text.includes("€");
+                        if (!hasEuro) return <strong>{children}</strong>;
+                        const hasMinus = text.includes("-") || text.includes("\u2212");
+                        const hasPercent = text.includes("%");
+                        const cls = hasMinus ? "chat-amount-negative" : hasPercent ? "chat-amount-neutral" : "chat-amount-positive";
+                        return <strong className={cls}>{children}</strong>;
+                      }
+                    }}>{message.content}</ReactMarkdown>
+                  ) : message.content}
                 </div>
               </div>
               {bubbleType === "self" && (

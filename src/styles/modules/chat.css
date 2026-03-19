@@ -141,6 +141,18 @@
   color: var(--primary);
 }
 
+.chat-amount-positive {
+  color: var(--positive);
+}
+
+.chat-amount-negative {
+  color: var(--negative);
+}
+
+.chat-amount-neutral {
+  color: var(--chart-3);
+}
+
 .chat-message-text em {
   font-style: italic;
 }
