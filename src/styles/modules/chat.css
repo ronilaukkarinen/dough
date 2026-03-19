@@ -18,6 +18,8 @@
 .chat-messages {
   flex: 1;
   padding: 1rem;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 @media (min-width: 768px) {
@@ -97,6 +99,31 @@
 
 .chat-message-text {
   white-space: pre-wrap;
+}
+
+.chat-message-text p {
+  margin: 0 0 0.5rem;
+}
+
+.chat-message-text p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-message-text strong {
+  font-weight: 600;
+}
+
+.chat-message-text em {
+  font-style: italic;
+}
+
+.chat-message-text ul, .chat-message-text ol {
+  margin: 0.25rem 0;
+  padding-left: 1.25rem;
+}
+
+.chat-message-text li {
+  margin: 0.125rem 0;
 }
 
 .chat-loading {

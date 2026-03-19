@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   id: string;
@@ -193,7 +194,9 @@ export function ChatInterface() {
                 {message.role === "user" && currentUser && (
                   <div className="chat-message-sender">{message.sender || currentUser}</div>
                 )}
-                <div className="chat-message-text">{message.content}</div>
+                <div className="chat-message-text">
+                  {message.role === "assistant" ? <ReactMarkdown>{message.content}</ReactMarkdown> : message.content}
+                </div>
               </div>
               {message.role === "user" && (
                 <div className="chat-message-avatar" data-role="user"><User /></div>

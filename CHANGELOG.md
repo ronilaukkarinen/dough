@@ -114,6 +114,10 @@
 * Add "Lisää puuttuva kulu" button to transactions page for adding expenses to YNAB
 * Add YNAB accounts API for account selector dropdown
 * Fix duplicate AI chat messages by removing client-side assistant message save
+* Reduce Y-axis width and left margin on all charts for tighter left alignment
+* Remove duplicate net worth title on net worth page
+* Add markdown rendering for AI chat assistant messages
+* Fix chat scroll overflow with min-height: 0 on messages area
 
 ### 0.2.0: 2026-03-18
 
