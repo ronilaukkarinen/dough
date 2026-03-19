@@ -1,5 +1,6 @@
 ### 1.0.0: 2026-03-19
 
+* Color income green and expenses red in month status sub label
 * Fix month status projection to separate bills from discretionary spending
 * Change bill due text to "Erääntyy X. päivä" in Finnish
 * Fix greeting value colors to only apply to euro amounts

@@ -181,7 +181,7 @@ export function DailyAllowance({
                 {monthIncome - monthExpenses >= 0
                   ? (locale === "fi" ? "Plussalla" : "Surplus")
                   : (locale === "fi" ? "Miinuksella" : "Deficit")}
-                {` \u00B7 ${locale === "fi" ? "tulot" : "income"} ${monthIncome.toFixed(0)} ${currency} \u2013 ${locale === "fi" ? "menot (arvio)" : "expenses (est.)"} ${monthExpenses.toFixed(0)} ${currency}`}
+                {" \u00B7 "}{locale === "fi" ? "tulot " : "income "}<span className="text-positive">{monthIncome.toFixed(0)} {currency}</span>{" \u2013 "}{locale === "fi" ? "menot (arvio) " : "expenses (est.) "}<span className="text-negative">{monthExpenses.toFixed(0)} {currency}</span>
               </p>
             </div>
           </div>
