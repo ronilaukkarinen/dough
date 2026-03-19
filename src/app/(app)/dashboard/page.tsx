@@ -11,6 +11,7 @@ import { CashFlowChart } from "@/components/dashboard/cash-flow";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { AiSummary } from "@/components/dashboard/ai-summary";
 import { NetWorth } from "@/components/dashboard/net-worth";
+import { EntryReminder } from "@/components/dashboard/entry-reminder";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -195,6 +196,11 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
+
+      <EntryReminder
+        lastTransactionDate={recentTransactions.length > 0 ? recentTransactions[0].date : null}
+        onAddExpense={() => window.location.href = "/transactions"}
+      />
 
       <AiSummary />
 
