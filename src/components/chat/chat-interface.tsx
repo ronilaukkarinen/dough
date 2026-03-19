@@ -191,24 +191,32 @@ export function ChatInterface() {
     <div className="chat-container">
       <ScrollArea className="chat-messages" ref={scrollRef}>
         <div className="chat-messages-list">
-          {messages.map((message) => (
-            <div key={message.id} className="chat-message" data-role={message.role}>
-              {message.role === "assistant" && (
-                <div className="chat-message-avatar" data-role="assistant"><Bot /></div>
+          {messages.map((message) => {
+            const isSelf = message.role === "user" && message.sender === currentUser;
+            const isOtherUser = message.role === "user" && message.sender !== currentUser;
+            const bubbleType = message.role === "assistant" ? "assistant" : isSelf ? "self" : "other";
+
+            return (
+            <div key={message.id} className="chat-message" data-type={bubbleType}>
+              {bubbleType !== "self" && (
+                <div className="chat-message-avatar" data-type={bubbleType}>
+                  {message.role === "assistant" ? <Bot /> : <User />}
+                </div>
               )}
-              <div className="chat-message-bubble" data-role={message.role}>
-                {message.role === "user" && message.sender && (
+              <div className="chat-message-bubble" data-type={bubbleType}>
+                {isOtherUser && message.sender && (
                   <div className="chat-message-sender">{message.sender}</div>
                 )}
                 <div className="chat-message-text">
                   {message.role === "assistant" ? <ReactMarkdown>{message.content}</ReactMarkdown> : message.content}
                 </div>
               </div>
-              {message.role === "user" && (
-                <div className="chat-message-avatar" data-role="user"><User /></div>
+              {bubbleType === "self" && (
+                <div className="chat-message-avatar" data-type="self"><User /></div>
               )}
             </div>
-          ))}
+            );
+          })}
           {loading && (
             <div className="chat-loading">
               <div className="chat-message-avatar" data-role="assistant"><Bot /></div>

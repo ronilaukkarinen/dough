@@ -34,19 +34,22 @@
   gap: 1.5rem;
 }
 
+/* Message layout */
 .chat-message {
   display: flex;
   gap: 0.75rem;
 }
 
-.chat-message[data-role="user"] {
+.chat-message[data-type="self"] {
   justify-content: flex-end;
 }
 
-.chat-message[data-role="assistant"] {
+.chat-message[data-type="assistant"],
+.chat-message[data-type="other"] {
   justify-content: flex-start;
 }
 
+/* Avatars */
 .chat-message-avatar {
   display: flex;
   width: 2rem;
@@ -62,16 +65,22 @@
   height: 1rem;
 }
 
-.chat-message-avatar[data-role="assistant"] {
+.chat-message-avatar[data-type="assistant"] {
   background-color: color-mix(in srgb, var(--primary) 10%, transparent);
   color: var(--primary);
 }
 
-.chat-message-avatar[data-role="user"] {
+.chat-message-avatar[data-type="other"] {
+  background-color: color-mix(in srgb, var(--chart-3) 10%, transparent);
+  color: var(--chart-3);
+}
+
+.chat-message-avatar[data-type="self"] {
   background-color: var(--accent);
   color: var(--foreground);
 }
 
+/* Bubbles */
 .chat-message-bubble {
   max-width: 80%;
   border-radius: 1rem;
@@ -80,20 +89,29 @@
   line-height: 1.625;
 }
 
-.chat-message-bubble[data-role="user"] {
+/* My own messages — solid primary */
+.chat-message-bubble[data-type="self"] {
   background-color: var(--primary);
-  color: var(--primary-foreground);
+  color: #fff;
 }
 
-.chat-message-bubble[data-role="assistant"] {
+/* Other user's messages — warm dim */
+.chat-message-bubble[data-type="other"] {
+  background-color: color-mix(in srgb, var(--chart-3) 10%, transparent);
+  color: var(--foreground);
+}
+
+/* AI assistant — cool dim */
+.chat-message-bubble[data-type="assistant"] {
   background-color: color-mix(in srgb, var(--accent) 50%, transparent);
   color: var(--foreground);
 }
 
+/* Sender name above other user's bubble */
 .chat-message-sender {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--chart-3);
   margin-bottom: 0.125rem;
 }
 
