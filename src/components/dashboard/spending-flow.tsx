@@ -77,13 +77,31 @@ export function SpendingFlow({
   const bubbleWidth = Math.max(60, bubbleText.length * 6.5 + 12);
   const statusColor = status === "good" ? "#4ade80" : status === "tight" ? "#facc15" : "#f87171";
 
-  // Gradient stops: map each day's ratio to a color
+  // Gradient stops: smooth RGB blend based on spending ratio vs target
+  function ratioToColor(r: number): string {
+    // 0.0-0.85 = green, 0.85-1.0 = green→yellow, 1.0-1.15 = yellow→red, 1.15+ = red
+    const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+    const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
+    const green = [74, 222, 128];   // #4ade80
+    const yellow = [250, 204, 21];  // #facc15
+    const red = [248, 113, 113];    // #f87171
+    if (r <= 0.85) return `rgb(${green.join(",")})`;
+    if (r <= 1.0) {
+      const t = clamp((r - 0.85) / 0.15, 0, 1);
+      return `rgb(${lerp(green[0], yellow[0], t)},${lerp(green[1], yellow[1], t)},${lerp(green[2], yellow[2], t)})`;
+    }
+    if (r <= 1.15) {
+      const t = clamp((r - 1.0) / 0.15, 0, 1);
+      return `rgb(${lerp(yellow[0], red[0], t)},${lerp(yellow[1], red[1], t)},${lerp(yellow[2], red[2], t)})`;
+    }
+    return `rgb(${red.join(",")})`;
+  }
+
   const gradientStops = data.filter((d) => d.actual !== undefined).map((d, i, arr) => {
     const pos = arr.length > 1 ? i / (arr.length - 1) : 0.5;
     const dayTarget = targetPerDay > 0 ? targetPerDay * d.day : 0;
     const r = dayTarget > 0 ? (d.actual || 0) / dayTarget : 0;
-    const color = r <= 0.9 ? "#4ade80" : r <= 1.05 ? "#facc15" : "#f87171";
-    return { pos, color };
+    return { pos, color: ratioToColor(r) };
   });
 
   return (
@@ -150,7 +168,7 @@ export function SpendingFlow({
               type="monotone"
               dataKey="actual"
               stroke="url(#flowLineGrad)"
-              strokeWidth={3}
+              strokeWidth={4}
               fill="url(#flowFillGrad)"
               dot={false}
             />
