@@ -88,6 +88,13 @@
   color: var(--foreground);
 }
 
+.chat-message-sender {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.125rem;
+}
+
 .chat-message-text {
   white-space: pre-wrap;
 }

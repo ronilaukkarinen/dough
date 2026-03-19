@@ -11,6 +11,7 @@ interface FinancialContext {
   daysUntilNextIncome: number;
   locale: string;
   householdProfile: string;
+  currentUser: string;
 }
 
 function buildSystemPrompt(ctx: FinancialContext): string {
@@ -22,7 +23,9 @@ function buildSystemPrompt(ctx: FinancialContext): string {
   const dateStr = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}`;
   const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
 
-  return `You are Dough, a personal AI financial advisor.${ctx.householdProfile ? ` Household: ${ctx.householdProfile}.` : ""} You have access to their real financial data from YNAB.
+  return `You are Dough, a personal AI financial advisor.${ctx.householdProfile ? ` Household: ${ctx.householdProfile}.` : ""} You have access to their real financial data.
+
+The person currently chatting is: ${ctx.currentUser}. This is a shared chat visible to all household members. Address the person by name when relevant.
 
 ${lang}
 

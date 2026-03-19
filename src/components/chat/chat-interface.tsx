@@ -11,6 +11,7 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  sender?: string;
 }
 
 export function ChatInterface() {
@@ -19,6 +20,7 @@ export function ChatInterface() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -31,7 +33,10 @@ export function ChatInterface() {
 
   // Load persisted messages on mount
   useEffect(() => {
-    console.debug("[chat] Loading persisted messages");
+    console.debug("[chat] Loading persisted messages and user");
+    fetch("/api/auth/me").then((r) => r.json()).then((d) => {
+      if (d.user) setCurrentUser(d.user.display_name || d.user.email);
+    }).catch(() => {});
     fetch("/api/chat/messages")
       .then((r) => r.json())
       .then((data) => {
@@ -190,6 +195,9 @@ export function ChatInterface() {
                 <div className="chat-message-avatar" data-role="assistant"><Bot /></div>
               )}
               <div className="chat-message-bubble" data-role={message.role}>
+                {message.role === "user" && currentUser && (
+                  <div className="chat-message-sender">{message.sender || currentUser}</div>
+                )}
                 <div className="chat-message-text">{message.content}</div>
               </div>
               {message.role === "user" && (

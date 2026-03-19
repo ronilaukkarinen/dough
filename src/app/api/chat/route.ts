@@ -81,6 +81,7 @@ export async function POST(request: Request) {
             daysUntilNextIncome: daysLeft,
             locale,
             householdProfile,
+            currentUser: user.display_name || user.email,
           };
 
           console.info("[chat] Context built with real data, balance:", context.totalBalance);
@@ -104,6 +105,7 @@ export async function POST(request: Request) {
         daysUntilNextIncome: 0,
         locale: "en",
         householdProfile: "",
+        currentUser: "unknown",
       };
     }
 
