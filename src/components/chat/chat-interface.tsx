@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User } from "lucide-react";
+import { Send, Bot, User, Copy, Check } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import { useEvent } from "@/lib/use-events";
 import ReactMarkdown from "react-markdown";
@@ -24,6 +24,7 @@ export function ChatInterface() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState("");
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messageCountRef = useRef(0);
@@ -222,6 +223,32 @@ export function ChatInterface() {
                     }}>{message.content}</ReactMarkdown>
                   ) : message.content}
                 </div>
+                {message.role === "assistant" && (
+                  <button
+                    type="button"
+                    className="chat-copy-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      try {
+                        navigator.clipboard.writeText(message.content).then(() => {
+                          setCopiedId(message.id);
+                          setTimeout(() => setCopiedId(null), 2000);
+                        });
+                      } catch {
+                        const ta = document.createElement("textarea");
+                        ta.value = message.content;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand("copy");
+                        document.body.removeChild(ta);
+                        setCopiedId(message.id);
+                        setTimeout(() => setCopiedId(null), 2000);
+                      }
+                    }}
+                  >
+                    {copiedId === message.id ? <Check /> : <Copy />}
+                  </button>
+                )}
               </div>
               {bubbleType === "self" && (
                 <div className="chat-message-avatar" data-type="self"><User /></div>
