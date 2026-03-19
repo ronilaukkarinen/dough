@@ -1,5 +1,6 @@
 ### 1.0.0: 2026-03-19
 
+* Strip markdown formatting from copied text in AI summary and chat
 * Fix Y-axis clipping on all charts by removing negative left margin and widening axis
 * Add copy button on AI advisor assistant bubbles
 * Add investments, debt details, and savings goal to AI chat, summary, and debt suggestion prompts
