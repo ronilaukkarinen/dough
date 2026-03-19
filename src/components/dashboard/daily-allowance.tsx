@@ -100,6 +100,30 @@ export function DailyAllowance({
         </div>
       </Card>
 
+      {monthIncome > 0 && (
+        <Card className="metric-card">
+          <div className="metric-card-row">
+            <div className="metric-card-icon" data-color={monthIncome - monthExpenses >= 0 ? "positive" : "negative"}>
+              {monthIncome - monthExpenses >= 0 ? <ArrowDown /> : <ArrowUp />}
+            </div>
+            <div>
+              <p className="metric-card-label">{locale === "fi" ? "Kuukauden tilanne" : "Month status"}</p>
+              <p className="metric-card-value">
+                <span className={monthIncome - monthExpenses >= 0 ? "text-positive" : "text-negative"}>
+                  {monthIncome - monthExpenses >= 0 ? "+" : "\u2212"}{Math.abs(monthIncome - monthExpenses).toFixed(2)} {currency}
+                </span>
+              </p>
+              <p className="metric-card-note">
+                {monthIncome - monthExpenses >= 0
+                  ? (locale === "fi" ? "Plussalla" : "Surplus")
+                  : (locale === "fi" ? "Miinuksella" : "Deficit")}
+                {" \u00B7 "}{locale === "fi" ? "tulot " : "income "}<span className="text-positive">{monthIncome.toFixed(0)} {currency}</span>{" \u2013 "}{locale === "fi" ? "menot (arvio) " : "expenses (est.) "}<span className="text-negative">{monthExpenses.toFixed(0)} {currency}</span>
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card className="metric-card">
         <div className="metric-card-row">
           <div className="metric-card-icon" data-color="primary">
@@ -162,31 +186,6 @@ export function DailyAllowance({
           </div>
         </div>
       </Card>
-
-
-      {monthIncome > 0 && (
-        <Card className="metric-card metric-card-half">
-          <div className="metric-card-row">
-            <div className="metric-card-icon" data-color={monthIncome - monthExpenses >= 0 ? "positive" : "negative"}>
-              {monthIncome - monthExpenses >= 0 ? <ArrowDown /> : <ArrowUp />}
-            </div>
-            <div>
-              <p className="metric-card-label">{locale === "fi" ? "Kuukauden tilanne" : "Month status"}</p>
-              <p className="metric-card-value">
-                <span className={monthIncome - monthExpenses >= 0 ? "text-positive" : "text-negative"}>
-                  {monthIncome - monthExpenses >= 0 ? "+" : "\u2212"}{Math.abs(monthIncome - monthExpenses).toFixed(2)} {currency}
-                </span>
-              </p>
-              <p className="metric-card-note">
-                {monthIncome - monthExpenses >= 0
-                  ? (locale === "fi" ? "Plussalla" : "Surplus")
-                  : (locale === "fi" ? "Miinuksella" : "Deficit")}
-                {" \u00B7 "}{locale === "fi" ? "tulot " : "income "}<span className="text-positive">{monthIncome.toFixed(0)} {currency}</span>{" \u2013 "}{locale === "fi" ? "menot (arvio) " : "expenses (est.) "}<span className="text-negative">{monthExpenses.toFixed(0)} {currency}</span>
-              </p>
-            </div>
-          </div>
-        </Card>
-      )}
     </div>
   );
 }

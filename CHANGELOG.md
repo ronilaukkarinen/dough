@@ -1,5 +1,7 @@
 ### 1.0.0: 2026-03-19
 
+* Include debt installments in month status expense projection
+* Move month status card right after hero, before available balance
 * Add investments page pulling accounts from YNAB with editable monthly contribution and return %, compound growth projection chart
 * Include investment monthly contributions in dashboard month status calculation
 * Color income green and expenses red in month status sub label
