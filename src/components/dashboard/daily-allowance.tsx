@@ -13,6 +13,8 @@ interface DailyAllowanceProps {
   daysUntilIncome: number;
   burnRate?: number;
   projectedMonthEnd?: number;
+  accountCount?: number;
+  billCount?: number;
   currency?: string;
 }
 
@@ -25,6 +27,8 @@ export function DailyAllowance({
   daysUntilIncome,
   burnRate = 0,
   projectedMonthEnd = 0,
+  accountCount = 0,
+  billCount = 0,
   currency = "€",
 }: DailyAllowanceProps) {
   const { t, locale } = useLocale();
@@ -61,6 +65,7 @@ export function DailyAllowance({
           <div>
             <p className="metric-card-label">{t.dashboard.available}</p>
             <p className="metric-card-value">{availableBalance.toFixed(2)} {currency}</p>
+            {accountCount > 0 && <p className="metric-card-note">{accountCount} {locale === "fi" ? "tiliä" : "accounts"}</p>}
           </div>
         </div>
       </Card>
@@ -73,6 +78,7 @@ export function DailyAllowance({
           <div>
             <p className="metric-card-label">{t.dashboard.billsDue}</p>
             <p className="metric-card-value">{upcomingBills.toFixed(2)} {currency}</p>
+            {billCount > 0 && <p className="metric-card-note">{billCount} {locale === "fi" ? "laskua" : "bills"}</p>}
           </div>
         </div>
       </Card>

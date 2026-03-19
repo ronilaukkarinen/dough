@@ -51,10 +51,11 @@ export function ChatInterface() {
         if (data.messages?.length > 0) {
           console.info("[chat] Loaded", data.messages.length, "messages");
           setMessages(
-            data.messages.map((m: { id: number; role: string; content: string }) => ({
+            data.messages.map((m: { id: number; role: string; content: string; sender?: string }) => ({
               id: m.id.toString(),
               role: m.role as "user" | "assistant",
               content: m.content,
+              sender: m.sender,
             }))
           );
         } else {

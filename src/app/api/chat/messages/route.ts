@@ -10,9 +10,10 @@ export async function GET() {
     }
 
     const db = getDb();
+    // Shared chat — show all messages from all household members
     const messages = db
-      .prepare("SELECT id, role, content, created_at FROM chat_messages WHERE user_id = ? ORDER BY created_at ASC")
-      .all(user.id) as { id: number; role: string; content: string; created_at: string }[];
+      .prepare("SELECT cm.id, cm.role, cm.content, cm.created_at, u.display_name as sender FROM chat_messages cm LEFT JOIN users u ON cm.user_id = u.id ORDER BY cm.created_at ASC")
+      .all() as { id: number; role: string; content: string; created_at: string; sender: string }[];
 
     console.debug("[chat/messages] Loaded", messages.length, "messages for user", user.id);
 

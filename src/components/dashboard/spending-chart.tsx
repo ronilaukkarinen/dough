@@ -57,7 +57,7 @@ export function SpendingChart({ data }: SpendingChartProps) {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <XAxis dataKey="date" tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v)} €`} width={55} domain={[0, (max: number) => Math.ceil((max + 500) / 500) * 500]} />
+            <YAxis tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v)} €`} width={55} domain={[0, "auto"]} allowDataOverflow={false} />
             <Tooltip content={<CustomTooltip />} />
             <Area type="monotone" dataKey="budget" stroke="#71717a" strokeWidth={1.5} strokeDasharray="4 4" fill="url(#budgetGradient)" />
             <Area type="monotone" dataKey="spent" stroke="#818cf8" strokeWidth={2} fill="url(#spentGradient)" />

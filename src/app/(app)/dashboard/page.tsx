@@ -34,13 +34,16 @@ export default function DashboardPage() {
   const { data, loading, connected, sync, savingRate } = useYnab();
   const [incomes, setIncomes] = useState<IncomeSource[]>([]);
   const [matchedIncomeIds, setMatchedIncomeIds] = useState<Set<number>>(new Set());
+  const [bills, setBills] = useState<{ id: number; amount: number; due_day: number; is_active: number }[]>([]);
 
   useEffect(() => {
     Promise.all([
       fetch("/api/income").then((r) => r.json()),
       fetch("/api/matches").then((r) => r.json()),
-    ]).then(([incomeData, matchData]) => {
+      fetch("/api/bills").then((r) => r.json()),
+    ]).then(([incomeData, matchData, billsData]) => {
       if (incomeData.incomes) setIncomes(incomeData.incomes);
+      if (billsData.bills) setBills(billsData.bills);
       if (matchData.monthlyMatches) {
         const ids = new Set<number>();
         for (const m of matchData.monthlyMatches) {
@@ -75,7 +78,7 @@ export default function DashboardPage() {
   // Calculate daily budget from real data
   const now = new Date();
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const daysLeft = daysInMonth - now.getDate() + 1;
+  const daysLeft = daysInMonth - now.getDate();
   const monthActivity = Math.abs(data.monthBudget.activity);
   const toBeBudgeted = data.monthBudget.toBeBudgeted;
 
@@ -207,7 +210,9 @@ export default function DashboardPage() {
       <DailyAllowance
         dailyBudget={dailyBudget}
         availableBalance={Math.round(availableBalance)}
-        upcomingBills={0}
+        upcomingBills={bills.filter((b) => b.is_active && b.due_day > today).reduce((s, b) => s + b.amount, 0)}
+        accountCount={data.summary.accounts.filter((a) => a.type === "checking" || a.type === "savings").length}
+        billCount={bills.filter((b) => b.is_active && b.due_day > today).length}
         nextIncomeAmount={(() => {
           const next = incomes
             .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))

@@ -45,7 +45,7 @@ export async function POST(request: Request) {
             .reduce((s: number, a: any) => s + a.balance, 0);
 
           const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-          const daysLeft = daysInMonth - now.getDate() + 1;
+          const daysLeft = daysInMonth - now.getDate();
           // Daily budget = checking+savings balance / days left (same as dashboard)
           const dailyBudget = daysLeft > 0 ? Math.round((checkingSavings / daysLeft) * 100) / 100 : 0;
 

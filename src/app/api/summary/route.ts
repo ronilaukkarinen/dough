@@ -73,7 +73,7 @@ export async function GET(request: Request) {
       .reduce((s: number, a: any) => s + a.balance, 0);
 
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const daysLeft = daysInMonth - now.getDate() + 1;
+    const daysLeft = daysInMonth - now.getDate();
     // Filter out transfers for accurate income/expense
     const realExpenses = transactions.filter((t: any) => t.amount < 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation") && t.category !== "Uncategorized");
     const realIncome = transactions.filter((t: any) => t.amount > 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation"));
