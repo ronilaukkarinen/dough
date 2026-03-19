@@ -84,8 +84,8 @@ export function ChatInterface() {
     const msg = data as { id: number; role: string; content: string; sender: string | null; userId: number | null };
     console.debug("[chat] SSE message received:", msg.role, msg.sender);
     setMessages((prev) => {
-      // Avoid duplicates
-      if (prev.some((m) => m.id === String(msg.id))) return prev;
+      // Avoid duplicates — check by DB id OR by matching content+role (optimistic vs SSE)
+      if (prev.some((m) => m.id === String(msg.id) || (m.content === msg.content && m.role === msg.role))) return prev;
       return [...prev, {
         id: String(msg.id),
         role: msg.role as "user" | "assistant",
@@ -94,7 +94,7 @@ export function ChatInterface() {
       }];
     });
     messageCountRef.current++;
-    setLoading(false);
+    if (msg.role === "assistant") setLoading(false);
     setTimeout(scrollToBottom, 50);
   }, [scrollToBottom]));
 
