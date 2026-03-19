@@ -88,6 +88,74 @@ export async function POST() {
       console.error("[api/ynab/sync] Failed to save net worth snapshot:", err);
     }
 
+    // Save monthly snapshot for current month
+    try {
+      const { getDb: getSnapDb } = await import("@/lib/db");
+      const snapDb = getSnapDb();
+      const { getHouseholdSetting: getSnapSetting } = await import("@/lib/household");
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      const snapMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      const snapIncome = transactions
+        .filter((t: any) => t.amount > 0 && !t.payee?.startsWith("Transfer") && !t.payee?.startsWith("Starting Balance") && !t.payee?.startsWith("Reconciliation"))
+        .reduce((s: number, t: any) => s + t.amount, 0);
+      const snapExpenses = transactions
+        .filter((t: any) => t.amount < 0 && !t.payee?.startsWith("Transfer") && !t.payee?.startsWith("Starting Balance") && !t.payee?.startsWith("Reconciliation") && t.category !== "Uncategorized")
+        .reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
+      const snapCategories = monthBudget.categories
+        .filter((c: any) => c.activity < 0 && c.name !== "Inflow: Ready to Assign")
+        .sort((a: any, b: any) => a.activity - b.activity)
+        .slice(0, 10)
+        .map((c: any) => ({ name: c.name, amount: Math.abs(c.activity) }));
+      const snapSavingGoal = parseFloat(getSnapSetting("saving_rate") || "0");
+
+      snapDb.prepare(`
+        INSERT INTO monthly_snapshots (month, income, expenses, categories_json, saving_goal)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(month) DO UPDATE SET income = excluded.income, expenses = excluded.expenses, categories_json = excluded.categories_json, saving_goal = excluded.saving_goal, updated_at = datetime('now')
+      `).run(snapMonth, snapIncome, snapExpenses, JSON.stringify(snapCategories), snapSavingGoal);
+      console.info("[api/ynab/sync] Monthly snapshot saved for", snapMonth);
+
+      // Backfill up to 3 previous months if not already saved
+      for (let offset = 1; offset <= 3; offset++) {
+        const pastDate = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+        const pastMonth = `${pastDate.getFullYear()}-${String(pastDate.getMonth() + 1).padStart(2, "0")}`;
+        const exists = snapDb.prepare("SELECT id FROM monthly_snapshots WHERE month = ?").get(pastMonth);
+        if (exists) continue;
+
+        console.info("[api/ynab/sync] Backfilling monthly snapshot for", pastMonth);
+        try {
+          const pastSinceDate = `${pastDate.getFullYear()}-${String(pastDate.getMonth() + 1).padStart(2, "0")}-01`;
+          const [pastTx, pastBudget] = await Promise.all([
+            getTransactions(budgetId, pastSinceDate, token),
+            getMonthBudget(budgetId, pastSinceDate, token),
+          ]);
+          const nextMonth = new Date(pastDate.getFullYear(), pastDate.getMonth() + 1, 1);
+          const nextMonthStr = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}`;
+          const filteredTx = pastTx.filter((t: any) => t.date >= pastSinceDate && t.date < `${nextMonthStr}-01`);
+          const pastIncome = filteredTx
+            .filter((t: any) => t.amount > 0 && !t.payee?.startsWith("Transfer") && !t.payee?.startsWith("Starting Balance") && !t.payee?.startsWith("Reconciliation"))
+            .reduce((s: number, t: any) => s + t.amount, 0);
+          const pastExpenses = filteredTx
+            .filter((t: any) => t.amount < 0 && !t.payee?.startsWith("Transfer") && !t.payee?.startsWith("Starting Balance") && !t.payee?.startsWith("Reconciliation") && t.category !== "Uncategorized")
+            .reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
+          const pastCategories = pastBudget.categories
+            .filter((c: any) => c.activity < 0 && c.name !== "Inflow: Ready to Assign")
+            .sort((a: any, b: any) => a.activity - b.activity)
+            .slice(0, 10)
+            .map((c: any) => ({ name: c.name, amount: Math.abs(c.activity) }));
+          snapDb.prepare(`
+            INSERT INTO monthly_snapshots (month, income, expenses, categories_json, saving_goal)
+            VALUES (?, ?, ?, ?, 0)
+          `).run(pastMonth, pastIncome, pastExpenses, JSON.stringify(pastCategories));
+          console.info("[api/ynab/sync] Backfilled", pastMonth, "income:", Math.round(pastIncome), "expenses:", Math.round(pastExpenses));
+        } catch (backfillErr) {
+          console.warn("[api/ynab/sync] Failed to backfill", pastMonth, backfillErr);
+        }
+      }
+    } catch (err) {
+      console.error("[api/ynab/sync] Monthly snapshot error:", err);
+    }
+
     // Auto-match transactions to income sources and bills
     try {
       const { runAutoMatch } = await import("@/lib/matching");

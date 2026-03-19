@@ -14,7 +14,7 @@ import {
 } from "recharts";
 
 interface SpendingChartProps {
-  data: { date: string; spent: number; budget: number }[];
+  data: { date: string; spent: number; savingsTarget?: number }[];
 }
 
 export function SpendingChart({ data }: SpendingChartProps) {
@@ -27,8 +27,8 @@ export function SpendingChart({ data }: SpendingChartProps) {
           <p className="chart-tooltip-label">{label}</p>
           {payload.map((entry, index) => (
             <p key={index} className="chart-tooltip-value">
-              <span style={{ color: entry.dataKey === "spent" ? "var(--chart-1)" : "var(--muted-foreground)" }}>
-                {entry.dataKey === "spent" ? t.dashboard.spent : t.dashboard.budget}:{" "}
+              <span style={{ color: entry.dataKey === "spent" ? "var(--chart-1)" : "#4ade80" }}>
+                {entry.dataKey === "spent" ? t.dashboard.spent : t.dashboard.savingsTarget}:{" "}
                 {fmt(entry.value)} €
               </span>
             </p>
@@ -50,16 +50,16 @@ export function SpendingChart({ data }: SpendingChartProps) {
                 <stop offset="0%" stopColor="#818cf8" stopOpacity={0.3} />
                 <stop offset="100%" stopColor="#818cf8" stopOpacity={0} />
               </linearGradient>
-              <linearGradient id="budgetGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#71717a" stopOpacity={0.1} />
-                <stop offset="100%" stopColor="#71717a" stopOpacity={0} />
+              <linearGradient id="savingsTargetGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#4ade80" stopOpacity={0.1} />
+                <stop offset="100%" stopColor="#4ade80" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <XAxis dataKey="date" tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} />
             <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k €` : `${Math.round(v)} €`} width={50} />
             <Tooltip content={<CustomTooltip />} />
-            <Area type="monotone" dataKey="budget" stroke="#71717a" strokeWidth={1.5} strokeDasharray="4 4" fill="url(#budgetGradient)" />
+            <Area type="monotone" dataKey="savingsTarget" stroke="#4ade80" strokeWidth={1.5} strokeDasharray="4 4" fill="url(#savingsTargetGradient)" />
             <Area type="monotone" dataKey="spent" stroke="#818cf8" strokeWidth={2} fill="url(#spentGradient)" />
           </AreaChart>
         </ResponsiveContainer>

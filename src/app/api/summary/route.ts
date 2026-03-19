@@ -68,6 +68,12 @@ export async function GET(request: Request) {
     const ynabData = JSON.parse(cached.data);
     const { summary, transactions, monthBudget } = ynabData;
 
+    // Load historical monthly data for comparisons
+    const billMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const historySnapshots = db
+      .prepare("SELECT month, income, expenses FROM monthly_snapshots WHERE month < ? ORDER BY month DESC LIMIT 3")
+      .all(billMonth) as { month: string; income: number; expenses: number }[];
+
     const checkingSavings = summary.accounts
       .filter((a: any) => a.type === "checking" || a.type === "savings")
       .reduce((s: number, a: any) => s + a.balance, 0);
@@ -104,7 +110,6 @@ export async function GET(request: Request) {
       .prepare("SELECT id, name, amount, due_day, is_active FROM recurring_bills WHERE is_active = 1 ORDER BY due_day ASC")
       .all() as { id: number; name: string; amount: number; due_day: number; is_active: number }[];
 
-    const billMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     const billMatches = db
       .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'bill' AND month = ?")
       .all(billMonth) as { source_id: number }[];
@@ -216,7 +221,8 @@ Pre-calculated analysis:
 - Total debt: ${debtAccounts.reduce((s: number, d: { balance: number }) => s + d.balance, 0)} euros
 - Investments: ${investmentAccounts.length > 0 ? investmentAccounts.map((i) => `${i.name}: ${i.balance} euros${i.monthly > 0 ? `, ${i.monthly} euros/month` : ""}${i.returnPct > 0 ? ` (${i.returnPct}% return)` : ""}`).join(", ") : "none"}
 - Total investment value: ${investmentAccounts.reduce((s: number, i: { balance: number }) => s + i.balance, 0)} euros
-- Monthly investment contributions: ${investmentAccounts.reduce((s: number, i: { monthly: number }) => s + i.monthly, 0)} euros`;
+- Monthly investment contributions: ${investmentAccounts.reduce((s: number, i: { monthly: number }) => s + i.monthly, 0)} euros
+- Previous months: ${historySnapshots.length > 0 ? historySnapshots.map((s) => `${s.month}: income ${Math.round(s.income)} euros, expenses ${Math.round(s.expenses)} euros, net ${Math.round(s.income - s.expenses)} euros`).join("; ") : "no historical data yet"}`;
 
     const claudePath = process.env.CLAUDE_PATH || "claude";
     console.info("[summary] Calling claude CLI");

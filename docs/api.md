@@ -52,6 +52,10 @@ All endpoints require authentication via `dough-session` cookie (except `/api/au
 - `GET /api/investments` — list investment accounts from YNAB cache with overrides and monthly transfer amounts
 - `PUT /api/investments` — save monthly contribution and expected return overrides
 
+### Monthly history
+
+- `GET /api/monthly-history` — last 4 monthly snapshots (income, expenses, categories)
+
 ### Net worth
 
 - `GET /api/net-worth` — list snapshots

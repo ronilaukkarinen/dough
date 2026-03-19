@@ -63,6 +63,7 @@ export const en = {
     topCategories: "Top categories",
     recentTransactions: "Recent transactions",
     spent: "Spent",
+    savingsTarget: "Savings target",
     budget: "Budget",
     income: "Income",
     expenses: "Expenses",

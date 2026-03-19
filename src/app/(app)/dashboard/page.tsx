@@ -43,6 +43,7 @@ export default function DashboardPage() {
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [householdSize, setHouseholdSize] = useState(1);
   const [personalBudgetShare, setPersonalBudgetShare] = useState(0);
+  const [monthlyHistory, setMonthlyHistory] = useState<{ month: string; income: number; expenses: number }[]>([]);
   const [lastYnabSync, setLastYnabSync] = useState<string | null>(null);
 
   const loadSideData = useCallback(() => {
@@ -54,7 +55,8 @@ export default function DashboardPage() {
       fetch("/api/household").then((r) => r.json()),
       fetch("/api/investments").then((r) => r.json()),
       fetch("/api/debts").then((r) => r.json()),
-    ]).then(([incomeData, matchData, billsData, profileData, householdData, investmentData, debtData]) => {
+      fetch("/api/monthly-history").then((r) => r.json()),
+    ]).then(([incomeData, matchData, billsData, profileData, householdData, investmentData, debtData, historyData]) => {
       if (profileData.linkedAccountIds) setLinkedAccountIds(profileData.linkedAccountIds);
       if (profileData.profile?.budget_share) setPersonalBudgetShare(profileData.profile.budget_share);
       if (householdData.settings?.last_ynab_sync) setLastYnabSync(householdData.settings.last_ynab_sync);
@@ -81,6 +83,7 @@ export default function DashboardPage() {
         setMatchedIncomeIds(incIds);
         setMatchedBillIds(billIds);
       }
+      if (historyData.snapshots) setMonthlyHistory(historyData.snapshots);
     }).catch(() => {});
   }, []);
 
@@ -232,13 +235,20 @@ export default function DashboardPage() {
     spendingByDay[day] = Math.round(cumulative);
   }
 
-  // Budget line based on actual non-transfer spending
-  const realSpending = sortedTx.reduce((s, t) => s + Math.abs(t.amount), 0);
-  const dailyBudgetLine = now.getDate() > 0 ? realSpending / now.getDate() : 0;
+  // Combined income for charts
+  const totalExpectedIncome = incomes
+    .filter((i) => i.is_active)
+    .reduce((s, i) => s + i.amount, 0);
+  const combinedIncome = Math.max(realIncome, totalExpectedIncome);
+
+  // Savings target line: cumulative max expenses to hit saving goal
+  const savingsTargetPerDay = savingRate > 0 && combinedIncome > 0
+    ? (combinedIncome - savingRate) / daysInMonth
+    : 0;
   const spendingData = Array.from({ length: now.getDate() }, (_, i) => ({
     date: `${i + 1}.`,
     spent: spendingByDay[i + 1] || (i > 0 ? spendingByDay[i] || 0 : 0),
-    budget: Math.round(dailyBudgetLine * (i + 1)),
+    ...(savingsTargetPerDay > 0 ? { savingsTarget: Math.round(savingsTargetPerDay * (i + 1)) } : {}),
   }));
   // Fill forward missing days
   for (let i = 1; i < spendingData.length; i++) {
@@ -273,15 +283,25 @@ export default function DashboardPage() {
       amount: tx.amount,
     }));
 
-  // Cash flow – received income + expected upcoming income
-  const totalExpectedIncome = incomes
-    .filter((i) => i.is_active)
-    .reduce((s, i) => s + i.amount, 0);
-  const combinedIncome = Math.max(realIncome, totalExpectedIncome);
+  // Cash flow – current month + up to 3 historical months
+  const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const historicalMonths = monthlyHistory
+    .filter((s) => s.month !== currentMonthStr)
+    .sort((a, b) => a.month.localeCompare(b.month))
+    .slice(-3);
 
   const cashFlowData = [
+    ...historicalMonths.map((s) => {
+      const [y, m] = s.month.split("-");
+      return {
+        month: new Date(parseInt(y), parseInt(m) - 1, 1).toLocaleDateString(locale === "fi" ? "fi" : "en", { month: "short" }),
+        income: Math.round(s.income),
+        expenses: Math.round(s.expenses),
+        net: Math.round(s.income - s.expenses),
+      };
+    }),
     {
-      month: new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString("en", { month: "short" }),
+      month: now.toLocaleDateString(locale === "fi" ? "fi" : "en", { month: "short" }),
       income: Math.round(combinedIncome),
       expenses: Math.round(monthActivity),
       net: Math.round(combinedIncome - monthActivity),

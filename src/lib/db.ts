@@ -203,6 +203,17 @@ function initializeDb(db: Database.Database) {
       synced_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS monthly_snapshots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      month TEXT UNIQUE NOT NULL,
+      income REAL NOT NULL DEFAULT 0,
+      expenses REAL NOT NULL DEFAULT 0,
+      categories_json TEXT NOT NULL DEFAULT '[]',
+      saving_goal REAL NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS household_settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL,

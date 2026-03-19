@@ -78,6 +78,7 @@ data/                     # SQLite database (gitignored)
 - `typing_status` — real-time typing indicators
 - `transactions_last_seen` — per-user transaction read tracking
 - `net_worth_snapshots` — daily net worth history
+- `monthly_snapshots` — monthly income/expenses/categories history for trends and cash flow chart
 - `ai_summaries` — cached AI summaries per locale
 
 ### Data flow

@@ -1,5 +1,9 @@
 ### 1.1.0: 2026-03-20
 
+* Add monthly snapshots table for historical spending data, backfill 3 months on first sync
+* Replace spending chart budget line with green savings target dashed line
+* Show 4 months in cash flow chart (current + 3 historical)
+* Pass monthly history to AI summary and chat for month-over-month comparisons
 * Remove right padding on AI summary last action icon
 * Move personal budget share to per-user profile setting so each user can have their own %
 * Show suggested personal amount and household remaining in greeting

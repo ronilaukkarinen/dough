@@ -109,6 +109,12 @@ export async function POST(request: Request) {
             .prepare("SELECT name, amount, expected_day FROM income_sources WHERE is_active = 1 ORDER BY expected_day ASC")
             .all() as { name: string; amount: number; expected_day: number }[];
 
+          // Load monthly history for comparisons
+          const chatHistoryMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+          const historySnapshots = chatDb
+            .prepare("SELECT month, income, expenses FROM monthly_snapshots WHERE month < ? ORDER BY month DESC LIMIT 3")
+            .all(chatHistoryMonth) as { month: string; income: number; expenses: number }[];
+
           // Pre-calculate time-sequenced cash flow for AI
           const today = now.getDate();
           const unpaidBills = enrichedBills.filter((b) => b.status !== "paid");
@@ -139,6 +145,7 @@ export async function POST(request: Request) {
             daysUntilNextIncome: daysLeft,
             availableBeforePayday,
             dailySpendableBeforePayday,
+            monthlyHistory: historySnapshots.map((s) => ({ month: s.month, income: Math.round(s.income), expenses: Math.round(s.expenses), net: Math.round(s.income - s.expenses) })),
             locale,
             householdProfile,
             currentUser: user.display_name || user.email,
@@ -168,6 +175,7 @@ export async function POST(request: Request) {
         daysUntilNextIncome: 0,
         availableBeforePayday: 0,
         dailySpendableBeforePayday: 0,
+        monthlyHistory: [],
         locale: "en",
         householdProfile: "",
         currentUser: "unknown",
