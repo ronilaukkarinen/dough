@@ -236,10 +236,10 @@ export default function IncomePage() {
                 </div>
               </div>
               <div className="form-grid-2">
-                <Button type="submit">{t.common.save}</Button>
                 <Button type="button" variant="destructive" onClick={() => { deleteIncome(editTarget.id); setEditOpen(false); }}>
                   {t.common.delete}
                 </Button>
+                <Button type="submit">{t.common.save}</Button>
               </div>
             </form>
           )}

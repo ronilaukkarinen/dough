@@ -16,6 +16,7 @@
 
 .card.cash-flow-card:hover {
   border-color: transparent;
+  background: var(--glass-bg, rgba(255, 255, 255, 0.02));
 }
 
 .cash-flow-title {

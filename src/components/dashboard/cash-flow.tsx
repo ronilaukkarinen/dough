@@ -60,7 +60,7 @@ export function CashFlowChart({ data }: CashFlowProps) {
           <BarChart data={data} margin={{ top: 10, right: 4, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v)}`} width={40} />
+            <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(1)}k` : `${Math.round(v)}`} width={35} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" />
             <Bar dataKey="income" fill="#4ade80" radius={[4, 4, 0, 0]} barSize={20} />
