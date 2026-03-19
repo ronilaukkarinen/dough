@@ -11,8 +11,8 @@ export async function GET() {
 
     const db = getDb();
     const bills = db
-      .prepare("SELECT id, name, amount, due_day, category, is_active FROM recurring_bills WHERE user_id = ? ORDER BY due_day ASC")
-      .all(user.id) as any[];
+      .prepare("SELECT id, name, amount, due_day, category, is_active FROM recurring_bills ORDER BY due_day ASC")
+      .all() as any[];
 
     // Get matches for this month
     const now = new Date();

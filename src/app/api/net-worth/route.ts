@@ -12,8 +12,8 @@ export async function GET() {
 
     const db = getDb();
     const snapshots = db
-      .prepare("SELECT date, checking, savings, investments, debts, net_worth FROM net_worth_snapshots WHERE user_id = ? ORDER BY date ASC")
-      .all(user.id) as any[];
+      .prepare("SELECT date, checking, savings, investments, debts, net_worth FROM net_worth_snapshots ORDER BY date ASC")
+      .all() as any[];
 
     console.debug("[net-worth] Loaded", snapshots.length, "snapshots for user", user.id);
 

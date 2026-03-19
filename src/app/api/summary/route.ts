@@ -98,12 +98,12 @@ export async function GET(request: Request) {
 
     // Get income sources and bills from DB
     const incomeSources = db
-      .prepare("SELECT name, amount, expected_day, is_active FROM income_sources WHERE user_id = ? AND is_active = 1 ORDER BY expected_day ASC")
-      .all(user.id) as { name: string; amount: number; expected_day: number; is_active: number }[];
+      .prepare("SELECT name, amount, expected_day, is_active FROM income_sources WHERE is_active = 1 ORDER BY expected_day ASC")
+      .all() as { name: string; amount: number; expected_day: number; is_active: number }[];
 
     const recurringBills = db
-      .prepare("SELECT id, name, amount, due_day, is_active FROM recurring_bills WHERE user_id = ? AND is_active = 1 ORDER BY due_day ASC")
-      .all(user.id) as { id: number; name: string; amount: number; due_day: number; is_active: number }[];
+      .prepare("SELECT id, name, amount, due_day, is_active FROM recurring_bills WHERE is_active = 1 ORDER BY due_day ASC")
+      .all() as { id: number; name: string; amount: number; due_day: number; is_active: number }[];
 
     const billMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     const billMatches = db

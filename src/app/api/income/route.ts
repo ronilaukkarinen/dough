@@ -9,8 +9,8 @@ export async function GET() {
 
     const db = getDb();
     const incomes = db
-      .prepare("SELECT id, name, amount, expected_day, is_recurring, is_active FROM income_sources WHERE user_id = ? ORDER BY expected_day ASC")
-      .all(user.id);
+      .prepare("SELECT id, name, amount, expected_day, is_recurring, is_active FROM income_sources ORDER BY expected_day ASC")
+      .all();
 
     console.debug("[income] Loaded", (incomes as unknown[]).length, "income sources for user", user.id);
     return NextResponse.json({ incomes });

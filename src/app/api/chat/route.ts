@@ -68,8 +68,8 @@ export async function POST(request: Request) {
           // Load recurring bills with paid/overdue status
           const chatDb = getDb();
           const bills = chatDb
-            .prepare("SELECT id, name, amount, due_day FROM recurring_bills WHERE user_id = ? AND is_active = 1 ORDER BY due_day ASC")
-            .all(user.id) as { id: number; name: string; amount: number; due_day: number }[];
+            .prepare("SELECT id, name, amount, due_day FROM recurring_bills WHERE is_active = 1 ORDER BY due_day ASC")
+            .all() as { id: number; name: string; amount: number; due_day: number }[];
 
           const chatMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
           const chatBillMatches = chatDb

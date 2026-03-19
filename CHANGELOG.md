@@ -1,5 +1,10 @@
 ### 1.0.0: 2026-03-19
 
+* Make income, bills, net worth shared across all household users
+* Remove user_id filters from income, bills, net worth API queries
+* Fix chat clear to delete all shared messages
+* Fix AI summary and chat to use all household income and bills
+* Fix settings input width to fill available space
 * Add "Today remaining" card showing daily budget minus all household spending
 * Fix personal greeting to show personal + household spending separately
 * Daily budget remaining subtracts ALL household spending, not just personal

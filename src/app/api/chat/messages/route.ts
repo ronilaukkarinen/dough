@@ -69,9 +69,9 @@ export async function DELETE() {
     }
 
     const db = getDb();
-    db.prepare("DELETE FROM chat_messages WHERE user_id = ?").run(user.id);
+    db.prepare("DELETE FROM chat_messages").run();
 
-    console.info("[chat/messages] Cleared chat for user", user.id);
+    console.info("[chat/messages] Cleared all shared chat messages");
 
     return NextResponse.json({ success: true });
   } catch (error) {
