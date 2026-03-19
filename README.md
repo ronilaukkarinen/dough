@@ -1,30 +1,268 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dough
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![Claude](https://img.shields.io/badge/Claude_AI-cc785c?style=for-the-badge&logo=anthropic&logoColor=white)
+![YNAB](https://img.shields.io/badge/YNAB-85c3e9?style=for-the-badge&logoColor=white)
 
-First, run the development server:
+A self-hosted personal finance dashboard that connects to YNAB and uses Claude AI for financial advice, spending summaries, and debt strategies. Built for households who want full control over their financial data.
+
+## Features
+
+- **Dashboard** with daily budget, burn rate, month status, spending chart, category breakdown, cash flow, and net worth
+- **AI advisor** chat with full financial context, shared across household members
+- **AI summary** generated daily with spending analysis and projections
+- **Bills** tracking with YNAB payee matching, overdue detection, and manual paid toggles
+- **Income** sources with expected dates and auto-matching to YNAB transactions
+- **Debts** pulled from YNAB with editable interest rates, snowball/avalanche strategies
+- **Investments** pulled from YNAB with monthly contributions and compound growth projections
+- **Net worth** history with daily snapshots and area chart
+- **Transactions** synced from YNAB with search, filtering, and manual expense entry
+- **Real-time** updates via Server-Sent Events across all connected clients
+- **Multi-user** household support with shared data and per-user settings
+- **Bilingual** English and Finnish with per-user language preference
+
+## Requirements
+
+- Node.js 22+
+- [Claude CLI](https://docs.anthropic.com/en/docs/claude-code) (`claude` command in PATH) for AI features
+- YNAB account with [personal access token](https://app.ynab.com/settings/developer)
+- Linux or macOS (tested on Arch Linux)
+
+## Installation
+
+```bash
+git clone https://github.com/ronilaukkarinen/dough.git
+cd dough
+npm install
+```
+
+### Configuration
+
+```bash
+cp .env.local.example .env.local
+```
+
+Edit `.env.local`:
+
+```bash
+# Required: random string for JWT signing
+SESSION_SECRET=change-me-to-something-random
+
+# Optional: can be set via settings UI instead
+YNAB_ACCESS_TOKEN=your-ynab-personal-access-token
+YNAB_BUDGET_ID=your-budget-id
+
+# Optional: path to claude CLI binary, defaults to "claude" in PATH
+# CLAUDE_PATH=/path/to/claude
+```
+
+### Create users
+
+```bash
+USER1_EMAIL=yourname USER1_PASSWORD=yourpassword USER1_NAME="Your Name" \
+USER2_EMAIL=partner USER2_PASSWORD=partnerpassword USER2_NAME="Partner" \
+npx tsx scripts/seed.ts
+```
+
+You can create 1 or 2 users. Set only `USER1_*` vars for a single user.
+
+### Build and run
+
+```bash
+npm run build
+npm start -- -p 3001
+```
+
+The app runs at `http://localhost:3001`.
+
+### First login
+
+1. Log in with the credentials from the seed script
+2. Go to Settings and paste your YNAB personal access token
+3. Select your budget and sync
+4. Set your display name, household details, and link your spending account
+5. Add income sources and recurring bills with YNAB payee patterns
+
+## Architecture
+
+```
+Next.js 16 (App Router)
+├── SQLite (better-sqlite3) ─── all data stored locally
+├── YNAB REST API ──────────── accounts, transactions, budgets
+├── Claude CLI (stdin pipe) ─── AI chat, summaries, debt advice
+├── Server-Sent Events ─────── real-time updates (in-process)
+└── Custom CSS framework ───── SMACSS-derivative, no Tailwind
+```
+
+### Tech stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 with App Router and Turbopack |
+| UI | @base-ui/react (headless), lucide-react icons |
+| Styling | Custom SMACSS-derivative CSS framework |
+| Database | SQLite via better-sqlite3 |
+| Auth | JWT sessions with httpOnly cookies |
+| Charts | Recharts |
+| AI | Claude CLI via `spawn` with stdin pipe |
+| Real-time | Server-Sent Events with in-process EventBus |
+| Finance | YNAB REST API with local SQLite caching |
+| i18n | Custom locale system with React context |
+
+### Directory structure
+
+```
+src/
+  app/
+    (app)/          # Authenticated pages (dashboard, bills, income, debts, etc.)
+    api/            # API routes
+    login/          # Public login page
+  components/
+    ui/             # Reusable UI components (button, card, dialog, etc.)
+    layout/         # App shell, sidebar
+    dashboard/      # Dashboard widgets
+    chat/           # Chat interface
+  lib/
+    ai/             # Claude CLI integration and default prompts
+    ynab/           # YNAB REST API client
+    i18n/           # Translation files (en.ts, fi.ts)
+    db.ts           # SQLite schema and connection
+    auth.ts         # JWT session management
+    event-bus.ts    # In-memory pub/sub for SSE
+    matching.ts     # YNAB payee pattern matching engine
+    locale-context.tsx  # React context for i18n and number formatting
+    ynab-context.tsx    # React context for YNAB data
+  styles/
+    theme.css       # CSS custom properties (light/dark themes)
+    modules/        # Per-component CSS modules
+    index.css       # Single entry point
+scripts/
+  seed.ts           # User creation script
+docs/               # Documentation
+data/               # SQLite database (gitignored)
+```
+
+## YNAB setup
+
+1. Go to [YNAB Developer Settings](https://app.ynab.com/settings/developer)
+2. Create a personal access token
+3. Paste it in Dough settings or `.env.local`
+4. Select your budget and sync
+
+Dough caches YNAB data locally in SQLite. Syncing is manual (button press) to avoid rate limits. The app works fully offline with cached data.
+
+## AI setup
+
+Dough uses the [Claude CLI](https://docs.anthropic.com/en/docs/claude-code) for AI features. Install it and make sure `claude` is available in your PATH.
+
+AI features:
+- **Chat advisor** with full financial context (balance, transactions, bills, debts, investments, income)
+- **Daily summary** with spending analysis and month-end projections
+- **Debt payoff suggestions** with strategy recommendations
+
+All AI prompts are editable in Settings. The household profile is injected into every prompt for personalized advice.
+
+## Running as a service
+
+### systemd (Linux)
+
+```bash
+mkdir -p ~/.config/systemd/user
+```
+
+Create `~/.config/systemd/user/dough.service`:
+
+```ini
+[Unit]
+Description=Dough personal finance app
+
+[Service]
+WorkingDirectory=/path/to/dough
+ExecStart=/path/to/node node_modules/.bin/next start -p 3001
+Restart=on-failure
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=default.target
+```
+
+```bash
+systemctl --user enable --now dough
+```
+
+### Cloudflare tunnel (optional)
+
+To expose the app over the internet:
+
+```bash
+cloudflared tunnel create dough
+cloudflared tunnel route dns dough your-domain.example.com
+```
+
+Create `~/.cloudflared/config-dough.yml`:
+
+```yaml
+tunnel: <tunnel-id>
+credentials-file: ~/.cloudflared/<tunnel-id>.json
+ingress:
+  - hostname: your-domain.example.com
+    service: http://localhost:3001
+  - service: http_status:404
+```
+
+## Backups
+
+The SQLite database is at `data/dough.db`. Back it up regularly:
+
+```bash
+sqlite3 data/dough.db ".backup /path/to/backup/dough-$(date +%Y%m%d).db"
+```
+
+## Development
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Runs with Turbopack at `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Code style
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Custom CSS framework (no Tailwind), classes over inline styles
+- Sentence case for headings and commits
+- Verbose logging at every step (debug, info, warning, error)
+- DRY code, shared utilities extracted
+- No emojis in code or commits
 
-## Learn More
+### Adding a new page
 
-To learn more about Next.js, take a look at the following resources:
+1. Create the page at `src/app/(app)/your-page/page.tsx`
+2. Add the API route at `src/app/api/your-feature/route.ts`
+3. Add translations to `src/lib/i18n/en.ts` and `fi.ts`
+4. Add sidebar nav item in `src/components/layout/sidebar.tsx`
+5. Use existing CSS classes from `src/styles/modules/pages.css`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Adding translations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+All UI text lives in `src/lib/i18n/en.ts` (English) and `fi.ts` (Finnish). Add keys to both files with matching structure.
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Keep commits concise and in present tense
+5. Update `CHANGELOG.md` and relevant docs
+6. Submit a pull request
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Documentation
+
+Detailed docs live in the `docs/` directory:
+
+- [Setup guide](docs/setup.md) - installation, configuration, deployment
+- [Features](docs/features.md) - complete feature list
+- [Architecture](docs/architecture.md) - tech stack, database schema, data flow
+- [API reference](docs/api.md) - all endpoints
+- [CSS framework](docs/css-framework.md) - styling conventions
+- [Real-time](docs/real-time.md) - SSE implementation
