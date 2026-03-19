@@ -69,9 +69,8 @@ export function SpendingFlow({
   const projectedEnd = lastActual + dailyDiscretionary * (daysInMonth - daysPassed);
   const endDiff = monthEndTarget > 0 ? monthEndTarget - projectedEnd : 0;
 
-  // Status: how are we doing relative to target
-  const ratio = monthEndTarget > 0 ? lastActual / (targetPerDay * daysPassed) : 0;
-  const status = ratio <= 0.95 ? "good" : ratio <= 1.05 ? "tight" : "danger";
+  // Status: based on projected end-of-month vs target
+  const status = endDiff > monthEndTarget * 0.05 ? "good" : endDiff >= 0 ? "tight" : "danger";
   const statusColor = status === "good" ? "#4ade80" : status === "tight" ? "#facc15" : "#f87171";
 
   // Gradient stops: map each day's ratio to a color
