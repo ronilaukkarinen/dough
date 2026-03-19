@@ -70,6 +70,7 @@ data/                     # SQLite database (gitignored)
 - `income_sources` — income sources with expected day
 - `income_amount_history` — income amount tracking per month
 - `debt_overrides` — manual interest rate and payment overrides
+- `investment_overrides` — monthly contribution and expected return overrides for YNAB investment accounts
 - `payee_matches` — YNAB payee patterns for matching
 - `monthly_matches` — matched transactions per source per month
 - `chat_messages` — shared chat history

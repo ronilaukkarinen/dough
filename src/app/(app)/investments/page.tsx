@@ -170,7 +170,7 @@ export default function InvestmentsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.investments.projectedValue}</p>
-              <p className="metric-card-value">{projection.finalValue.toLocaleString("fi-FI")} €</p>
+              <p className="metric-card-value">{projection.finalValue.toFixed(0)} €</p>
               <p className="metric-card-note">{projectionYears} {locale === "fi" ? "v" : "y"}</p>
             </div>
           </div>
@@ -253,15 +253,15 @@ export default function InvestmentsPage() {
             <div className="payoff-stats">
               <div>
                 <span className="payoff-stats-label">{t.investments.projectedValue} </span>
-                <span className="payoff-stats-value" data-color="positive">{projection.finalValue.toLocaleString("fi-FI")} €</span>
+                <span className="payoff-stats-value" data-color="positive">{projection.finalValue.toFixed(0)} €</span>
               </div>
               <div>
                 <span className="payoff-stats-label">{t.investments.invested} </span>
-                <span className="payoff-stats-value">{projection.totalInvested.toLocaleString("fi-FI")} €</span>
+                <span className="payoff-stats-value">{projection.totalInvested.toFixed(0)} €</span>
               </div>
               <div>
                 <span className="payoff-stats-label">{t.investments.returns} </span>
-                <span className="payoff-stats-value" data-color="positive">+{projection.totalReturns.toLocaleString("fi-FI")} €</span>
+                <span className="payoff-stats-value" data-color="positive">+{projection.totalReturns.toFixed(0)} €</span>
               </div>
             </div>
             {projection.timeline.length > 1 && (
@@ -298,8 +298,8 @@ export default function InvestmentsPage() {
                         active && payload?.length ? (
                           <div className="chart-tooltip">
                             <p className="chart-tooltip-label">{label} {locale === "fi" ? "vuotta" : "years"}</p>
-                            <p className="chart-tooltip-value text-positive">{Number(payload[0].value).toLocaleString("fi-FI")} €</p>
-                            <p className="chart-tooltip-value text-foreground">{locale === "fi" ? "Sijoitettu" : "Invested"}: {Number(payload[1].value).toLocaleString("fi-FI")} €</p>
+                            <p className="chart-tooltip-value text-positive">{Number(payload[0].value).toFixed(0)} €</p>
+                            <p className="chart-tooltip-value text-foreground">{locale === "fi" ? "Sijoitettu" : "Invested"}: {Number(payload[1].value).toFixed(0)} €</p>
                           </div>
                         ) : null
                       }

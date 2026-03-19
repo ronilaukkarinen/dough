@@ -64,6 +64,14 @@
 - AI debt payoff suggestion
 - Debt list on dashboard
 
+### Investments
+
+- Auto-populated from YNAB otherAsset accounts
+- Editable monthly contribution amount and expected return percentage
+- Compound growth projection chart with configurable time horizon
+- Shows monthly transfers already made this month
+- Monthly contributions included in dashboard month status
+
 ### Net worth
 
 - Snapshot history with area chart
