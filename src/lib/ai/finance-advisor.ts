@@ -18,21 +18,27 @@ function buildSystemPrompt(ctx: FinancialContext): string {
     ? "Respond in Finnish. Be natural and conversational."
     : "Respond in English. Be natural and conversational.";
 
+  const now = new Date();
+  const dateStr = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}`;
+  const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
+
   return `You are Dough, a personal AI financial advisor.${ctx.householdProfile ? ` Household: ${ctx.householdProfile}.` : ""} You have access to their real financial data from YNAB.
 
 ${lang}
 
+Current date and time: ${dateStr} ${timeStr} (Europe/Helsinki)
+
 Current financial snapshot:
-- Total balance across all accounts: ${ctx.totalBalance} euros
+- Checking+savings balance: ${ctx.totalBalance} euros
 - Daily budget (safe to spend per day): ${ctx.dailyBudget} euros
-- Days until next income: ${ctx.daysUntilNextIncome}
-- Monthly income: ${ctx.monthlyIncome} euros
-- Monthly expenses so far: ${ctx.monthlyExpenses} euros
+- Days left in month: ${ctx.daysUntilNextIncome}
+- Monthly income (excluding transfers): ${ctx.monthlyIncome} euros
+- Monthly expenses (excluding transfers): ${ctx.monthlyExpenses} euros
 
 Upcoming bills this month:
-${ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th)`).join("\n")}
+${ctx.upcomingBills.length > 0 ? ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th)`).join("\n") : "- None configured"}
 
-Recent transactions (last 10):
+Recent transactions (last 10, with dates):
 ${ctx.recentTransactions.slice(0, 10).map(t => `- ${t.date}: ${t.payee} - ${Math.abs(t.amount)} euros (${t.category})`).join("\n")}
 
 Debts:

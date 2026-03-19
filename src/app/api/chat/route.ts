@@ -46,7 +46,8 @@ export async function POST(request: Request) {
 
           const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
           const daysLeft = daysInMonth - now.getDate() + 1;
-          const dailyBudget = daysLeft > 0 ? Math.round((monthBudget.toBeBudgeted / daysLeft) * 100) / 100 : 0;
+          // Daily budget = checking+savings balance / days left (same as dashboard)
+          const dailyBudget = daysLeft > 0 ? Math.round((checkingSavings / daysLeft) * 100) / 100 : 0;
 
           // Get debts from accounts
           const debts = summary.accounts
