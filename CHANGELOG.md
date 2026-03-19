@@ -1,5 +1,7 @@
 ### 1.0.0: 2026-03-19
 
+* Add comprehensive documentation: setup guide, features, API reference
+* Update architecture docs with database tables, data flow, AI integration
 * Add manual paid/unpaid toggle button on bills (circle checkmark)
 * Show actual vs expected amount diff when paid amount differs from bill amount
 * Store manual paid status per bill per month in bill_manual_status table
