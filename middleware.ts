@@ -10,10 +10,10 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get(COOKIE_NAME)?.value;
   const isLoginPage = request.nextUrl.pathname.startsWith("/login");
   const isApiAuth = request.nextUrl.pathname.startsWith("/api/auth");
+  const isEvents = request.nextUrl.pathname === "/api/events";
 
-
-  // Allow auth API and static assets
-  if (isApiAuth) {
+  // Allow auth API, SSE events, and static assets
+  if (isApiAuth || isEvents) {
     return NextResponse.next();
   }
 

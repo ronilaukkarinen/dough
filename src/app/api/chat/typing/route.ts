@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
+import { eventBus } from "@/lib/event-bus";
 
 // Simple typing indicator using household_settings
 export async function GET() {
@@ -51,6 +52,12 @@ export async function POST(request: Request) {
     } else {
       db.prepare("DELETE FROM typing_status WHERE user_id = ?").run(user.id);
     }
+
+    eventBus.emit("chat:typing", {
+      userId: user.id,
+      name: user.display_name || user.email,
+      typing,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

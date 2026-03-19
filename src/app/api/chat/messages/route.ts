@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
+import { eventBus } from "@/lib/event-bus";
 
 export async function GET() {
   try {
@@ -43,6 +44,15 @@ export async function POST(request: Request) {
       .run(user.id, role, content);
 
     console.debug("[chat/messages] Saved", role, "message for user", user.id, "id:", result.lastInsertRowid);
+
+    // Broadcast to all SSE clients
+    eventBus.emit("chat:message", {
+      id: result.lastInsertRowid,
+      role,
+      content,
+      sender: user.display_name || user.email,
+      userId: user.id,
+    });
 
     return NextResponse.json({ id: result.lastInsertRowid });
   } catch (error) {

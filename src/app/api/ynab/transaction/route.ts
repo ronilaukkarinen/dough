@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getYnabToken, getYnabBudgetId } from "@/lib/household";
+import { eventBus } from "@/lib/event-bus";
 
 export async function POST(request: Request) {
   try {
@@ -51,6 +52,8 @@ export async function POST(request: Request) {
 
     const data = await res.json();
     console.info("[ynab/transaction] Transaction created:", data.data?.transaction?.id);
+
+    eventBus.emit("data:updated", { source: "transaction-added" });
 
     return NextResponse.json({ success: true, id: data.data?.transaction?.id });
   } catch (error) {

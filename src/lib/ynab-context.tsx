@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { useEvent } from "./use-events";
 
 interface YnabAccount {
   id: string;
@@ -117,6 +118,17 @@ export function YnabProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
   }, [sync]);
+
+  // SSE: re-sync when another user triggers sync or adds data
+  useEvent("sync:complete", useCallback(() => {
+    console.info("[ynab-context] SSE sync:complete received, re-syncing");
+    sync();
+  }, [sync]));
+
+  useEvent("data:updated", useCallback(() => {
+    console.info("[ynab-context] SSE data:updated received, re-syncing");
+    sync();
+  }, [sync]));
 
   return (
     <YnabContext.Provider value={{ data, loading, error, connected, savingRate, sync }}>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getYnabToken, getYnabBudgetId, setHouseholdSetting } from "@/lib/household";
+import { eventBus } from "@/lib/event-bus";
 
 export async function POST() {
   try {
@@ -75,6 +76,10 @@ export async function POST() {
     }
 
     console.info("[api/ynab/sync] Sync complete. Accounts:", summary.accounts.length, "Transactions:", transactions.length);
+
+    // Broadcast sync complete to all SSE clients
+    eventBus.emit("sync:complete", { syncedAt: new Date().toISOString() });
+    eventBus.emit("data:updated", { source: "ynab-sync" });
 
     return NextResponse.json({
       success: true,

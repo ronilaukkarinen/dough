@@ -123,6 +123,16 @@
 * Fix net worth chart Y-axis to show negative values with wider width
 * Fix chat scroll-to-bottom on load
 * Clear duplicate chat messages
+* Add SSE (Server-Sent Events) real-time system for instant updates across all clients
+* Add in-memory EventBus singleton for broadcasting events between API routes and SSE connections
+* Add useEvent hook for subscribing to SSE events from any component
+* Replace chat polling with SSE for instant message delivery
+* Replace sidebar unread polling with SSE event-driven counter
+* Add SSE listeners to YNAB context for auto-refresh when any user syncs
+* Broadcast chat messages, typing indicators, sync completions, and data updates via SSE
+* Add real-time documentation in docs/real-time.md
+* Differentiate chat bubbles: self (right, solid), other user (left, warm amber), AI (left, cool neutral)
+* Show sender name only on other users' bubbles, not on own
 
 ### 0.2.0: 2026-03-18
 

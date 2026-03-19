@@ -17,9 +17,10 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/locale-context";
+import { useEvent } from "@/lib/use-events";
 
 const navKeys = [
   { href: "/dashboard", icon: LayoutDashboard, key: "dashboard" },
@@ -43,16 +44,21 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [unreadChat, setUnreadChat] = useState(0);
   const { t } = useLocale();
 
+  // Initial unread check
   useEffect(() => {
-    const checkUnread = () => {
-      fetch("/api/chat/unread").then((r) => r.json()).then((d) => {
-        setUnreadChat(d.unread || 0);
-      }).catch(() => {});
-    };
-    checkUnread();
-    const interval = setInterval(checkUnread, 5000);
-    return () => clearInterval(interval);
+    fetch("/api/chat/unread").then((r) => r.json()).then((d) => {
+      setUnreadChat(d.unread || 0);
+    }).catch(() => {});
   }, []);
+
+  // SSE: increment unread on new chat message (if not on chat page)
+  useEvent("chat:message", useCallback((data: unknown) => {
+    const msg = data as { userId: number | null };
+    // Only count messages from other users when not on chat page
+    if (pathname !== "/chat" && msg.userId !== null) {
+      setUnreadChat((prev) => prev + 1);
+    }
+  }, [pathname]));
 
   const handleLogout = () => {
     // Use GET redirect — works on all browsers including iOS Orion

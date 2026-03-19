@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
+import { useEvent } from "@/lib/use-events";
 import ReactMarkdown from "react-markdown";
 
 interface Message {
@@ -76,30 +77,37 @@ export function ChatInterface() {
         setTimeout(scrollToBottom, 100);
       });
 
-    // Always-on polling for new messages + typing status
-    const pollInterval = setInterval(() => {
-      Promise.all([
-        fetch("/api/chat/messages").then((r) => r.json()),
-        fetch("/api/chat/typing").then((r) => r.json()),
-      ]).then(([msgData, typingData]) => {
-        if (msgData.messages && msgData.messages.length !== messageCountRef.current) {
-          console.debug("[chat] New messages detected:", msgData.messages.length, "vs", messageCountRef.current);
-          const msgs = msgData.messages.map((m: { id: number; role: string; content: string; sender?: string }) => ({
-            id: m.id.toString(),
-            role: m.role as "user" | "assistant",
-            content: m.content,
-            sender: m.sender,
-          }));
-          setMessages(msgs);
-          messageCountRef.current = msgs.length;
-          setTimeout(scrollToBottom, 50);
-        }
-        setTypingUsers(typingData.typing || []);
-      }).catch(() => {});
-    }, 2000);
-
-    return () => clearInterval(pollInterval);
   }, []);
+
+  // SSE: receive new chat messages in real time
+  useEvent("chat:message", useCallback((data: unknown) => {
+    const msg = data as { id: number; role: string; content: string; sender: string | null; userId: number | null };
+    console.debug("[chat] SSE message received:", msg.role, msg.sender);
+    setMessages((prev) => {
+      // Avoid duplicates
+      if (prev.some((m) => m.id === String(msg.id))) return prev;
+      return [...prev, {
+        id: String(msg.id),
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+        sender: msg.sender || undefined,
+      }];
+    });
+    messageCountRef.current++;
+    setLoading(false);
+    setTimeout(scrollToBottom, 50);
+  }, [scrollToBottom]));
+
+  // SSE: receive typing indicators in real time
+  useEvent("chat:typing", useCallback((data: unknown) => {
+    const typing = data as { userId: number; name: string; typing: boolean };
+    setTypingUsers((prev) => {
+      if (typing.typing) {
+        return prev.includes(typing.name) ? prev : [...prev, typing.name];
+      }
+      return prev.filter((n) => n !== typing.name);
+    });
+  }, []));
 
   useEffect(() => {
     scrollToBottom();

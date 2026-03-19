@@ -4,6 +4,7 @@ import { getFinancialAdvice } from "@/lib/ai/finance-advisor";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { getYnabToken, getYnabBudgetId } from "@/lib/household";
+import { eventBus } from "@/lib/event-bus";
 import { getBudgetSummary, getTransactions, getMonthBudget } from "@/lib/ynab/client";
 
 export async function POST(request: Request) {
@@ -118,6 +119,13 @@ export async function POST(request: Request) {
         chatDb.prepare("INSERT INTO chat_messages (user_id, role, content) VALUES (?, ?, ?)")
           .run(user.id, "assistant", response);
         console.info("[chat] Saved assistant response to DB");
+        eventBus.emit("chat:message", {
+          id: chatDb.prepare("SELECT last_insert_rowid() as id").get(),
+          role: "assistant",
+          content: response,
+          sender: null,
+          userId: null,
+        });
       } catch (err) {
         console.error("[chat] Failed to save response to DB:", err);
       }
