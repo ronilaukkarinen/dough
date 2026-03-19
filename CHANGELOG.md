@@ -98,6 +98,9 @@
 * Feed household profile to all AI prompts (summary, chat, debt suggestion)
 * Treat "Starting Balance" and "Reconciliation Balance Adjustment" as transfers
 * Extract shared isTransfer helper to transaction-utils.ts
+* Fix household profile save button with explicit type="button"
+* Feed recurring bills and due dates to AI summary and chat prompts
+* Remove debt details from default household profile placeholder
 
 ### 0.2.0: 2026-03-18
 

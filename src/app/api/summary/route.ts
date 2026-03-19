@@ -95,10 +95,14 @@ export async function GET(request: Request) {
     const daysPassed = now.getDate();
     const dailyBurnRate = daysPassed > 0 ? Math.round(monthActivity / daysPassed) : 0;
 
-    // Get income sources from DB
+    // Get income sources and bills from DB
     const incomeSources = db
       .prepare("SELECT name, amount, expected_day, is_active FROM income_sources WHERE user_id = ? AND is_active = 1 ORDER BY expected_day ASC")
       .all(user.id) as { name: string; amount: number; expected_day: number; is_active: number }[];
+
+    const recurringBills = db
+      .prepare("SELECT name, amount, due_day, is_active FROM recurring_bills WHERE user_id = ? AND is_active = 1 ORDER BY due_day ASC")
+      .all(user.id) as { name: string; amount: number; due_day: number; is_active: number }[];
 
     const upcomingIncome = incomeSources
       .filter((i) => i.expected_day > now.getDate())
@@ -138,7 +142,9 @@ Data:
 - Days passed: ${daysPassed}, days left: ${daysLeft}
 - Daily budget from current balance: ${daysLeft > 0 ? Math.round(checkingSavings / daysLeft) : 0} euros/day
 - Spending by category: ${categoryBreakdown}
-- Top individual expenses: ${topExpenses}`;
+- Top individual expenses: ${topExpenses}
+- Recurring bills: ${recurringBills.length > 0 ? recurringBills.map((b) => `${b.name}: ${b.amount} euros (due day ${b.due_day}${b.due_day > now.getDate() ? " - upcoming" : " - paid"})`).join(", ") : "none configured"}
+- Total monthly bills: ${recurringBills.reduce((s, b) => s + b.amount, 0)} euros`;
 
     const claudePath = process.env.CLAUDE_PATH || "/home/rolle/.local/bin/claude";
     console.info("[summary] Calling claude CLI");

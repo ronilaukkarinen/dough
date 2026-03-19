@@ -63,11 +63,17 @@ export async function POST(request: Request) {
             .slice(0, 10)
             .map((t: any) => ({ date: t.date, payee: t.payee, amount: t.amount, category: t.category }));
 
+          // Load recurring bills from DB
+          const chatDb = getDb();
+          const bills = chatDb
+            .prepare("SELECT name, amount, due_day FROM recurring_bills WHERE user_id = ? AND is_active = 1 ORDER BY due_day ASC")
+            .all(user.id) as { name: string; amount: number; due_day: number }[];
+
           context = {
             totalBalance: Math.round(checkingSavings * 100) / 100,
             monthlyIncome: Math.round(realIncomeTx.reduce((s: number, t: any) => s + t.amount, 0) * 100) / 100,
             monthlyExpenses: Math.round(realExpenseTx.reduce((s: number, t: any) => s + Math.abs(t.amount), 0) * 100) / 100,
-            upcomingBills: [] as { name: string; amount: number; dueDay: number }[],
+            upcomingBills: bills.map((b) => ({ name: b.name, amount: b.amount, dueDay: b.due_day })),
             recentTransactions: recentTx,
             debts,
             dailyBudget,

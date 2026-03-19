@@ -303,9 +303,11 @@ export default function SettingsPage() {
                 rows={3}
               />
               <div className="settings-row">
-                <Button
-                  size="sm"
-                  variant="outline"
+                <button
+                  type="button"
+                  className="button"
+                  data-variant="outline"
+                  data-size="sm"
                   onClick={async () => {
                     console.info("[settings] Saving household profile");
                     await fetch("/api/household", {
@@ -318,7 +320,7 @@ export default function SettingsPage() {
                   }}
                 >
                   {t.common.save}
-                </Button>
+                </button>
                 {householdSaved && <span className="settings-saved">{t.common.saved}</span>}
               </div>
               <p className="settings-help">
