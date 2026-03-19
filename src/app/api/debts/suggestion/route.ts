@@ -1,42 +1,49 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getYnabToken, getYnabBudgetId } from "@/lib/household";
+import { getDb } from "@/lib/db";
 import { spawn } from "child_process";
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export async function GET() {
   try {
     const user = await getSession();
     if (!user) return NextResponse.json({ suggestion: null }, { status: 401 });
 
-    const token = getYnabToken();
-    const budgetId = getYnabBudgetId();
-    if (!token || !budgetId) return NextResponse.json({ suggestion: null });
-
     console.info("[debts/suggestion] Fetching data for AI suggestion");
 
-    const { getBudgetSummary } = await import("@/lib/ynab/client");
-    const summary = await getBudgetSummary(budgetId, token);
+    const db = getDb();
+    const cached = db.prepare("SELECT data FROM ynab_cache WHERE id = 1").get() as { data: string } | undefined;
+    if (!cached) return NextResponse.json({ suggestion: null });
 
-    const debts = summary.accounts
-      .filter((a: any) => a.type === "otherDebt" && a.balance < 0)
-      .map((a: any) => `${a.name}: ${Math.abs(a.balance).toFixed(0)} euros`);
+    const ynabData = JSON.parse(cached.data);
+    const debtAccounts = ynabData.summary.accounts.filter((a: any) => a.type === "otherDebt" && a.balance < 0);
+    if (debtAccounts.length === 0) return NextResponse.json({ suggestion: null });
 
-    if (debts.length === 0) return NextResponse.json({ suggestion: null });
+    // Load overrides for interest rates and payments
+    const overrides = db.prepare("SELECT * FROM debt_overrides").all() as any[];
+    const overrideMap: Record<string, any> = {};
+    for (const o of overrides) overrideMap[o.ynab_account_id] = o;
+
+    const debts = debtAccounts.map((a: any) => {
+      const override = overrideMap[a.id];
+      const balance = Math.abs(a.balance);
+      const rate = override?.interest_rate ?? 0;
+      const payment = override?.minimum_payment ?? 0;
+      return `${a.name}: ${balance.toFixed(0)} euros${rate > 0 ? ` (${rate}% APR)` : ""}${payment > 0 ? `, ${payment} euros/month` : ""}`;
+    });
 
     const { getHouseholdSetting } = await import("@/lib/household");
     const householdProfile = getHouseholdSetting("household_profile") || "";
-
-    const { getHouseholdSetting: getSetting } = await import("@/lib/household");
     const { DEFAULT_DEBT_INSTRUCTIONS } = await import("@/lib/ai/default-prompts");
-    const debtInstructions = getSetting("prompt_debt_instructions") || DEFAULT_DEBT_INSTRUCTIONS;
+    const debtInstructions = getHouseholdSetting("prompt_debt_instructions") || DEFAULT_DEBT_INSTRUCTIONS;
 
     const lang = user.locale === "fi" ? "Respond in Finnish." : "Respond in English.";
     const prompt = `${lang} You are a debt advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} ${debtInstructions}
 
 Debts:
-${debts.join("\n")}`;
+${debts.join("\n")}
+
+Total debt: ${debtAccounts.reduce((s: number, a: any) => s + Math.abs(a.balance), 0).toFixed(0)} euros`;
 
     const claudePath = process.env.CLAUDE_PATH || "claude";
 

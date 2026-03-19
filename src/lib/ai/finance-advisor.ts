@@ -8,7 +8,9 @@ interface FinancialContext {
   monthlyExpenses: number;
   upcomingBills: { name: string; amount: number; dueDay: number; status?: string }[];
   recentTransactions: { date: string; payee: string; amount: number; category: string }[];
-  debts: { name: string; remaining: number; rate: number }[];
+  debts: { name: string; remaining: number; rate: number; minimumPayment?: number }[];
+  investments: { name: string; balance: number; monthlyContribution: number; expectedReturn: number }[];
+  savingGoal: number;
   incomeSources: { name: string; amount: number; expectedDay: number }[];
   dailyBudget: number;
   daysUntilNextIncome: number;
@@ -52,7 +54,12 @@ Recent transactions (last 10, with dates):
 ${ctx.recentTransactions.slice(0, 10).map(t => `- ${t.date}: ${t.payee} - ${Math.abs(t.amount)} euros (${t.category})`).join("\n")}
 
 Debts:
-${ctx.debts.map(d => `- ${d.name}: ${d.remaining} euros remaining (${d.rate}% APR)`).join("\n")}
+${ctx.debts.length > 0 ? ctx.debts.map(d => `- ${d.name}: ${d.remaining} euros remaining${d.rate > 0 ? ` (${d.rate}% APR)` : ""}${d.minimumPayment ? `, ${d.minimumPayment} euros/month` : ""}`).join("\n") : "- None"}
+
+Investments:
+${ctx.investments.length > 0 ? ctx.investments.map(i => `- ${i.name}: ${i.balance} euros${i.monthlyContribution > 0 ? `, ${i.monthlyContribution} euros/month contribution` : ""}${i.expectedReturn > 0 ? `, ${i.expectedReturn}% expected return` : ""}`).join("\n") : "- None"}
+
+${ctx.savingGoal > 0 ? `Savings goal: ${ctx.savingGoal} euros/month` : ""}
 
 Guidelines:
 ${getHouseholdSetting("prompt_chat_guidelines") || DEFAULT_CHAT_GUIDELINES}`;

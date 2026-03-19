@@ -48,10 +48,33 @@ export async function POST(request: Request) {
           // Daily budget = checking+savings balance / days left (same as dashboard)
           const dailyBudget = daysLeft > 0 ? Math.round((checkingSavings / daysLeft) * 100) / 100 : 0;
 
-          // Get debts from accounts
+          // Get debts from accounts with overrides
+          const chatDb = getDb();
+          const debtOverrides = chatDb.prepare("SELECT * FROM debt_overrides").all() as any[];
+          const debtOverrideMap: Record<string, any> = {};
+          for (const o of debtOverrides) debtOverrideMap[o.ynab_account_id] = o;
+
           const debts = summary.accounts
             .filter((a: any) => a.type === "otherDebt" && a.balance < 0)
-            .map((a: any) => ({ name: a.name, remaining: Math.abs(a.balance), rate: 0 }));
+            .map((a: any) => {
+              const override = debtOverrideMap[a.id];
+              return { name: a.name, remaining: Math.abs(a.balance), rate: override?.interest_rate ?? 0, minimumPayment: override?.minimum_payment ?? 0 };
+            });
+
+          // Get investment accounts with overrides
+          const investOverrides = chatDb.prepare("SELECT * FROM investment_overrides").all() as any[];
+          const investOverrideMap: Record<string, any> = {};
+          for (const o of investOverrides) investOverrideMap[o.ynab_account_id] = o;
+
+          const investmentAccounts = summary.accounts
+            .filter((a: any) => a.type === "otherAsset")
+            .map((a: any) => {
+              const override = investOverrideMap[a.id];
+              return { name: a.name, balance: a.balance, monthlyContribution: override?.monthly_contribution ?? 0, expectedReturn: override?.expected_return ?? 7 };
+            });
+
+          // Get savings goal
+          const savingRate = parseFloat(getHouseholdSetting("saving_rate") || "0");
 
           // Filter transfers
           const realIncomeTx = transactions.filter((t: any) => t.amount > 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation"));
@@ -64,7 +87,6 @@ export async function POST(request: Request) {
             .map((t: any) => ({ date: t.date, payee: t.payee, amount: t.amount, category: t.category }));
 
           // Load recurring bills with paid/overdue status
-          const chatDb = getDb();
           const bills = chatDb
             .prepare("SELECT id, name, amount, due_day FROM recurring_bills WHERE is_active = 1 ORDER BY due_day ASC")
             .all() as { id: number; name: string; amount: number; due_day: number }[];
@@ -94,6 +116,8 @@ export async function POST(request: Request) {
             upcomingBills: enrichedBills,
             recentTransactions: recentTx,
             debts,
+            investments: investmentAccounts,
+            savingGoal: savingRate,
             incomeSources: incomeRows.map((i) => ({ name: i.name, amount: i.amount, expectedDay: i.expected_day })),
             dailyBudget,
             daysUntilNextIncome: daysLeft,
@@ -119,6 +143,8 @@ export async function POST(request: Request) {
         upcomingBills: [],
         recentTransactions: [],
         debts: [],
+        investments: [],
+        savingGoal: 0,
         incomeSources: [],
         dailyBudget: 0,
         daysUntilNextIncome: 0,

@@ -140,6 +140,32 @@ export async function GET(request: Request) {
       ? incomeSources.map((i) => `${i.name}: ${i.amount} euros (day ${i.expected_day})`).join(", ")
       : "No income sources configured";
 
+    // Get debts with overrides
+    const debtOverrides = db.prepare("SELECT * FROM debt_overrides").all() as { ynab_account_id: string; interest_rate: number; minimum_payment: number }[];
+    const debtOverrideMap: Record<string, { interest_rate: number; minimum_payment: number }> = {};
+    for (const o of debtOverrides) debtOverrideMap[o.ynab_account_id] = o;
+
+    const debtAccounts: { name: string; balance: number; rate: number; payment: number }[] = summary.accounts
+      .filter((a: any) => a.type === "otherDebt" && a.balance < 0)
+      .map((a: any) => {
+        const override = debtOverrideMap[a.id];
+        return { name: a.name, balance: Math.abs(a.balance), rate: override?.interest_rate ?? 0, payment: override?.minimum_payment ?? 0 };
+      });
+
+    // Get investment accounts with overrides
+    const investOverrides = db.prepare("SELECT * FROM investment_overrides").all() as { ynab_account_id: string; monthly_contribution: number; expected_return: number }[];
+    const investOverrideMap: Record<string, { monthly_contribution: number; expected_return: number }> = {};
+    for (const o of investOverrides) investOverrideMap[o.ynab_account_id] = o;
+
+    const investmentAccounts: { name: string; balance: number; monthly: number; returnPct: number }[] = summary.accounts
+      .filter((a: any) => a.type === "otherAsset")
+      .map((a: any) => {
+        const override = investOverrideMap[a.id];
+        return { name: a.name, balance: a.balance, monthly: override?.monthly_contribution ?? 0, returnPct: override?.expected_return ?? 7 };
+      });
+
+    const savingGoal = parseFloat(getHouseholdSetting("saving_rate") || "0");
+
     const summaryInstructions = getHouseholdSetting("prompt_summary_instructions") || DEFAULT_SUMMARY_INSTRUCTIONS;
 
     const projectedRemainingExpenses = Math.round(unpaidBillsAmount + (dailyDiscretionary * daysLeft));
@@ -177,7 +203,12 @@ Pre-calculated analysis:
       return `${b.name}: ${b.amount} euros (due ${b.due_day}th${isPaid ? " - PAID" : isOverdue ? " - OVERDUE" : " - upcoming"})`;
     }).join(", ") : "none configured"}
 - Total monthly bills: ${recurringBills.reduce((s, b) => s + b.amount, 0)} euros
-- Income sources: ${incomeList}`;
+- Income sources: ${incomeList}
+- Debts: ${debtAccounts.length > 0 ? debtAccounts.map((d) => `${d.name}: ${d.balance} euros${d.rate > 0 ? ` (${d.rate}% APR)` : ""}${d.payment > 0 ? `, ${d.payment} euros/month` : ""}`).join(", ") : "none"}
+- Total debt: ${debtAccounts.reduce((s: number, d: { balance: number }) => s + d.balance, 0)} euros
+- Investments: ${investmentAccounts.length > 0 ? investmentAccounts.map((i) => `${i.name}: ${i.balance} euros${i.monthly > 0 ? `, ${i.monthly} euros/month` : ""}${i.returnPct > 0 ? ` (${i.returnPct}% return)` : ""}`).join(", ") : "none"}
+- Total investment value: ${investmentAccounts.reduce((s: number, i: { balance: number }) => s + i.balance, 0)} euros
+- Monthly investment contributions: ${investmentAccounts.reduce((s: number, i: { monthly: number }) => s + i.monthly, 0)} euros${savingGoal > 0 ? `\n- Savings goal: ${savingGoal} euros/month` : ""}`;
 
     const claudePath = process.env.CLAUDE_PATH || "claude";
     console.info("[summary] Calling claude CLI");
