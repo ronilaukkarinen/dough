@@ -57,7 +57,7 @@ function initializeDb(db: Database.Database) {
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
       amount REAL NOT NULL,
-      expected_day INTEGER NOT NULL CHECK (expected_day BETWEEN 1 AND 31),
+      expected_day INTEGER NOT NULL DEFAULT 0 CHECK (expected_day BETWEEN 0 AND 31),
       is_recurring INTEGER NOT NULL DEFAULT 1,
       is_active INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),

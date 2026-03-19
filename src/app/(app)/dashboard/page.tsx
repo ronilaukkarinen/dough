@@ -92,8 +92,10 @@ export default function DashboardPage() {
 
   // Upcoming income = active, unmatched income sources with expected_day still ahead
   const today = now.getDate();
+  const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const resolveDay = (day: number) => day === 0 ? lastDayOfMonth : day;
   const upcomingIncome = incomes
-    .filter((i) => i.is_active && i.expected_day > today && !matchedIncomeIds.has(i.id))
+    .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
     .reduce((s, i) => s + i.amount, 0);
 
   // Daily budget = (balance - saving goal) / days left
@@ -201,20 +203,20 @@ export default function DashboardPage() {
         upcomingBills={0}
         nextIncomeAmount={(() => {
           const next = incomes
-            .filter((i) => i.is_active && i.expected_day > today && !matchedIncomeIds.has(i.id))
+            .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
             .sort((a, b) => a.expected_day - b.expected_day)[0];
           return next?.amount ?? 0;
         })()}
         nextIncomeDate={(() => {
           const next = incomes
-            .filter((i) => i.is_active && i.expected_day > today && !matchedIncomeIds.has(i.id))
+            .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
             .sort((a, b) => a.expected_day - b.expected_day)[0];
           if (!next) return "";
           return `${next.expected_day}.${now.getMonth() + 1}. – ${next.name}`;
         })()}
         daysUntilIncome={(() => {
           const next = incomes
-            .filter((i) => i.is_active && i.expected_day > today && !matchedIncomeIds.has(i.id))
+            .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
             .sort((a, b) => a.expected_day - b.expected_day)[0];
           return next ? next.expected_day - today : daysLeft;
         })()}

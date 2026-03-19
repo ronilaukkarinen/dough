@@ -101,6 +101,11 @@
 * Fix household profile save button with explicit type="button"
 * Feed recurring bills and due dates to AI summary and chat prompts
 * Remove debt details from default household profile placeholder
+* Add inline editing for income sources (name, amount, day)
+* Add delete button for income sources
+* Support day 0 as "last day of month" for income expected date
+* Update income API PUT to support full field editing
+* Relax expected_day constraint to allow 0
 
 ### 0.2.0: 2026-03-18
 

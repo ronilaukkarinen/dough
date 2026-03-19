@@ -51,15 +51,37 @@ export async function PUT(request: Request) {
     if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
     const body = await request.json();
-    const { id, is_active } = body;
+    const { id } = body;
 
     if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
 
     const db = getDb();
-    db.prepare("UPDATE income_sources SET is_active = ?, updated_at = datetime('now') WHERE id = ? AND user_id = ?")
-      .run(is_active ? 1 : 0, id, user.id);
 
-    console.info("[income] Updated income source", id, "active:", is_active);
+    // Toggle active
+    if (body.is_active !== undefined && Object.keys(body).length === 2) {
+      db.prepare("UPDATE income_sources SET is_active = ?, updated_at = datetime('now') WHERE id = ? AND user_id = ?")
+        .run(body.is_active ? 1 : 0, id, user.id);
+      console.info("[income] Toggled income source", id, "active:", body.is_active);
+      return NextResponse.json({ success: true });
+    }
+
+    // Full edit
+    const updates: string[] = [];
+    const values: (string | number)[] = [];
+
+    if (body.name !== undefined) { updates.push("name = ?"); values.push(body.name); }
+    if (body.amount !== undefined) { updates.push("amount = ?"); values.push(body.amount); }
+    if (body.expected_day !== undefined) { updates.push("expected_day = ?"); values.push(body.expected_day); }
+    if (body.is_recurring !== undefined) { updates.push("is_recurring = ?"); values.push(body.is_recurring ? 1 : 0); }
+    if (body.is_active !== undefined) { updates.push("is_active = ?"); values.push(body.is_active ? 1 : 0); }
+
+    if (updates.length > 0) {
+      updates.push("updated_at = datetime('now')");
+      values.push(id, user.id);
+      db.prepare(`UPDATE income_sources SET ${updates.join(", ")} WHERE id = ? AND user_id = ?`).run(...values);
+      console.info("[income] Updated income source", id);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[income] PUT error:", error);

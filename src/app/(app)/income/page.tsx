@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Wallet, TrendingUp, Loader2, Link2, Check, X } from "lucide-react";
+import { Plus, Wallet, TrendingUp, Loader2, Link2, Check, X, Pencil, Trash2 } from "lucide-react";
 
 interface Income {
   id: number;
@@ -35,6 +35,8 @@ export default function IncomePage() {
   const [monthlyMatches, setMonthlyMatches] = useState<Record<number, boolean>>({});
   const [addingPattern, setAddingPattern] = useState<number | null>(null);
   const [newPattern, setNewPattern] = useState("");
+  const [editing, setEditing] = useState<number | null>(null);
+  const [editData, setEditData] = useState<{ name: string; amount: string; expected_day: string }>({ name: "", amount: "", expected_day: "" });
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -124,6 +126,59 @@ export default function IncomePage() {
     }
   };
 
+  const startEdit = (income: Income) => {
+    setEditing(income.id);
+    setEditData({
+      name: income.name,
+      amount: String(income.amount),
+      expected_day: String(income.expected_day),
+    });
+  };
+
+  const saveEdit = async (id: number) => {
+    console.info("[income] Saving edit for", id);
+    try {
+      await fetch("/api/income", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          name: editData.name,
+          amount: parseFloat(editData.amount),
+          expected_day: parseInt(editData.expected_day, 10),
+        }),
+      });
+      setIncomes((prev) => prev.map((i) => i.id === id ? {
+        ...i,
+        name: editData.name,
+        amount: parseFloat(editData.amount),
+        expected_day: parseInt(editData.expected_day, 10),
+      } : i));
+      setEditing(null);
+    } catch (err) {
+      console.error("[income] Edit error:", err);
+    }
+  };
+
+  const deleteIncome = async (id: number) => {
+    console.info("[income] Deleting income", id);
+    try {
+      await fetch("/api/income", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      setIncomes((prev) => prev.filter((i) => i.id !== id));
+    } catch (err) {
+      console.error("[income] Delete error:", err);
+    }
+  };
+
+  const formatExpectedDay = (day: number): string => {
+    if (day === 0) return locale === "fi" ? "kuun viimeinen" : "last day";
+    return `${day}.`;
+  };
+
   const handleAddPattern = async (sourceId: number) => {
     if (!newPattern.trim()) return;
     console.info("[income] Adding pattern:", newPattern, "for source", sourceId);
@@ -204,7 +259,7 @@ export default function IncomePage() {
                 </div>
                 <div className="form-field">
                   <Label>{t.income.expectedDay}</Label>
-                  <Input name="expected_day" type="number" min="1" max="31" placeholder="1" required />
+                  <Input name="expected_day" type="number" min="0" max="31" placeholder="0 = viimeinen" required />
                 </div>
               </div>
               <div className="form-row">
@@ -245,6 +300,24 @@ export default function IncomePage() {
             .sort((a, b) => a.expected_day - b.expected_day)
             .map((income) => (
               <div key={income.id} className="list-item list-item-col">
+                {editing === income.id ? (
+                  <div className="debt-edit-row">
+                    <div className="debt-edit-field">
+                      <Label className="debt-edit-label">{t.income.name}</Label>
+                      <Input value={editData.name} onChange={(e) => setEditData((d) => ({ ...d, name: e.target.value }))} className="debt-edit-input" />
+                    </div>
+                    <div className="debt-edit-field">
+                      <Label className="debt-edit-label">€</Label>
+                      <Input type="number" step="0.01" value={editData.amount} onChange={(e) => setEditData((d) => ({ ...d, amount: e.target.value }))} className="debt-edit-input" />
+                    </div>
+                    <div className="debt-edit-field">
+                      <Label className="debt-edit-label">{locale === "fi" ? "Pv" : "Day"}</Label>
+                      <Input type="number" min="0" max="31" value={editData.expected_day} onChange={(e) => setEditData((d) => ({ ...d, expected_day: e.target.value }))} placeholder="0 = last" className="debt-edit-input" />
+                    </div>
+                    <Button type="button" variant="ghost" size="icon-sm" onClick={() => saveEdit(income.id)}><Check /></Button>
+                    <Button type="button" variant="ghost" size="icon-sm" onClick={() => setEditing(null)}><X /></Button>
+                  </div>
+                ) : (
                 <div className="list-item-main">
                   <div className="list-item-icon" data-color="positive">
                     <Wallet />
@@ -256,7 +329,7 @@ export default function IncomePage() {
                       {income.is_recurring ? <Badge variant="secondary">{t.income.recurring}</Badge> : null}
                     </div>
                     <p className="list-item-meta">
-                      {t.income.expectedAround} {income.expected_day}.
+                      {t.income.expectedAround} {formatExpectedDay(income.expected_day)}
                       {(patterns[income.id] || []).length > 0 && (
                         <span className="list-item-patterns">
                           {" – "}{(patterns[income.id]).map((p) => p.payee_pattern).join(", ")}
@@ -266,12 +339,19 @@ export default function IncomePage() {
                   </div>
                   <div className="list-item-actions">
                     <p className="list-item-amount-value" data-positive>+{income.amount.toFixed(2)} €</p>
+                    <button type="button" className="list-item-link-btn" onClick={() => startEdit(income)}>
+                      <Pencil />
+                    </button>
                     <button type="button" className="list-item-link-btn" onClick={() => setAddingPattern(addingPattern === income.id ? null : income.id)}>
                       <Link2 />
+                    </button>
+                    <button type="button" className="list-item-link-btn" onClick={() => deleteIncome(income.id)}>
+                      <Trash2 />
                     </button>
                     <Switch checked={!!income.is_active} onCheckedChange={() => toggleIncome(income.id, income.is_active)} />
                   </div>
                 </div>
+                )}
                 {addingPattern === income.id && (
                   <div className="match-pattern-row">
                     <Input
