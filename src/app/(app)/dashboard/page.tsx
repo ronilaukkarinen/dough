@@ -14,6 +14,7 @@ import { AiSummary } from "@/components/dashboard/ai-summary";
 import { NetWorth } from "@/components/dashboard/net-worth";
 import { EntryReminder } from "@/components/dashboard/entry-reminder";
 import { PersonalGreeting } from "@/components/dashboard/personal-greeting";
+import { SpendingFlow } from "@/components/dashboard/spending-flow";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -335,6 +336,16 @@ export default function DashboardPage() {
         dailyBudget={dailyBudget}
         todayRemaining={todayRemaining}
         suggestedForYou={suggestedForYou}
+      />
+
+      <SpendingFlow
+        spendingByDay={spendingByDay as unknown as Record<number, number>}
+        daysInMonth={daysInMonth}
+        daysPassed={daysPassed}
+        dailyDiscretionary={dailyDiscretionary}
+        targetPerDay={savingsTargetPerDay}
+        combinedIncome={combinedIncome}
+        savingRate={savingRate}
       />
 
       <AiSummary />

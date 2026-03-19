@@ -29,6 +29,7 @@
 @import "./modules/chart.css";
 @import "./modules/daily-allowance.css";
 @import "./modules/spending-chart.css";
+@import "./modules/spending-flow.css";
 @import "./modules/category-breakdown.css";
 @import "./modules/cash-flow.css";
 @import "./modules/recent-transactions.css";

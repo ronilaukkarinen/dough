@@ -1,5 +1,6 @@
 ### 1.1.0: 2026-03-20
 
+* Add spending flow hero chart with gradient line, projected spending, savings target, and status bubble
 * Change savings target label to "Vakaa talous" in Finnish
 * Add monthly snapshots table for historical spending data, backfill 3 months on first sync
 * Replace spending chart budget line with green savings target dashed line
