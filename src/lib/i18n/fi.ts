@@ -127,10 +127,10 @@ export const fi = {
     recurring: "Toistuva",
     recurringMonthly: "Toistuva kuukausittain",
     monthlyTotal: "Kuukausittain yhteensä",
-    expectedMonthly: "Odotettu kuukausittain",
+    expectedMonthly: "Kuukausitulot",
     guaranteedRecurring: "Varma kuukausitulo",
     reliableMonthlyIncome: "Luotettava kuukausitulo",
-    expectedAround: "Odotettu noin",
+    expectedAround: "Näkyy tilillä",
   },
   debts: {
     title: "Velat",
