@@ -9,8 +9,8 @@ export async function GET() {
 
     const db = getDb();
     const profile = db
-      .prepare("SELECT id, email, display_name, locale FROM users WHERE id = ?")
-      .get(user.id) as { id: number; email: string; display_name: string; locale: string } | undefined;
+      .prepare("SELECT id, email, display_name, locale, budget_share FROM users WHERE id = ?")
+      .get(user.id) as { id: number; email: string; display_name: string; locale: string; budget_share: number } | undefined;
 
     const linkedAccounts = db
       .prepare("SELECT ynab_account_id FROM user_linked_accounts WHERE user_id = ?")
@@ -40,6 +40,12 @@ export async function PUT(request: Request) {
       console.info("[profile] Updating display name for user", user.id, "to", body.display_name);
       db.prepare("UPDATE users SET display_name = ?, updated_at = datetime('now') WHERE id = ?")
         .run(body.display_name, user.id);
+    }
+
+    if (body.budget_share !== undefined) {
+      console.info("[profile] Updating budget share for user", user.id, "to", body.budget_share);
+      db.prepare("UPDATE users SET budget_share = ?, updated_at = datetime('now') WHERE id = ?")
+        .run(parseInt(body.budget_share, 10) || 0, user.id);
     }
 
     if (body.linked_account_ids !== undefined) {

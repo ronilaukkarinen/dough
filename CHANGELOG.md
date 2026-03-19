@@ -1,6 +1,6 @@
 ### 1.0.0: 2026-03-19
 
-* Add personal budget share setting with configurable %, auto-calculated from spending history when 0
+* Move personal budget share to per-user profile setting so each user can have their own %
 * Show suggested personal amount and household remaining in greeting
 * Fix bills due card to include overdue unpaid bills, not just future ones
 * Add comprehensive README.md with install guide, architecture, contributing, and documentation links

@@ -56,9 +56,9 @@ export default function DashboardPage() {
       fetch("/api/debts").then((r) => r.json()),
     ]).then(([incomeData, matchData, billsData, profileData, householdData, investmentData, debtData]) => {
       if (profileData.linkedAccountIds) setLinkedAccountIds(profileData.linkedAccountIds);
+      if (profileData.profile?.budget_share) setPersonalBudgetShare(profileData.profile.budget_share);
       if (householdData.settings?.last_ynab_sync) setLastYnabSync(householdData.settings.last_ynab_sync);
       if (householdData.settings?.household_size) setHouseholdSize(parseInt(householdData.settings.household_size, 10) || 1);
-      if (householdData.settings?.personal_budget_share) setPersonalBudgetShare(parseInt(householdData.settings.personal_budget_share, 10) || 0);
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       if (billsData.bills) setBills(billsData.bills);
       if (investmentData.investments) {

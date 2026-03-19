@@ -210,6 +210,13 @@ function initializeDb(db: Database.Database) {
     );
   `);
 
+  // Add budget_share column to users if missing
+  const userCols = db.prepare("PRAGMA table_info(users)").all() as { name: string }[];
+  if (!userCols.some((c) => c.name === "budget_share")) {
+    console.info("[db] Adding budget_share column to users");
+    db.exec("ALTER TABLE users ADD COLUMN budget_share INTEGER NOT NULL DEFAULT 0");
+  }
+
   // Migrate payee_matches/monthly_matches to support 'investment' source_type
   const payeeCheck = db.prepare("SELECT sql FROM sqlite_master WHERE name = 'payee_matches'").get() as { sql: string } | undefined;
   if (payeeCheck?.sql && !payeeCheck.sql.includes("investment")) {
