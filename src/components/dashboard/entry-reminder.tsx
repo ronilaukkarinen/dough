@@ -12,7 +12,12 @@ interface EntryReminderProps {
 }
 
 export function EntryReminder({ lastTransactionDate, onAddExpense }: EntryReminderProps) {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const ts = localStorage.getItem("dough-reminder-dismissed");
+    if (!ts) return false;
+    return Date.now() - parseInt(ts, 10) < 6 * 60 * 60 * 1000;
+  });
   const { locale } = useLocale();
 
   if (dismissed || !lastTransactionDate) return null;
@@ -40,7 +45,10 @@ export function EntryReminder({ lastTransactionDate, onAddExpense }: EntryRemind
           {locale === "fi" ? "Lisää kulu" : "Add expense"}
         </button>
       </div>
-      <button type="button" className="entry-reminder-close" onClick={() => setDismissed(true)}>
+      <button type="button" className="entry-reminder-close" onClick={() => {
+        localStorage.setItem("dough-reminder-dismissed", String(Date.now()));
+        setDismissed(true);
+      }}>
         <X />
       </button>
     </div>
