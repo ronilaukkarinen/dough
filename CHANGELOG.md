@@ -1,4 +1,4 @@
-### 0.3.0: 2026-03-18
+### 1.0.0: 2026-03-19
 
 * Fix metric card value font sizes to be consistent across all dashboard cards
 * Fix AI advisor by removing unsupported --no-input flag from claude CLI call
