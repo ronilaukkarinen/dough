@@ -264,6 +264,8 @@ export default function DashboardPage() {
         projectedMonthEnd={projectedMonthEnd}
         todaySpentAll={todaySpentAll}
         todayRemaining={todayRemaining}
+        monthIncome={combinedIncome}
+        monthExpenses={Math.round(realSpendingTotal)}
       />
 
       <div className="page-grid-2">

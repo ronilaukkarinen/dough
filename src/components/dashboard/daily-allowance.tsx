@@ -17,6 +17,8 @@ interface DailyAllowanceProps {
   billCount?: number;
   todaySpentAll?: number;
   todayRemaining?: number;
+  monthIncome?: number;
+  monthExpenses?: number;
   currency?: string;
 }
 
@@ -33,39 +35,41 @@ export function DailyAllowance({
   billCount = 0,
   todaySpentAll = 0,
   todayRemaining = 0,
+  monthIncome = 0,
+  monthExpenses = 0,
   currency = "€",
 }: DailyAllowanceProps) {
   const { t, locale } = useLocale();
+  const effectiveBudget = todaySpentAll > 0 ? Math.max(0, todayRemaining) : dailyBudget;
+  const overspent = todayRemaining < 0;
   const status =
-    dailyBudget > 50 ? "good" : dailyBudget > 20 ? "tight" : "danger";
+    effectiveBudget > 50 ? "good" : effectiveBudget > 20 ? "tight" : "danger";
 
   return (
     <div className="daily-allowance-grid">
       <Card className="daily-allowance-hero" data-status={status}>
         <div className="daily-allowance-hero-content">
-          <p className="daily-allowance-hero-label">{t.dashboard.dailyBudget}</p>
+          <p className="daily-allowance-hero-label">
+            {todaySpentAll > 0
+              ? (locale === "fi" ? "Tänään jäljellä" : "Remaining today")
+              : t.dashboard.dailyBudget}
+          </p>
           <div className="daily-allowance-hero-amount">
-            <span className="daily-allowance-hero-value" data-status={status}>
-              {dailyBudget.toFixed(2)} {currency}
+            <span className="daily-allowance-hero-value" data-status={overspent ? "danger" : status}>
+              {overspent ? `\u2212${Math.abs(todayRemaining).toFixed(2)}` : effectiveBudget.toFixed(2)} {currency}
             </span>
-            <span className="daily-allowance-hero-unit">{t.dashboard.perDay}</span>
+            <span className="daily-allowance-hero-unit">{todaySpentAll > 0 ? "" : t.dashboard.perDay}</span>
           </div>
           <p className="daily-allowance-hero-note">
-            {daysUntilIncome} {t.dashboard.daysUntilNextIncome}
-            {status === "danger" && ` \u2014 ${t.dashboard.cutNonEssentials}`}
-            {status === "tight" && ` \u2014 ${t.dashboard.beCareful}`}
-            {todaySpentAll > 0 && (
-              <>
-                {" \u00B7 "}
-                {locale === "fi" ? "tänään " : "today "}
-                {todaySpentAll.toFixed(2)} {currency}
-                {" \u2014 "}
-                {locale === "fi" ? "jäljellä " : "left "}
-                <span className={todayRemaining <= 0 ? "text-negative" : todayRemaining < dailyBudget * 0.3 ? "text-chart-3" : "text-positive"}>
-                  {todayRemaining.toFixed(2)} {currency}
-                </span>
-              </>
-            )}
+            {overspent
+              ? (locale === "fi"
+                ? `Budjetti ylitetty! Alkuperäinen ${dailyBudget.toFixed(2)} ${currency}, käytetty ${todaySpentAll.toFixed(2)} ${currency}`
+                : `Budget exceeded! Original ${dailyBudget.toFixed(2)} ${currency}, spent ${todaySpentAll.toFixed(2)} ${currency}`)
+              : todaySpentAll > 0
+                ? `${locale === "fi" ? "Budjetti" : "Budget"} ${dailyBudget.toFixed(2)} ${currency} \u00B7 ${locale === "fi" ? "käytetty" : "spent"} ${todaySpentAll.toFixed(2)} ${currency}`
+                : `${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`}
+            {!overspent && status === "danger" && ` \u2014 ${t.dashboard.cutNonEssentials}`}
+            {!overspent && status === "tight" && ` \u2014 ${t.dashboard.beCareful}`}
           </p>
         </div>
         <div className="daily-allowance-hero-bg">
@@ -126,6 +130,29 @@ export function DailyAllowance({
           </div>
         </div>
       </Card>
+
+      {monthIncome > 0 && (
+        <Card className="metric-card metric-card-half">
+          <div className="metric-card-row">
+            <div className="metric-card-icon" data-color={monthIncome - monthExpenses >= 0 ? "positive" : "negative"}>
+              {monthIncome - monthExpenses >= 0 ? <ArrowDown /> : <ArrowUp />}
+            </div>
+            <div>
+              <p className="metric-card-label">{locale === "fi" ? "Kuukauden tilanne" : "Month status"}</p>
+              <p className="metric-card-value">
+                <span className={monthIncome - monthExpenses >= 0 ? "text-positive" : "text-negative"}>
+                  {monthIncome - monthExpenses >= 0 ? "+" : "\u2212"}{Math.abs(monthIncome - monthExpenses).toFixed(2)} {currency}
+                </span>
+              </p>
+              <p className="metric-card-note">
+                {monthIncome - monthExpenses >= 0
+                  ? (locale === "fi" ? "Plussalla" : "Surplus")
+                  : (locale === "fi" ? "Miinuksella" : "Deficit")}
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
