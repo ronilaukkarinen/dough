@@ -266,14 +266,7 @@ export default function BillsPage() {
                   {bill.average_amount && bill.history_count >= 2 && !bill.amount_diff && (
                     <p className="list-item-meta">{locale === "fi" ? "ka" : "avg"} {bill.average_amount.toFixed(2)} €</p>
                   )}
-                  <span onClick={(e) => e.stopPropagation()} className="list-item-actions-row">
-                    <button
-                      type="button"
-                      className={`list-item-paid-btn ${bill.is_paid ? "is-paid" : ""}`}
-                      onClick={() => togglePaid(bill.id, bill.is_paid)}
-                    >
-                      <Check />
-                    </button>
+                  <span onClick={(e) => e.stopPropagation()}>
                     <Switch checked={!!bill.is_active} onCheckedChange={() => toggleBill(bill.id, bill.is_active)} />
                   </span>
                 </div>
@@ -338,11 +331,20 @@ export default function BillsPage() {
                 )}
               </div>
               <div className="form-grid-2">
-                <Button type="submit">{t.common.save}</Button>
+                <Button
+                  type="button"
+                  variant={editTarget.is_paid ? "outline" : "default"}
+                  onClick={() => { togglePaid(editTarget.id, editTarget.is_paid); setEditOpen(false); }}
+                >
+                  {editTarget.is_paid
+                    ? (locale === "fi" ? "Merkitse maksamattomaksi" : "Mark unpaid")
+                    : (locale === "fi" ? "Merkitse maksetuksi" : "Mark paid")}
+                </Button>
                 <Button type="button" variant="destructive" onClick={() => { deleteBill(editTarget.id); setEditOpen(false); }}>
                   {t.common.delete}
                 </Button>
               </div>
+              <Button type="submit">{t.common.save}</Button>
             </form>
           )}
         </DialogContent>

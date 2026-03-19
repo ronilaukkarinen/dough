@@ -135,8 +135,8 @@ export async function PUT(request: Request) {
 
     // Toggle active
     if (body.is_active !== undefined && Object.keys(body).length === 2) {
-      db.prepare("UPDATE recurring_bills SET is_active = ?, updated_at = datetime('now') WHERE id = ? AND user_id = ?")
-        .run(body.is_active ? 1 : 0, id, user.id);
+      db.prepare("UPDATE recurring_bills SET is_active = ?, updated_at = datetime('now') WHERE id = ?")
+        .run(body.is_active ? 1 : 0, id);
       console.info("[bills] Toggled bill", id, "active:", body.is_active);
       eventBus.emit("data:updated", { source: "bill-toggled" });
       return NextResponse.json({ success: true });
@@ -164,8 +164,8 @@ export async function PUT(request: Request) {
 
     if (updates.length > 0) {
       updates.push("updated_at = datetime('now')");
-      values.push(id, user.id);
-      db.prepare(`UPDATE recurring_bills SET ${updates.join(", ")} WHERE id = ? AND user_id = ?`).run(...values);
+      values.push(id);
+      db.prepare(`UPDATE recurring_bills SET ${updates.join(", ")} WHERE id = ?`).run(...values);
       console.info("[bills] Updated bill", id);
       eventBus.emit("data:updated", { source: "bill-updated" });
     }
@@ -186,7 +186,7 @@ export async function DELETE(request: Request) {
     if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
 
     const db = getDb();
-    db.prepare("DELETE FROM recurring_bills WHERE id = ? AND user_id = ?").run(id, user.id);
+    db.prepare("DELETE FROM recurring_bills WHERE id = ?").run(id);
 
     console.info("[bills] Deleted bill", id);
     eventBus.emit("data:updated", { source: "bill-deleted" });

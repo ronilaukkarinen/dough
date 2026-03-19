@@ -76,8 +76,8 @@ export async function PUT(request: Request) {
 
     // Toggle active
     if (body.is_active !== undefined && Object.keys(body).length === 2) {
-      db.prepare("UPDATE income_sources SET is_active = ?, updated_at = datetime('now') WHERE id = ? AND user_id = ?")
-        .run(body.is_active ? 1 : 0, id, user.id);
+      db.prepare("UPDATE income_sources SET is_active = ?, updated_at = datetime('now') WHERE id = ?")
+        .run(body.is_active ? 1 : 0, id);
       console.info("[income] Toggled income source", id, "active:", body.is_active);
       return NextResponse.json({ success: true });
     }
@@ -104,8 +104,8 @@ export async function PUT(request: Request) {
 
     if (updates.length > 0) {
       updates.push("updated_at = datetime('now')");
-      values.push(id, user.id);
-      db.prepare(`UPDATE income_sources SET ${updates.join(", ")} WHERE id = ? AND user_id = ?`).run(...values);
+      values.push(id);
+      db.prepare(`UPDATE income_sources SET ${updates.join(", ")} WHERE id = ?`).run(...values);
       console.info("[income] Updated income source", id);
     }
 
@@ -126,7 +126,7 @@ export async function DELETE(request: Request) {
     if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
 
     const db = getDb();
-    db.prepare("DELETE FROM income_sources WHERE id = ? AND user_id = ?").run(id, user.id);
+    db.prepare("DELETE FROM income_sources WHERE id = ?").run(id);
 
     console.info("[income] Deleted income source", id);
     eventBus.emit("data:updated", { source: "income-deleted" });
