@@ -17,6 +17,7 @@ export async function GET() {
         saving_rate: settings.saving_rate ? parseFloat(settings.saving_rate) : 0,
         saving_rate_type: settings.saving_rate_type || "fixed",
         household_profile: settings.household_profile || "",
+        household_size: settings.household_size || "1",
         prompt_chat_guidelines: settings.prompt_chat_guidelines || "",
         prompt_summary_instructions: settings.prompt_summary_instructions || "",
         prompt_debt_instructions: settings.prompt_debt_instructions || "",

@@ -12,6 +12,7 @@ import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { AiSummary } from "@/components/dashboard/ai-summary";
 import { NetWorth } from "@/components/dashboard/net-worth";
 import { EntryReminder } from "@/components/dashboard/entry-reminder";
+import { PersonalGreeting } from "@/components/dashboard/personal-greeting";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -115,6 +116,12 @@ export default function DashboardPage() {
   const dailyBurnRate = daysPassed > 0 ? Math.round((realSpendingTotal / daysPassed) * 100) / 100 : 0;
   const projectedMonthEnd = Math.round((availableBalance + upcomingIncome - (dailyBurnRate * daysLeft)) * 100) / 100;
 
+  // Today's spending
+  const todayStr = now.toISOString().slice(0, 10);
+  const todaySpent = data.transactions
+    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category))
+    .reduce((s, t) => s + Math.abs(t.amount), 0);
+
   // Build spending chart data from transactions (exclude transfers)
   const spendingByDay: Record<string, number> = {};
   const sortedTx = [...data.transactions]
@@ -203,6 +210,11 @@ export default function DashboardPage() {
       <EntryReminder
         lastTransactionDate={recentTransactions.length > 0 ? recentTransactions[0].date : null}
         onAddExpense={() => window.location.href = "/transactions"}
+      />
+
+      <PersonalGreeting
+        todaySpent={todaySpent}
+        dailyBudget={dailyBudget}
       />
 
       <AiSummary />

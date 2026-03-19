@@ -1,0 +1,11 @@
+/* Module: personal-greeting */
+
+.personal-greeting {
+  padding: 0 0.25rem;
+}
+
+.personal-greeting-text {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}

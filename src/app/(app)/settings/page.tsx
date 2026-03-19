@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2, PiggyBank, Users, Sparkles } from "lucide-react";
+import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2, PiggyBank, Users, Sparkles, User } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import type { Locale } from "@/lib/i18n";
 
@@ -42,9 +42,15 @@ export default function SettingsPage() {
   const [savingRate, setSavingRate] = useState("");
   const [savingRateSaved, setSavingRateSaved] = useState(false);
   const [householdProfile, setHouseholdProfile] = useState("");
+  const [householdSize, setHouseholdSize] = useState("1");
   const [householdSaved, setHouseholdSaved] = useState(false);
   const [prompts, setPrompts] = useState({ chat: "", summary: "", debt: "" });
   const [promptSaved, setPromptSaved] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [nameSaved, setNameSaved] = useState(false);
+  const [allAccounts, setAllAccounts] = useState<{ id: string; name: string; balance: number }[]>([]);
+  const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
+  const [accountsSaved, setAccountsSaved] = useState(false);
   const { t, locale, setLocale } = useLocale();
 
   useEffect(() => {
@@ -52,8 +58,10 @@ export default function SettingsPage() {
     Promise.all([
       fetch("/api/auth/me").then((r) => r.json()),
       fetch("/api/household").then((r) => r.json()),
+      fetch("/api/profile").then((r) => r.json()),
+      fetch("/api/ynab/accounts").then((r) => r.json()).catch(() => ({ accounts: [] })),
     ])
-      .then(([userData, householdData]) => {
+      .then(([userData, householdData, profileData, accountsData]) => {
         if (userData.user) {
           setProfile({
             ...userData.user,
@@ -71,6 +79,9 @@ export default function SettingsPage() {
           if (householdData.settings?.household_profile) {
             setHouseholdProfile(householdData.settings.household_profile);
           }
+          if (householdData.settings?.household_size) {
+            setHouseholdSize(householdData.settings.household_size);
+          }
           if (householdData.settings?.prompt_chat_guidelines) {
             setPrompts((p) => ({ ...p, chat: householdData.settings.prompt_chat_guidelines }));
           }
@@ -79,6 +90,15 @@ export default function SettingsPage() {
           }
           if (householdData.settings?.prompt_debt_instructions) {
             setPrompts((p) => ({ ...p, debt: householdData.settings.prompt_debt_instructions }));
+          }
+          if (profileData.profile) {
+            setDisplayName(profileData.profile.display_name || "");
+          }
+          if (profileData.linkedAccountIds) {
+            setLinkedAccountIds(profileData.linkedAccountIds);
+          }
+          if (accountsData.accounts) {
+            setAllAccounts(accountsData.accounts);
           }
           if (householdData.settings?.ynab_connected) {
             fetch("/api/ynab/budgets")
@@ -267,6 +287,91 @@ export default function SettingsPage() {
       </div>
 
       <div className="settings-grid">
+        {/* Profile */}
+        <Card className="settings-card">
+          <CardHeader>
+            <CardTitle className="settings-card-title">
+              <User />
+              {t.settings.profile}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="form-stack">
+            <div className="form-field">
+              <Label>{locale === "fi" ? "Nimi" : "Name"}</Label>
+              <div className="settings-row">
+                <Input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder={locale === "fi" ? "Etunimi" : "First name"}
+                  className="settings-input"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    await fetch("/api/profile", {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ display_name: displayName }),
+                    });
+                    setNameSaved(true);
+                    setTimeout(() => setNameSaved(false), 2000);
+                  }}
+                >
+                  {t.common.save}
+                </Button>
+                {nameSaved && <span className="settings-saved">{t.common.saved}</span>}
+              </div>
+              <p className="settings-help">
+                {locale === "fi" ? "Näytetään tervehdyksessä ja chatissa" : "Shown in greeting and chat"}
+              </p>
+            </div>
+            {allAccounts.length > 0 && (
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Omat tilit" : "My accounts"}</Label>
+                <p className="settings-help" style={{ marginBottom: "0.5rem" }}>
+                  {locale === "fi" ? "Valitse tilit joita käytät henkilökohtaisesti" : "Select accounts you use personally"}
+                </p>
+                <div className="settings-account-list">
+                  {allAccounts.map((a) => (
+                    <label key={a.id} className="settings-account-item">
+                      <input
+                        type="checkbox"
+                        checked={linkedAccountIds.includes(a.id)}
+                        onChange={(e) => {
+                          setLinkedAccountIds((prev) =>
+                            e.target.checked ? [...prev, a.id] : prev.filter((id) => id !== a.id)
+                          );
+                        }}
+                      />
+                      <span className="settings-account-name">{a.name}</span>
+                      <span className="settings-account-balance">{a.balance.toFixed(2)} €</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="settings-row">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      await fetch("/api/profile", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ linked_account_ids: linkedAccountIds }),
+                      });
+                      setAccountsSaved(true);
+                      setTimeout(() => setAccountsSaved(false), 2000);
+                    }}
+                  >
+                    {t.common.save}
+                  </Button>
+                  {accountsSaved && <span className="settings-saved">{t.common.saved}</span>}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Language */}
         <Card className="settings-card">
           <CardHeader>
@@ -303,6 +408,22 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="form-field">
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Talouden koko" : "Household size"}</Label>
+                <div className="settings-row">
+                  <Input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={householdSize}
+                    onChange={(e) => setHouseholdSize(e.target.value)}
+                    className="settings-input"
+                  />
+                </div>
+                <p className="settings-help">
+                  {locale === "fi" ? "Montako henkilöä taloudessa (vaikuttaa henkilökohtaiseen budjettiin)" : "Number of people (affects personal budget calculation)"}
+                </p>
+              </div>
               <Label>{locale === "fi" ? "Kuvaus AI-neuvontaa varten" : "Description for AI advisor"}</Label>
               <textarea
                 className="settings-textarea"
@@ -324,7 +445,7 @@ export default function SettingsPage() {
                     await fetch("/api/household", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ household_profile: householdProfile }),
+                      body: JSON.stringify({ household_profile: householdProfile, household_size: householdSize }),
                     });
                     setHouseholdSaved(true);
                     setTimeout(() => setHouseholdSaved(false), 2000);

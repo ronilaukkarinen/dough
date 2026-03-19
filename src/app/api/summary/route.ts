@@ -136,11 +136,13 @@ export async function GET(request: Request) {
 
     const prompt = `${lang} You are a personal finance advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} ${summaryInstructions}
 
+IMPORTANT: Do NOT compare "received income so far" to "total expenses" to conclude they are overspending. Income arrives at specific dates (see below). Compare EXPECTED TOTAL monthly income to expenses for the full picture. The family may receive most income late in the month.
+
 Data:
 - Checking+savings balance: ${Math.round(checkingSavings)} euros
-- This month's received income so far: ${Math.round(monthIncomeTotal)} euros
-- Expected monthly income: ${totalExpectedMonthlyIncome} euros
-- Upcoming income still expected this month: ${Math.round(upcomingIncome)} euros (${incomeSources.filter((i) => i.expected_day > now.getDate()).map((i) => `${i.name} on day ${i.expected_day}`).join(", ") || "none"})
+- Income ALREADY received this month: ${Math.round(monthIncomeTotal)} euros
+- TOTAL expected monthly income (all sources): ${totalExpectedMonthlyIncome} euros
+- Income still coming this month: ${Math.round(upcomingIncome)} euros (${incomeSources.filter((i) => i.expected_day > now.getDate()).map((i) => `${i.name}: ${i.amount} euros on day ${i.expected_day}`).join(", ") || "none"})
 - Income sources: ${incomeList}
 - This month's real spending (excluding transfers): ${Math.round(monthActivity)} euros
 - Daily burn rate: ${dailyBurnRate} euros/day

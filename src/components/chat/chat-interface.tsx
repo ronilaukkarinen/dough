@@ -227,7 +227,7 @@ export function ChatInterface() {
           })}
           {loading && (
             <div className="chat-loading">
-              <div className="chat-message-avatar" data-role="assistant"><Bot /></div>
+              <div className="chat-message-avatar" data-type="assistant"><Bot /></div>
               <div className="chat-loading-bubble">
                 <div className="typing-dots"><span /><span /><span /></div>
               </div>

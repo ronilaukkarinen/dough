@@ -142,6 +142,16 @@
 * Feed bill paid/overdue status to AI summary and chat advisor
 * Add list-item-body grid layout with 4px gap
 * Bills page auto-refreshes via SSE on data changes
+* Add name field to user profile settings
+* Add linked accounts selection (checkboxes for YNAB accounts)
+* Add household size setting for personal budget calculation
+* Add personalized greeting on dashboard with today's spending and personal budget
+* Add profile API for name and linked accounts management
+* Fix AI summary to not mislead about income vs expenses when salary comes late in month
+* Fix chat paragraph spacing (0.25rem instead of 0.5rem)
+* Fix chat avatar border-radius to match bubble (1rem)
+* Fix AI typing indicator avatar to use correct data-type attribute
+* Fix match pattern input sizing and remove extra padding-left
 
 ### 0.2.0: 2026-03-18
 
