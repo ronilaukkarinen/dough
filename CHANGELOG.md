@@ -1,7 +1,7 @@
 ### 1.0.0: 2026-03-19
 
-* Add investments page with CRUD, YNAB transfer matching, compound growth projection chart
-* Include investment monthly amounts in dashboard month status calculation
+* Add investments page pulling accounts from YNAB with editable monthly contribution and return %, compound growth projection chart
+* Include investment monthly contributions in dashboard month status calculation
 * Color income green and expenses red in month status sub label
 * Fix month status projection to separate bills from discretionary spending
 * Change bill due text to "Erääntyy X. päivä" in Finnish

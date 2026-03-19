@@ -117,16 +117,12 @@ function initializeDb(db: Database.Database) {
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_net_worth_user_date ON net_worth_snapshots(user_id, date);
 
-    CREATE TABLE IF NOT EXISTS investments (
+    CREATE TABLE IF NOT EXISTS investment_overrides (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      name TEXT NOT NULL,
-      monthly_amount REAL NOT NULL DEFAULT 0,
-      expected_day INTEGER NOT NULL DEFAULT 1 CHECK (expected_day BETWEEN 1 AND 31),
+      ynab_account_id TEXT UNIQUE NOT NULL,
+      monthly_contribution REAL NOT NULL DEFAULT 0,
       expected_return REAL NOT NULL DEFAULT 7,
-      current_value REAL NOT NULL DEFAULT 0,
-      is_active INTEGER NOT NULL DEFAULT 1,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      notes TEXT DEFAULT '',
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 

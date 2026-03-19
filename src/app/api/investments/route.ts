@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { eventBus } from "@/lib/event-bus";
 
 export async function GET() {
   try {
@@ -9,73 +9,61 @@ export async function GET() {
     if (!user) return NextResponse.json({ investments: [] }, { status: 401 });
 
     const db = getDb();
-    const investments = db
-      .prepare("SELECT id, name, monthly_amount, expected_day, expected_return, current_value, is_active FROM investments ORDER BY expected_day ASC")
-      .all() as { id: number; name: string; monthly_amount: number; expected_day: number; expected_return: number; current_value: number; is_active: number }[];
 
-    // Get matches for this month
-    const now = new Date();
-    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const matches = db
-      .prepare("SELECT source_id, amount FROM monthly_matches WHERE source_type = 'investment' AND month = ?")
-      .all(month) as { source_id: number; amount: number }[];
-    const matchMap = new Map(matches.map((m) => [m.source_id, m.amount]));
-
-    // Get payee patterns
-    const patterns = db
-      .prepare("SELECT source_id, payee_pattern FROM payee_matches WHERE source_type = 'investment'")
-      .all() as { source_id: number; payee_pattern: string }[];
-    const patternMap = new Map<number, string[]>();
-    for (const p of patterns) {
-      if (!patternMap.has(p.source_id)) patternMap.set(p.source_id, []);
-      patternMap.get(p.source_id)!.push(p.payee_pattern);
+    // Get YNAB investment accounts from cache
+    const cached = db.prepare("SELECT data FROM ynab_cache WHERE id = 1").get() as { data: string } | undefined;
+    if (!cached) {
+      return NextResponse.json({ investments: [], error: "No cached data. Sync first." });
     }
 
-    const enriched = investments.map((inv) => ({
-      ...inv,
-      is_paid: matchMap.has(inv.id),
-      paid_amount: matchMap.get(inv.id) || null,
-      patterns: patternMap.get(inv.id) || [],
-    }));
+    const ynabData = JSON.parse(cached.data);
+    const { summary, transactions } = ynabData;
 
-    console.debug("[investments] Loaded", investments.length, "investments,", matches.length, "paid this month");
-    return NextResponse.json({ investments: enriched });
+    // Investment accounts in YNAB are type "otherAsset"
+    const investmentAccounts = summary.accounts.filter((a: any) => a.type === "otherAsset");
+
+    // Load overrides from DB
+    const overrides = db.prepare("SELECT * FROM investment_overrides").all() as any[];
+    const overrideMap: Record<string, any> = {};
+    for (const o of overrides) {
+      overrideMap[o.ynab_account_id] = o;
+    }
+
+    // Find monthly transfers to each investment account
+    const now = new Date();
+    const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+    const investments = investmentAccounts.map((a: any) => {
+      const override = overrideMap[a.id];
+
+      // Find transfer transactions TO this account this month
+      const transfersIn = transactions.filter((t: any) =>
+        t.amount > 0 &&
+        t.account_id === a.id &&
+        t.date.startsWith(monthStr)
+      );
+      const monthlyTransferred = transfersIn.reduce((s: number, t: any) => s + t.amount, 0);
+
+      return {
+        id: a.id,
+        name: a.name,
+        balance: a.balance,
+        monthlyContribution: override?.monthly_contribution ?? 0,
+        expectedReturn: override?.expected_return ?? 7,
+        monthlyTransferred: Math.round(monthlyTransferred * 100) / 100,
+        notes: override?.notes ?? "",
+      };
+    });
+
+    console.info("[investments] Loaded", investments.length, "investment accounts from YNAB cache");
+    return NextResponse.json({
+      investments,
+      totalValue: investments.reduce((s: number, i: any) => s + i.balance, 0),
+      totalMonthly: investments.reduce((s: number, i: any) => s + i.monthlyContribution, 0),
+    });
   } catch (error) {
     console.error("[investments] GET error:", error);
-    return NextResponse.json({ investments: [] }, { status: 500 });
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const user = await getSession();
-    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-
-    const body = await request.json();
-    const { name, monthly_amount, expected_day, expected_return, current_value } = body;
-
-    if (!name || !monthly_amount) {
-      return NextResponse.json({ error: "Name and monthly amount required" }, { status: 400 });
-    }
-
-    const db = getDb();
-    const result = db
-      .prepare("INSERT INTO investments (user_id, name, monthly_amount, expected_day, expected_return, current_value) VALUES (?, ?, ?, ?, ?, ?)")
-      .run(
-        user.id,
-        name,
-        parseFloat(String(monthly_amount).replace(",", ".")),
-        expected_day || 1,
-        expected_return ?? 7,
-        parseFloat(String(current_value || 0).replace(",", "."))
-      );
-
-    console.info("[investments] Created investment:", name, "id:", result.lastInsertRowid);
-    eventBus.emit("data:updated", { source: "investment-added" });
-    return NextResponse.json({ id: result.lastInsertRowid });
-  } catch (error) {
-    console.error("[investments] POST error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ investments: [], error: "Failed to load investments" }, { status: 500 });
   }
 }
 
@@ -85,73 +73,25 @@ export async function PUT(request: Request) {
     if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
     const body = await request.json();
-    const { id } = body;
+    const { ynab_account_id, monthly_contribution, expected_return, notes } = body;
 
-    if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+    if (!ynab_account_id) return NextResponse.json({ error: "Account ID required" }, { status: 400 });
 
     const db = getDb();
+    db.prepare(`
+      INSERT INTO investment_overrides (ynab_account_id, monthly_contribution, expected_return, notes)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(ynab_account_id) DO UPDATE SET
+        monthly_contribution = excluded.monthly_contribution,
+        expected_return = excluded.expected_return,
+        notes = excluded.notes,
+        updated_at = datetime('now')
+    `).run(ynab_account_id, monthly_contribution ?? 0, expected_return ?? 7, notes ?? "");
 
-    // Toggle active
-    if (body.is_active !== undefined && Object.keys(body).length === 2) {
-      db.prepare("UPDATE investments SET is_active = ?, updated_at = datetime('now') WHERE id = ?")
-        .run(body.is_active ? 1 : 0, id);
-      console.info("[investments] Toggled investment", id, "active:", body.is_active);
-      eventBus.emit("data:updated", { source: "investment-toggled" });
-      return NextResponse.json({ success: true });
-    }
-
-    // Full edit
-    const updates: string[] = [];
-    const values: (string | number)[] = [];
-
-    if (body.name !== undefined) { updates.push("name = ?"); values.push(body.name); }
-    if (body.monthly_amount !== undefined) {
-      updates.push("monthly_amount = ?");
-      values.push(parseFloat(String(body.monthly_amount).replace(",", ".")));
-    }
-    if (body.expected_day !== undefined) { updates.push("expected_day = ?"); values.push(body.expected_day); }
-    if (body.expected_return !== undefined) {
-      updates.push("expected_return = ?");
-      values.push(parseFloat(String(body.expected_return).replace(",", ".")));
-    }
-    if (body.current_value !== undefined) {
-      updates.push("current_value = ?");
-      values.push(parseFloat(String(body.current_value).replace(",", ".")));
-    }
-
-    if (updates.length > 0) {
-      updates.push("updated_at = datetime('now')");
-      values.push(id);
-      db.prepare(`UPDATE investments SET ${updates.join(", ")} WHERE id = ?`).run(...values);
-      console.info("[investments] Updated investment", id);
-      eventBus.emit("data:updated", { source: "investment-updated" });
-    }
-
+    console.info("[investments] Override saved for", ynab_account_id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[investments] PUT error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
-
-export async function DELETE(request: Request) {
-  try {
-    const user = await getSession();
-    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-
-    const { id } = await request.json();
-    if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
-
-    const db = getDb();
-    db.prepare("DELETE FROM investments WHERE id = ?").run(id);
-    // Clean up patterns
-    db.prepare("DELETE FROM payee_matches WHERE source_type = 'investment' AND source_id = ?").run(id);
-
-    console.info("[investments] Deleted investment", id);
-    eventBus.emit("data:updated", { source: "investment-deleted" });
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("[investments] DELETE error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

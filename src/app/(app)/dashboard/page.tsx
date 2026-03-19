@@ -56,10 +56,9 @@ export default function DashboardPage() {
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       if (billsData.bills) setBills(billsData.bills);
       if (investmentData.investments) {
-        const activeMonthly = investmentData.investments
-          .filter((i: { is_active: number }) => i.is_active)
-          .reduce((s: number, i: { monthly_amount: number }) => s + i.monthly_amount, 0);
-        setInvestmentMonthly(activeMonthly);
+        const totalMonthly = investmentData.investments
+          .reduce((s: number, i: { monthlyContribution: number }) => s + i.monthlyContribution, 0);
+        setInvestmentMonthly(totalMonthly);
       }
       if (matchData.monthlyMatches) {
         const incIds = new Set<number>();
