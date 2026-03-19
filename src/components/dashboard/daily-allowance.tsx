@@ -141,8 +141,32 @@ export function DailyAllowance({
 
       <Card className="metric-card metric-card-half">
         <div className="metric-card-row">
-          <div className="metric-card-icon" data-color={projectedMonthEnd >= 0 ? "positive" : "negative"}>
+          <div className="metric-card-icon" data-color="chart-3">
             <CalendarClock />
+          </div>
+          <div>
+            <p className="metric-card-label">{locale === "fi" ? "Kulutusvauhti" : "Burn rate"}</p>
+            <p className="metric-card-value">{burnRate.toFixed(0)} {currency}/{locale === "fi" ? "pv" : "day"}</p>
+            <p className="metric-card-note">
+              {trendPercent !== 0 ? (
+                <>
+                  <span className={trendPercent > 0 ? "text-negative" : "text-positive"}>
+                    {trendPercent > 0 ? "+" : ""}{trendPercent}%
+                  </span>
+                  {" "}{locale === "fi" ? "vs ed. viikko" : "vs last week"}
+                </>
+              ) : (
+                locale === "fi" ? "keskiarvo tässä kuussa" : "average this month"
+              )}
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="metric-card metric-card-half">
+        <div className="metric-card-row">
+          <div className="metric-card-icon" data-color={projectedMonthEnd >= 0 ? "positive" : "negative"}>
+            {projectedMonthEnd >= 0 ? <ArrowDown /> : <ArrowUp />}
           </div>
           <div>
             <p className="metric-card-label">{locale === "fi" ? "Kuun lopussa (arvio)" : "End of month (est.)"}</p>
@@ -150,18 +174,6 @@ export function DailyAllowance({
               <span className={projectedMonthEnd >= 0 ? "text-positive" : "text-negative"}>
                 {projectedMonthEnd.toFixed(2)} {currency}
               </span>
-            </p>
-            <p className="metric-card-note">
-              {burnRate.toFixed(0)} {currency}/{locale === "fi" ? "pv" : "day"}
-              {trendPercent !== 0 && (
-                <>
-                  {" \u00B7 "}
-                  <span className={trendPercent > 0 ? "text-negative" : "text-positive"}>
-                    {trendPercent > 0 ? "+" : ""}{trendPercent}%
-                  </span>
-                  {" "}{locale === "fi" ? "vs ed. viikko" : "vs last week"}
-                </>
-              )}
             </p>
           </div>
         </div>
