@@ -75,6 +75,10 @@ export function SpendingFlow({
     ? `${Math.round(Math.abs(endDiff))} € alle`
     : `${Math.round(Math.abs(endDiff))} € yli`;
   const bubbleWidth = Math.max(60, bubbleText.length * 6.5 + 12);
+  // Ball color = end of line gradient color (matches the last data point's ratio)
+  const lastDayTarget = targetPerDay > 0 ? targetPerDay * daysPassed : 0;
+  const lastRatio = lastDayTarget > 0 ? lastActual / lastDayTarget : 0;
+  const ballColor = targetPerDay > 0 ? ratioToColor(lastRatio) : "#818cf8";
   const statusColor = status === "good" ? "#4ade80" : status === "tight" ? "#facc15" : "#f87171";
 
   // Gradient stops: smooth RGB blend based on spending ratio vs target
@@ -108,16 +112,12 @@ export function SpendingFlow({
     <div className="spending-flow">
       <div className="spending-flow-chart">
         <ResponsiveContainer width="100%" height={140}>
-          <AreaChart data={data} margin={{ top: 8, right: 12, left: -20, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 32, right: 12, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="flowLineGrad" x1="0" y1="0" x2="1" y2="0">
                 {gradientStops.map((s, i) => (
                   <stop key={i} offset={`${Math.round(s.pos * 100)}%`} stopColor={s.color} />
                 ))}
-              </linearGradient>
-              <linearGradient id="flowFillGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={statusColor} stopOpacity={0.2} />
-                <stop offset="100%" stopColor={statusColor} stopOpacity={0} />
               </linearGradient>
             </defs>
             <XAxis
@@ -168,16 +168,16 @@ export function SpendingFlow({
               type="monotone"
               dataKey="actual"
               stroke="url(#flowLineGrad)"
-              strokeWidth={4}
-              fill="url(#flowFillGrad)"
+              strokeWidth={5}
+              fill="none"
               dot={false}
             />
             {daysPassed > 0 && (
               <ReferenceDot
                 x={data[daysPassed - 1]?.label}
                 y={lastActual}
-                r={6}
-                fill={statusColor}
+                r={7}
+                fill={ballColor}
                 stroke="var(--background)"
                 strokeWidth={2}
               >
