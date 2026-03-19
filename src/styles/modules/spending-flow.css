@@ -10,33 +10,3 @@
   width: 100%;
 }
 
-.spending-flow-status {
-  position: absolute;
-  bottom: 1.5rem;
-  left: 0.75rem;
-  padding: 0.25rem 0.625rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1;
-  backdrop-filter: blur(8px);
-}
-
-.spending-flow-status[data-status="good"] {
-  background: rgba(74, 222, 128, 0.2);
-  color: #4ade80;
-}
-
-.spending-flow-status[data-status="tight"] {
-  background: rgba(250, 204, 21, 0.2);
-  color: #facc15;
-}
-
-.spending-flow-status[data-status="danger"] {
-  background: rgba(248, 113, 113, 0.2);
-  color: #f87171;
-}
-
-.spending-flow-status-value {
-  font-variant-numeric: tabular-nums;
-}

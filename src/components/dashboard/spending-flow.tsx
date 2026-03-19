@@ -71,6 +71,10 @@ export function SpendingFlow({
 
   // Status: based on projected end-of-month vs target
   const status = endDiff > monthEndTarget * 0.05 ? "good" : endDiff >= 0 ? "tight" : "danger";
+  const bubbleText = endDiff >= 0
+    ? `${Math.round(Math.abs(endDiff))} € alle`
+    : `${Math.round(Math.abs(endDiff))} € yli`;
+  const bubbleWidth = Math.max(60, bubbleText.length * 6.5 + 12);
   const statusColor = status === "good" ? "#4ade80" : status === "tight" ? "#facc15" : "#f87171";
 
   // Gradient stops: map each day's ratio to a color
@@ -158,21 +162,45 @@ export function SpendingFlow({
                 fill={statusColor}
                 stroke="var(--background)"
                 strokeWidth={2}
-              />
+              >
+                {monthEndTarget > 0 && (
+                  <g>
+                    {/* Speech bubble tip pointing down-left to the dot */}
+                    <polygon
+                      points="-2,-6 6,-6 2,-1"
+                      fill={`${statusColor}33`}
+                    />
+                    {/* Speech bubble body */}
+                    <rect
+                      x={-2}
+                      y={-24}
+                      width={bubbleWidth}
+                      height={18}
+                      rx={4}
+                      fill={`${statusColor}33`}
+                    />
+                    <text
+                      x={-2 + bubbleWidth / 2}
+                      y={-12}
+                      textAnchor="middle"
+                      fill={statusColor}
+                      fontSize={10}
+                      fontWeight={600}
+                      fontFamily="var(--font-geist-sans), system-ui, sans-serif"
+                      style={{ fontVariantNumeric: "tabular-nums" }}
+                    >
+                      {endDiff >= 0
+                        ? `${fmt(Math.abs(endDiff))} € ${locale === "fi" ? "alle" : "under"}`
+                        : `${fmt(Math.abs(endDiff))} € ${locale === "fi" ? "yli" : "over"}`
+                      }
+                    </text>
+                  </g>
+                )}
+              </ReferenceDot>
             )}
           </AreaChart>
         </ResponsiveContainer>
       </div>
-      {monthEndTarget > 0 && (
-        <div className="spending-flow-status" data-status={status}>
-          <span className="spending-flow-status-value">
-            {endDiff >= 0
-              ? `${fmt(Math.abs(endDiff))} € ${locale === "fi" ? "alle" : "under"}`
-              : `${fmt(Math.abs(endDiff))} € ${locale === "fi" ? "yli" : "over"}`
-            }
-          </span>
-        </div>
-      )}
     </div>
   );
 }
