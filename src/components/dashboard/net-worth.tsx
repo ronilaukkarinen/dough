@@ -85,6 +85,18 @@ export function NetWorth({ accounts }: NetWorthProps) {
           ))}
         </Card>
       )}
+
+      {debts.length > 0 && (
+        <Card className="net-worth-list">
+          <h4 className="net-worth-list-heading">{t.debts.title}</h4>
+          {debts.map((a) => (
+            <div key={a.id} className="net-worth-list-item">
+              <span className="net-worth-list-name">{a.name}</span>
+              <span className="net-worth-list-amount net-worth-list-amount-debt">{a.balance.toFixed(2)} €</span>
+            </div>
+          ))}
+        </Card>
+      )}
     </div>
   );
 }
