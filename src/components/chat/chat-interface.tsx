@@ -245,16 +245,25 @@ export function ChatInterface() {
 
       <div className="chat-input-area">
         <form onSubmit={handleSubmit} className="chat-input-form">
-          <Input
-            ref={inputRef}
+          <textarea
+            ref={inputRef as unknown as React.RefObject<HTMLTextAreaElement>}
             value={input}
             onChange={(e) => {
               setInput(e.target.value);
+              e.target.style.height = "auto";
+              e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
               if (e.target.value.length > 0) broadcastTyping();
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+              }
+            }}
             placeholder={t.chat.placeholder}
-            className="chat-input"
+            className="chat-textarea"
             disabled={loading}
+            rows={1}
           />
           <Button type="submit" size="icon" className="chat-send-button" disabled={!input.trim() || loading}>
             <Send />

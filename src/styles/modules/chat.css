@@ -223,11 +223,36 @@
 .chat-input-form {
   display: flex;
   gap: 0.75rem;
+  align-items: flex-end;
 }
 
-.input.chat-input {
+.chat-textarea {
   flex: 1;
-  height: 2.75rem;
+  min-height: 2.75rem;
+  max-height: 120px;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: none;
+  overflow-y: auto;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+}
+
+.dark .chat-textarea {
+  background: color-mix(in srgb, var(--input) 30%, transparent);
+}
+
+.chat-textarea::placeholder {
+  color: var(--muted-foreground);
+}
+
+.chat-textarea:focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
 }
 
 .button.chat-send-button {
