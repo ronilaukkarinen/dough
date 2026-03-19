@@ -212,11 +212,12 @@ export default function IncomePage() {
               </div>
               <div className="list-item-end">
                 <p className="list-item-amount-value" data-positive>+{income.amount.toFixed(2)} €</p>
-                <Switch
-                  checked={!!income.is_active}
-                  onCheckedChange={(e) => { e.stopPropagation?.(); toggleIncome(income.id, income.is_active); }}
-                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                />
+                <span onClick={(e) => e.stopPropagation()}>
+                  <Switch
+                    checked={!!income.is_active}
+                    onCheckedChange={() => toggleIncome(income.id, income.is_active)}
+                  />
+                </span>
               </div>
             </div>
           ))}
