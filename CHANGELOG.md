@@ -1,6 +1,7 @@
 ### 1.0.0: 2026-03-19
 
-* Show personal spending and household remaining in greeting instead of per-person budget split
+* Add personal budget share setting with configurable %, auto-calculated from spending history when 0
+* Show suggested personal amount and household remaining in greeting
 * Fix bills due card to include overdue unpaid bills, not just future ones
 * Add comprehensive README.md with install guide, architecture, contributing, and documentation links
 * Pre-calculate available-before-payday and daily spendable in AI chat to prevent treating future salary as available

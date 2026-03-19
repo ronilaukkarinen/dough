@@ -8,6 +8,7 @@ interface PersonalGreetingProps {
   todaySpentAll: number;
   dailyBudget: number;
   todayRemaining: number;
+  suggestedForYou: number;
 }
 
 function valueStatus(value: number, budget: number): "good" | "tight" | "danger" {
@@ -17,7 +18,7 @@ function valueStatus(value: number, budget: number): "good" | "tight" | "danger"
   return "danger";
 }
 
-export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudget, todayRemaining }: PersonalGreetingProps) {
+export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudget, todayRemaining, suggestedForYou }: PersonalGreetingProps) {
   const [name, setName] = useState("");
   const { locale, fmt } = useLocale();
 
@@ -55,11 +56,15 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
               {locale === "fi" ? " verran. Huomenna parempi kulukuri sitten." : "."}
             </>
           : <>
-              {locale === "fi" ? "Käytettävissä vielä " : "Still available "}
+              {locale === "fi" ? "Suositeltu käyttösumma sinulle " : "Suggested for you "}
+              <span className="personal-greeting-value" data-status={valueStatus(suggestedForYou, dailyBudget)}>
+                {fmt(suggestedForYou)} €
+              </span>
+              {locale === "fi" ? ", perheelle yhteensä " : ", household total "}
               <span className="personal-greeting-value" data-status={valueStatus(todayRemaining, dailyBudget)}>
                 {fmt(todayRemaining)} €
               </span>
-              {locale === "fi" ? " tänään." : " today."}
+              {"."}
             </>
         }
       </p>

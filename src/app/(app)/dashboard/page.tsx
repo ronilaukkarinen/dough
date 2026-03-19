@@ -42,6 +42,7 @@ export default function DashboardPage() {
   const [debtMonthly, setDebtMonthly] = useState(0);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [householdSize, setHouseholdSize] = useState(1);
+  const [personalBudgetShare, setPersonalBudgetShare] = useState(0);
   const [lastYnabSync, setLastYnabSync] = useState<string | null>(null);
 
   const loadSideData = useCallback(() => {
@@ -57,6 +58,7 @@ export default function DashboardPage() {
       if (profileData.linkedAccountIds) setLinkedAccountIds(profileData.linkedAccountIds);
       if (householdData.settings?.last_ynab_sync) setLastYnabSync(householdData.settings.last_ynab_sync);
       if (householdData.settings?.household_size) setHouseholdSize(parseInt(householdData.settings.household_size, 10) || 1);
+      if (householdData.settings?.personal_budget_share) setPersonalBudgetShare(parseInt(householdData.settings.personal_budget_share, 10) || 0);
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       if (billsData.bills) setBills(billsData.bills);
       if (investmentData.investments) {
@@ -208,6 +210,15 @@ export default function DashboardPage() {
     .reduce((s, t) => s + Math.abs(t.amount), 0);
   const todayRemaining = dailyBudget - todaySpentAll;
 
+  // Personal spending share: configured % or calculated from actual spending ratio
+  const personalMonthSpend = data.transactions
+    .filter((t) => t.amount < 0 && !isTransfer(t.payee, t.category)
+      && (linkedAccountIds.length === 0 || linkedAccountIds.includes(t.account_id || "")))
+    .reduce((s, t) => s + Math.abs(t.amount), 0);
+  const calculatedShare = realSpendingTotal > 0 ? personalMonthSpend / realSpendingTotal : 0.5;
+  const personalShare = personalBudgetShare > 0 ? personalBudgetShare / 100 : calculatedShare;
+  const suggestedForYou = Math.max(0, Math.round((dailyBudget * personalShare - todaySpentPersonal) * 100) / 100);
+
   // Build spending chart data from transactions (exclude transfers)
   const spendingByDay: Record<string, number> = {};
   const sortedTx = [...data.transactions]
@@ -303,6 +314,7 @@ export default function DashboardPage() {
         todaySpentAll={todaySpentAll}
         dailyBudget={dailyBudget}
         todayRemaining={todayRemaining}
+        suggestedForYou={suggestedForYou}
       />
 
       <AiSummary />

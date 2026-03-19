@@ -51,6 +51,8 @@ export default function SettingsPage() {
   const [allAccounts, setAllAccounts] = useState<{ id: string; name: string; balance: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [accountsSaved, setAccountsSaved] = useState(false);
+  const [personalBudgetShare, setPersonalBudgetShare] = useState("");
+  const [personalShareSaved, setPersonalShareSaved] = useState(false);
   const [decimalPlaces, setDecimalPlaces] = useState("0");
   const [decimalSaved, setDecimalSaved] = useState(false);
   const { t, locale, setLocale, setDecimals, fmt } = useLocale();
@@ -86,6 +88,9 @@ export default function SettingsPage() {
           }
           if (householdData.settings?.decimal_places !== undefined) {
             setDecimalPlaces(String(householdData.settings.decimal_places));
+          }
+          if (householdData.settings?.personal_budget_share) {
+            setPersonalBudgetShare(String(householdData.settings.personal_budget_share));
           }
           if (householdData.settings?.prompt_chat_guidelines) {
             setPrompts((p) => ({ ...p, chat: householdData.settings.prompt_chat_guidelines }));
@@ -472,6 +477,42 @@ export default function SettingsPage() {
                 </div>
                 <p className="settings-help">
                   {locale === "fi" ? "Montako henkilöä taloudessa (vaikuttaa henkilökohtaiseen budjettiin)" : "Number of people (affects personal budget calculation)"}
+                </p>
+              </div>
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Oma osuus päiväbudjetista (%)" : "Your share of daily budget (%)"}</Label>
+                <div className="settings-row">
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={personalBudgetShare}
+                    onChange={(e) => setPersonalBudgetShare(e.target.value)}
+                    placeholder={locale === "fi" ? "0 = automaattinen" : "0 = automatic"}
+                    className="settings-input"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      console.info("[settings] Saving personal budget share:", personalBudgetShare);
+                      await fetch("/api/household", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ personal_budget_share: personalBudgetShare || "0" }),
+                      });
+                      setPersonalShareSaved(true);
+                      setTimeout(() => setPersonalShareSaved(false), 2000);
+                    }}
+                  >
+                    {t.common.save}
+                  </Button>
+                  {personalShareSaved && <span className="settings-saved">{t.common.saved}</span>}
+                </div>
+                <p className="settings-help">
+                  {locale === "fi"
+                    ? "Kuinka suuri osa päiväbudjetista on sinun. 0 = lasketaan automaattisesti kulutushistoriasta."
+                    : "Your portion of the daily budget. 0 = calculated automatically from spending history."}
                 </p>
               </div>
               <Label>{locale === "fi" ? "Kuvaus AI-neuvontaa varten" : "Description for AI advisor"}</Label>
