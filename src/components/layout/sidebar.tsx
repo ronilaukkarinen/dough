@@ -42,9 +42,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [unreadChat, setUnreadChat] = useState(0);
+  const [unreadTx, setUnreadTx] = useState(0);
   const { t } = useLocale();
 
-  // Initial unread check + reset when navigating to chat
+  // Initial unread check + reset when navigating to page
   useEffect(() => {
     if (pathname === "/chat") {
       setUnreadChat(0);
@@ -52,6 +53,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     } else {
       fetch("/api/chat/unread").then((r) => r.json()).then((d) => {
         setUnreadChat(d.unread || 0);
+      }).catch(() => {});
+    }
+
+    if (pathname === "/transactions") {
+      setUnreadTx(0);
+      fetch("/api/transactions/unread", { method: "POST" }).catch(() => {});
+    } else {
+      fetch("/api/transactions/unread").then((r) => r.json()).then((d) => {
+        setUnreadTx(d.unread || 0);
       }).catch(() => {});
     }
   }, [pathname]);
@@ -66,6 +76,20 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       } else {
         setUnreadChat((prev) => prev + 1);
       }
+    }
+  }, [pathname]));
+
+  // SSE: show indicator on transactions when new data synced or expense added
+  useEvent("sync:complete", useCallback(() => {
+    if (pathname !== "/transactions") {
+      setUnreadTx(1);
+    }
+  }, [pathname]));
+
+  useEvent("data:updated", useCallback((data: unknown) => {
+    const d = data as { source?: string };
+    if (d.source === "transaction-added" && pathname !== "/transactions") {
+      setUnreadTx(1);
     }
   }, [pathname]));
 
@@ -108,6 +132,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               {!collapsed && <span>{t.nav[item.key]}</span>}
               {item.key === "chat" && unreadChat > 0 && !isActive && (
                 <span className="l-sidebar-badge">{unreadChat}</span>
+              )}
+              {item.key === "transactions" && unreadTx > 0 && !isActive && (
+                <span className="l-sidebar-badge-dot" />
               )}
             </Link>
           );
