@@ -99,6 +99,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           {!collapsed && <span>{t.common.settings}</span>}
         </Link>
         <button
+          type="button"
           onClick={handleLogout}
           className="l-sidebar-link"
         >
