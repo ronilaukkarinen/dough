@@ -71,7 +71,7 @@ export default function TransactionsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           account_id: addAccount,
-          amount: addAmount,
+          amount: addAmount.replace(",", "."),
           payee_name: addPayee,
         }),
       });
@@ -159,7 +159,7 @@ export default function TransactionsPage() {
                 </div>
                 <div className="form-field">
                   <Label>{locale === "fi" ? "Summa (€)" : "Amount (€)"}</Label>
-                  <Input type="number" step="0.01" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} placeholder="0.00" />
+                  <Input type="text" inputMode="decimal" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} placeholder="0.00" />
                 </div>
                 <Button type="button" onClick={handleAddExpense} disabled={addLoading || !addAccount || !addAmount || !addPayee}>
                   {addLoading ? (locale === "fi" ? "Lisätään..." : "Adding...") : (locale === "fi" ? "Lisää" : "Add")}

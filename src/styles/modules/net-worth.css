@@ -129,6 +129,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+@media (min-width: 768px) {
+  .net-worth-card-value {
+    font-size: 1.5rem;
+  }
+}
+
 /* Investment list */
 .card.net-worth-list {
   border: none;

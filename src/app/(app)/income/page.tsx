@@ -80,7 +80,7 @@ export default function IncomePage() {
     const fd = new FormData(form);
     const body = {
       name: fd.get("name") as string,
-      amount: parseFloat(fd.get("amount") as string),
+      amount: parseFloat((fd.get("amount") as string).replace(",", ".")),
       expected_day: parseInt(fd.get("expected_day") as string, 10),
       is_recurring: (form.querySelector("#recurring") as HTMLInputElement)?.getAttribute("aria-checked") === "true",
     };
@@ -255,7 +255,7 @@ export default function IncomePage() {
               <div className="form-grid-2">
                 <div className="form-field">
                   <Label>{t.income.amountEur}</Label>
-                  <Input name="amount" type="number" step="0.01" placeholder="0.00" required />
+                  <Input name="amount" type="text" inputMode="decimal" placeholder="0.00" required />
                 </div>
                 <div className="form-field">
                   <Label>{t.income.expectedDay}</Label>
@@ -308,7 +308,7 @@ export default function IncomePage() {
                     </div>
                     <div className="debt-edit-field">
                       <Label className="debt-edit-label">€</Label>
-                      <Input type="number" step="0.01" value={editData.amount} onChange={(e) => setEditData((d) => ({ ...d, amount: e.target.value }))} className="debt-edit-input" />
+                      <Input type="text" inputMode="decimal" value={editData.amount} onChange={(e) => setEditData((d) => ({ ...d, amount: e.target.value }))} className="debt-edit-input" />
                     </div>
                     <div className="debt-edit-field">
                       <Label className="debt-edit-label">{locale === "fi" ? "Pv" : "Day"}</Label>
@@ -318,11 +318,7 @@ export default function IncomePage() {
                     <Button type="button" variant="ghost" size="icon-sm" onClick={() => setEditing(null)}><X /></Button>
                   </div>
                 ) : (
-                <>
                 <div className="list-item-main">
-                  <div className="list-item-icon" data-color="positive">
-                    <Wallet />
-                  </div>
                   <div className="list-item-body">
                     <div className="list-item-name-row">
                       <p className={`list-item-name ${!income.is_active ? "is-inactive" : ""}`}>{income.name}</p>
@@ -338,17 +334,16 @@ export default function IncomePage() {
                       )}
                     </p>
                   </div>
-                  <p className="list-item-amount-value" data-positive>+{income.amount.toFixed(2)} €</p>
-                </div>
-                <div className="list-item-toolbar">
-                  <div className="list-item-actions-row">
-                    <button type="button" className="list-item-link-btn" onClick={() => startEdit(income)}><Pencil /></button>
-                    <button type="button" className="list-item-link-btn" onClick={() => setAddingPattern(addingPattern === income.id ? null : income.id)}><Link2 /></button>
-                    <button type="button" className="list-item-link-btn" onClick={() => deleteIncome(income.id)}><Trash2 /></button>
+                  <div className="list-item-end">
+                    <p className="list-item-amount-value" data-positive>+{income.amount.toFixed(2)} €</p>
+                    <div className="list-item-actions-row">
+                      <Switch checked={!!income.is_active} onCheckedChange={() => toggleIncome(income.id, income.is_active)} />
+                      <button type="button" className="list-item-link-btn" onClick={() => startEdit(income)}><Pencil /></button>
+                      <button type="button" className="list-item-link-btn" onClick={() => setAddingPattern(addingPattern === income.id ? null : income.id)}><Link2 /></button>
+                      <button type="button" className="list-item-link-btn" onClick={() => deleteIncome(income.id)}><Trash2 /></button>
+                    </div>
                   </div>
-                  <Switch checked={!!income.is_active} onCheckedChange={() => toggleIncome(income.id, income.is_active)} />
                 </div>
-                </>
                 )}
                 {addingPattern === income.id && (
                   <div className="match-pattern-row">

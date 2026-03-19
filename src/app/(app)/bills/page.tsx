@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocale } from "@/lib/locale-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,35 +15,104 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, CalendarClock, AlertCircle } from "lucide-react";
+import { Plus, CalendarClock, AlertCircle, Loader2 } from "lucide-react";
 
 interface Bill {
-  id: string;
+  id: number;
   name: string;
   amount: number;
-  dueDay: number;
+  due_day: number;
   category: string;
-  isActive: boolean;
+  is_active: number;
 }
-
-// TODO: Load from database
 
 export default function BillsPage() {
   const { t } = useLocale();
   const [bills, setBills] = useState<Bill[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    console.debug("[bills] Loading bills");
+    fetch("/api/bills")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.bills) {
+          console.info("[bills] Loaded", data.bills.length, "bills");
+          setBills(data.bills);
+        }
+      })
+      .catch((err) => console.error("[bills] Load error:", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = formRef.current;
+    if (!form) return;
+
+    const fd = new FormData(form);
+    const body = {
+      name: fd.get("name") as string,
+      amount: (fd.get("amount") as string).replace(",", "."),
+      due_day: parseInt(fd.get("due_day") as string, 10),
+      category: fd.get("category") as string,
+    };
+
+    console.info("[bills] Adding bill:", body.name);
+
+    try {
+      const res = await fetch("/api/bills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.id) {
+        setBills((prev) => [...prev, {
+          id: data.id,
+          name: body.name,
+          amount: parseFloat(body.amount),
+          due_day: body.due_day,
+          category: body.category || "",
+          is_active: 1,
+        }]);
+        setDialogOpen(false);
+        form.reset();
+      }
+    } catch (err) {
+      console.error("[bills] Add error:", err);
+    }
+  };
+
+  const toggleBill = async (id: number, currentActive: number) => {
+    const newActive = currentActive ? 0 : 1;
+    setBills((prev) => prev.map((b) => b.id === id ? { ...b, is_active: newActive } : b));
+    console.info("[bills] Toggling bill", id, "active:", newActive);
+    try {
+      await fetch("/api/bills", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, is_active: newActive }),
+      });
+    } catch (err) {
+      console.error("[bills] Toggle error:", err);
+    }
+  };
 
   const today = new Date().getDate();
-  const monthlyTotal = bills.filter((b) => b.isActive).reduce((s, b) => s + b.amount, 0);
-  const remainingThisMonth = bills
-    .filter((b) => b.isActive && b.dueDay >= today)
-    .reduce((s, b) => s + b.amount, 0);
+  const active = bills.filter((b) => b.is_active);
+  const monthlyTotal = active.reduce((s, b) => s + b.amount, 0);
+  const remainingThisMonth = active.filter((b) => b.due_day >= today).reduce((s, b) => s + b.amount, 0);
 
-  const toggleBill = (id: string) => {
-    setBills((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, isActive: !b.isActive } : b))
+  if (loading) {
+    return (
+      <div className="page-loading">
+        <Loader2 className="page-loading-spinner animate-spin" />
+      </div>
     );
-  };
+  }
 
   return (
     <div className="page-stack">
@@ -61,26 +130,26 @@ export default function BillsPage() {
             <DialogHeader>
               <DialogTitle>{t.bills.addRecurringBill}</DialogTitle>
             </DialogHeader>
-            <form className="form-stack">
+            <form ref={formRef} onSubmit={handleAdd} className="form-stack">
               <div className="form-field">
                 <Label>{t.bills.name}</Label>
-                <Input placeholder={t.bills.namePlaceholder} />
+                <Input name="name" placeholder={t.bills.namePlaceholder} required />
               </div>
               <div className="form-grid-2">
                 <div className="form-field">
                   <Label>{t.bills.amountEur}</Label>
-                  <Input type="number" step="0.01" placeholder="0.00" />
+                  <Input name="amount" type="text" inputMode="decimal" placeholder="0.00" required />
                 </div>
                 <div className="form-field">
                   <Label>{t.bills.dueDay}</Label>
-                  <Input type="number" min="1" max="31" placeholder="1" />
+                  <Input name="due_day" type="number" min="1" max="31" placeholder="1" required />
                 </div>
               </div>
               <div className="form-field">
                 <Label>{t.bills.category}</Label>
-                <Input placeholder={t.bills.categoryPlaceholder} />
+                <Input name="category" placeholder={t.bills.categoryPlaceholder} />
               </div>
-              <Button type="submit" className="w-full" onClick={() => setDialogOpen(false)}>
+              <Button type="submit">
                 {t.bills.addBill}
               </Button>
             </form>
@@ -93,7 +162,7 @@ export default function BillsPage() {
           <p className="metric-card-label">{t.bills.monthlyTotal}</p>
           <p className="metric-card-value-3xl">{monthlyTotal.toFixed(2)} €</p>
           <p className="metric-card-note metric-card-note-mt">
-            {bills.filter((b) => b.isActive).length} {t.common.activeBills}
+            {active.length} {t.common.activeBills}
           </p>
         </Card>
         <Card className="metric-card">
@@ -108,32 +177,34 @@ export default function BillsPage() {
         </Card>
       </div>
 
-      <Card className="list-card list-card-divider">
-        {bills
-          .sort((a, b) => a.dueDay - b.dueDay)
-          .map((bill) => (
-            <div key={bill.id} className="list-item">
-              <div className="list-item-icon" data-color="chart-4">
-                <CalendarClock />
-              </div>
-              <div className="list-item-body">
-                <div className="list-item-name-row">
-                  <p className={`list-item-name ${!bill.isActive ? "is-inactive" : ""}`}>{bill.name}</p>
-                  {bill.dueDay >= today && bill.dueDay <= today + 3 && bill.isActive && (
-                    <Badge variant="destructive">{t.bills.dueSoon}</Badge>
-                  )}
+      {bills.length > 0 && (
+        <Card className="list-card list-card-divider">
+          {[...bills]
+            .sort((a, b) => a.due_day - b.due_day)
+            .map((bill) => (
+              <div key={bill.id} className="list-item">
+                <div className="list-item-icon" data-color="chart-4">
+                  <CalendarClock />
                 </div>
-                <p className="list-item-meta">
-                  {bill.category} · {t.bills.dueOn} {bill.dueDay}.
-                </p>
+                <div className="list-item-body">
+                  <div className="list-item-name-row">
+                    <p className={`list-item-name ${!bill.is_active ? "is-inactive" : ""}`}>{bill.name}</p>
+                    {bill.due_day >= today && bill.due_day <= today + 3 && bill.is_active ? (
+                      <Badge variant="destructive">{t.bills.dueSoon}</Badge>
+                    ) : null}
+                  </div>
+                  <p className="list-item-meta">
+                    {bill.category ? `${bill.category} · ` : ""}{t.bills.dueOn} {bill.due_day}.
+                  </p>
+                </div>
+                <div className="list-item-actions">
+                  <p className="list-item-amount-value">{bill.amount.toFixed(2)} €</p>
+                  <Switch checked={!!bill.is_active} onCheckedChange={() => toggleBill(bill.id, bill.is_active)} />
+                </div>
               </div>
-              <div className="list-item-actions">
-                <p className="list-item-amount-value">{bill.amount.toFixed(2)} €</p>
-                <Switch checked={bill.isActive} onCheckedChange={() => toggleBill(bill.id)} />
-              </div>
-            </div>
-          ))}
-      </Card>
+            ))}
+        </Card>
+      )}
     </div>
   );
 }
