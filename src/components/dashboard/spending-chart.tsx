@@ -44,7 +44,7 @@ export function SpendingChart({ data }: SpendingChartProps) {
       <h3 className="spending-chart-title">{t.dashboard.spendingThisMonth}</h3>
       <ChartContainer height={280}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 4, right: 4, left: -15, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 4, left: -15, bottom: 0 }}>
             <defs>
               <linearGradient id="spentGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#818cf8" stopOpacity={0.3} />
@@ -57,7 +57,7 @@ export function SpendingChart({ data }: SpendingChartProps) {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <XAxis dataKey="date" tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v)} €`} width={55} />
+            <YAxis tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${Math.round(v)} €`} width={55} domain={[0, (max: number) => Math.ceil((max + 500) / 500) * 500]} />
             <Tooltip content={<CustomTooltip />} />
             <Area type="monotone" dataKey="budget" stroke="#71717a" strokeWidth={1.5} strokeDasharray="4 4" fill="url(#budgetGradient)" />
             <Area type="monotone" dataKey="spent" stroke="#818cf8" strokeWidth={2} fill="url(#spentGradient)" />
