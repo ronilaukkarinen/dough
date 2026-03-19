@@ -1,29 +1,92 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocale } from "@/lib/locale-context";
 import { isTransfer } from "@/lib/transaction-utils";
 import { useYnab } from "@/lib/ynab-context";
 import { relativeDate } from "@/lib/date-utils";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   ArrowUpRight,
   ArrowDownLeft,
   Search,
   RefreshCw,
   Loader2,
+  Plus,
 } from "lucide-react";
 
 type FilterType = "all" | "income" | "expenses" | "transfers";
+
+interface YnabAccount {
+  id: string;
+  name: string;
+  balance: number;
+}
 
 export default function TransactionsPage() {
   const { t, locale } = useLocale();
   const { data, loading, connected, sync } = useYnab();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
+  const [addOpen, setAddOpen] = useState(false);
+  const [accounts, setAccounts] = useState<YnabAccount[]>([]);
+  const [addAccount, setAddAccount] = useState("");
+  const [addAmount, setAddAmount] = useState("");
+  const [addPayee, setAddPayee] = useState("");
+  const [addLoading, setAddLoading] = useState(false);
+
+  useEffect(() => {
+    if (connected) {
+      fetch("/api/ynab/accounts").then((r) => r.json()).then((d) => {
+        if (d.accounts?.length) setAccounts(d.accounts);
+      }).catch(() => {});
+    }
+  }, [connected]);
+
+  const handleAddExpense = async () => {
+    if (!addAccount || !addAmount || !addPayee) return;
+    setAddLoading(true);
+    console.info("[transactions] Adding expense:", addPayee, addAmount);
+    try {
+      const res = await fetch("/api/ynab/transaction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          account_id: addAccount,
+          amount: addAmount,
+          payee_name: addPayee,
+        }),
+      });
+      if (res.ok) {
+        setAddOpen(false);
+        setAddAmount("");
+        setAddPayee("");
+        sync();
+      }
+    } catch (err) {
+      console.error("[transactions] Add expense error:", err);
+    } finally {
+      setAddLoading(false);
+    }
+  };
 
   const filterLabels: Record<FilterType, string> = {
     all: t.transactions.all,
@@ -66,10 +129,48 @@ export default function TransactionsPage() {
           <h1 className="page-heading">{t.transactions.title}</h1>
           <p className="page-subtitle">{t.transactions.subtitle}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
-          <RefreshCw className={loading ? "icon-sm animate-spin" : "icon-sm"} />
-          {t.common.sync}
-        </Button>
+        <div className="sync-row">
+          <Dialog open={addOpen} onOpenChange={setAddOpen}>
+            <DialogTrigger render={<Button size="sm" />}>
+              <Plus className="icon-sm" />
+              {locale === "fi" ? "Lisää kulu" : "Add expense"}
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{locale === "fi" ? "Lisää puuttuva kulu" : "Add missing expense"}</DialogTitle>
+              </DialogHeader>
+              <div className="form-stack">
+                <div className="form-field">
+                  <Label>{locale === "fi" ? "Tili" : "Account"}</Label>
+                  <Select value={addAccount} onValueChange={(v) => v && setAddAccount(v)}>
+                    <SelectTrigger className="settings-input">
+                      <SelectValue placeholder={locale === "fi" ? "Valitse tili" : "Select account"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((a) => (
+                        <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="form-field">
+                  <Label>{locale === "fi" ? "Saaja" : "Payee"}</Label>
+                  <Input value={addPayee} onChange={(e) => setAddPayee(e.target.value)} placeholder={locale === "fi" ? "esim. K-Market" : "e.g. Store name"} />
+                </div>
+                <div className="form-field">
+                  <Label>{locale === "fi" ? "Summa (€)" : "Amount (€)"}</Label>
+                  <Input type="number" step="0.01" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} placeholder="0.00" />
+                </div>
+                <Button type="button" onClick={handleAddExpense} disabled={addLoading || !addAccount || !addAmount || !addPayee}>
+                  {addLoading ? (locale === "fi" ? "Lisätään..." : "Adding...") : (locale === "fi" ? "Lisää" : "Add")}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
+            <RefreshCw className={loading ? "icon-sm animate-spin" : "icon-sm"} />
+          </Button>
+        </div>
       </div>
 
       <div className="filter-bar">

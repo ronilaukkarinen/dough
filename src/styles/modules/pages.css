@@ -354,6 +354,13 @@
   }
 }
 
+.list-item-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 1.5rem;
+}
+
 /* Debt page extras */
 .debt-item {
   padding: 1rem 1.25rem;

@@ -109,6 +109,11 @@
 * Move all AI prompts to editable settings stored in DB
 * Add AI prompts section in settings with chat, summary and debt instruction editors
 * Clear field to restore default prompt
+* Fix income list layout with separate toolbar row for edit/link/delete buttons
+* Fix all remaining white focus rings with global !important override
+* Add "Lisää puuttuva kulu" button to transactions page for adding expenses to YNAB
+* Add YNAB accounts API for account selector dropdown
+* Fix duplicate AI chat messages by removing client-side assistant message save
 
 ### 0.2.0: 2026-03-18
 

@@ -71,20 +71,19 @@ a {
   touch-action: manipulation;
 }
 
-/* Global focus reset — never white */
-:focus {
-  outline: none;
+/* Global focus reset — never white, always use theme ring color */
+*:focus {
+  outline: none !important;
 }
 
-:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+*:focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
 }
 
-/* Remove focus ring on non-keyboard interactions */
-:focus:not(:focus-visible) {
-  outline: none;
-  box-shadow: none;
+*:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 img, video {

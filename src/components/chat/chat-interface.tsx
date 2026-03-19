@@ -159,12 +159,7 @@ export function ChatInterface() {
             clearInterval(pollRef.current);
             pollRef.current = null;
           }
-          // Save assistant message
-          fetch("/api/chat/messages", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ role: "assistant", content: data.message }),
-          }).catch(() => {});
+          // Server already saves assistant message, no need to save here
         }
       })
       .catch(() => {
