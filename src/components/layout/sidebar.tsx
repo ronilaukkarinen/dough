@@ -43,9 +43,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { t } = useLocale();
 
   const handleLogout = () => {
-    fetch("/api/auth/logout", { method: "POST" }).finally(() => {
-      window.location.replace("/login");
-    });
+    // Use GET redirect — works on all browsers including iOS Orion
+    window.location.href = "/api/auth/logout";
   };
 
   const handleNavClick = () => {
