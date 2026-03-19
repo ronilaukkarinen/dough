@@ -38,6 +38,7 @@ export default function DashboardPage() {
   const [matchedIncomeIds, setMatchedIncomeIds] = useState<Set<number>>(new Set());
   const [matchedBillIds, setMatchedBillIds] = useState<Set<number>>(new Set());
   const [bills, setBills] = useState<{ id: number; amount: number; due_day: number; is_active: number }[]>([]);
+  const [investmentMonthly, setInvestmentMonthly] = useState(0);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [lastYnabSync, setLastYnabSync] = useState<string | null>(null);
 
@@ -48,11 +49,18 @@ export default function DashboardPage() {
       fetch("/api/bills").then((r) => r.json()),
       fetch("/api/profile").then((r) => r.json()),
       fetch("/api/household").then((r) => r.json()),
-    ]).then(([incomeData, matchData, billsData, profileData, householdData]) => {
+      fetch("/api/investments").then((r) => r.json()),
+    ]).then(([incomeData, matchData, billsData, profileData, householdData, investmentData]) => {
       if (profileData.linkedAccountIds) setLinkedAccountIds(profileData.linkedAccountIds);
       if (householdData.settings?.last_ynab_sync) setLastYnabSync(householdData.settings.last_ynab_sync);
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       if (billsData.bills) setBills(billsData.bills);
+      if (investmentData.investments) {
+        const activeMonthly = investmentData.investments
+          .filter((i: { is_active: number }) => i.is_active)
+          .reduce((s: number, i: { monthly_amount: number }) => s + i.monthly_amount, 0);
+        setInvestmentMonthly(activeMonthly);
+      }
       if (matchData.monthlyMatches) {
         const incIds = new Set<number>();
         const billIds = new Set<number>();
@@ -321,7 +329,7 @@ export default function DashboardPage() {
         todaySpentAll={todaySpentAll}
         todayRemaining={todayRemaining}
         monthIncome={combinedIncome}
-        monthExpenses={Math.round(realSpendingTotal + unpaidBillsAmount + (dailyDiscretionary * daysLeft))}
+        monthExpenses={Math.round(realSpendingTotal + unpaidBillsAmount + (dailyDiscretionary * daysLeft) + investmentMonthly)}
         trendPercent={trendPercent}
       />
 

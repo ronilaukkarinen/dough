@@ -9,6 +9,7 @@ import {
   CalendarClock,
   Wallet,
   TrendingDown,
+  TrendingUp,
   LineChart,
   Settings,
   LogOut,
@@ -29,6 +30,7 @@ const navKeys = [
   { href: "/bills", icon: CalendarClock, key: "bills" },
   { href: "/income", icon: Wallet, key: "income" },
   { href: "/debts", icon: TrendingDown, key: "debts" },
+  { href: "/investments", icon: TrendingUp, key: "investments" },
   { href: "/net-worth", icon: LineChart, key: "netWorth" },
 ] as const;
 

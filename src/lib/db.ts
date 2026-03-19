@@ -117,9 +117,22 @@ function initializeDb(db: Database.Database) {
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_net_worth_user_date ON net_worth_snapshots(user_id, date);
 
+    CREATE TABLE IF NOT EXISTS investments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      monthly_amount REAL NOT NULL DEFAULT 0,
+      expected_day INTEGER NOT NULL DEFAULT 1 CHECK (expected_day BETWEEN 1 AND 31),
+      expected_return REAL NOT NULL DEFAULT 7,
+      current_value REAL NOT NULL DEFAULT 0,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS payee_matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill')),
+      source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment')),
       source_id INTEGER NOT NULL,
       payee_pattern TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -129,7 +142,7 @@ function initializeDb(db: Database.Database) {
 
     CREATE TABLE IF NOT EXISTS monthly_matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill')),
+      source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment')),
       source_id INTEGER NOT NULL,
       month TEXT NOT NULL,
       ynab_transaction_id TEXT NOT NULL,
@@ -200,6 +213,40 @@ function initializeDb(db: Database.Database) {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  // Migrate payee_matches/monthly_matches to support 'investment' source_type
+  const payeeCheck = db.prepare("SELECT sql FROM sqlite_master WHERE name = 'payee_matches'").get() as { sql: string } | undefined;
+  if (payeeCheck?.sql && !payeeCheck.sql.includes("investment")) {
+    console.info("[db] Migrating payee_matches and monthly_matches to support investment source_type");
+    db.exec(`
+      CREATE TABLE payee_matches_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment')),
+        source_id INTEGER NOT NULL,
+        payee_pattern TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      INSERT INTO payee_matches_new SELECT * FROM payee_matches;
+      DROP TABLE payee_matches;
+      ALTER TABLE payee_matches_new RENAME TO payee_matches;
+      CREATE INDEX IF NOT EXISTS idx_payee_matches_source ON payee_matches(source_type, source_id);
+
+      CREATE TABLE monthly_matches_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment')),
+        source_id INTEGER NOT NULL,
+        month TEXT NOT NULL,
+        ynab_transaction_id TEXT NOT NULL,
+        amount REAL NOT NULL,
+        matched_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      INSERT INTO monthly_matches_new SELECT * FROM monthly_matches;
+      DROP TABLE monthly_matches;
+      ALTER TABLE monthly_matches_new RENAME TO monthly_matches;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_monthly_matches_unique ON monthly_matches(source_type, source_id, month, ynab_transaction_id);
+    `);
+    console.info("[db] Migration complete");
+  }
 
   // Migrate YNAB settings from users to household_settings
   const existingYnab = db.prepare("SELECT ynab_access_token, ynab_budget_id FROM users WHERE ynab_access_token IS NOT NULL LIMIT 1").get() as { ynab_access_token: string; ynab_budget_id: string | null } | undefined;
