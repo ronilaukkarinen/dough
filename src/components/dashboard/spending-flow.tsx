@@ -176,7 +176,6 @@ export function SpendingFlow({
                 fill={ballColor}
                 stroke="var(--background)"
                 strokeWidth={2}
-                isFront
               />
             )}
           </AreaChart>
