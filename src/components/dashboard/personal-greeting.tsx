@@ -8,6 +8,18 @@ interface PersonalGreetingProps {
   dailyBudget: number;
 }
 
+function spentStatus(spent: number, budget: number): "good" | "tight" | "danger" {
+  if (spent <= budget * 0.5) return "good";
+  if (spent <= budget * 0.8) return "tight";
+  return "danger";
+}
+
+function remainingStatus(remaining: number, budget: number): "good" | "tight" | "danger" {
+  if (remaining > budget * 0.5) return "good";
+  if (remaining > budget * 0.2) return "tight";
+  return "danger";
+}
+
 export function PersonalGreeting({ todaySpent, dailyBudget }: PersonalGreetingProps) {
   const [name, setName] = useState("");
   const [householdSize, setHouseholdSize] = useState(1);
@@ -26,26 +38,39 @@ export function PersonalGreeting({ todaySpent, dailyBudget }: PersonalGreetingPr
   if (!name) return null;
 
   const personalBudget = householdSize > 1 ? Math.round((dailyBudget / householdSize) * 100) / 100 : dailyBudget;
-  const remaining = Math.max(0, personalBudget - todaySpent);
+  const remaining = personalBudget - todaySpent;
+  const exceeded = remaining < 0;
 
   return (
     <div className="personal-greeting">
       <p className="personal-greeting-text">
-        {locale === "fi"
-          ? `Hei ${name}! Olet käyttänyt tänään ${todaySpent.toFixed(2)} €. `
-          : `Hi ${name}! You've spent ${todaySpent.toFixed(2)} € today. `}
+        {locale === "fi" ? `Hei ${name}! ` : `Hi ${name}! `}
+        {locale === "fi" ? "Tänään käytetty " : "Spent today "}
+        <span className="personal-greeting-value" data-status={spentStatus(todaySpent, personalBudget)}>
+          {todaySpent.toFixed(2)} €
+        </span>
         {householdSize > 1 && (
-          locale === "fi"
-            ? `Henkilökohtainen budjettisi on ${personalBudget.toFixed(2)} €/pv. `
-            : `Your personal budget is ${personalBudget.toFixed(2)} €/day. `
+          <>
+            {locale === "fi" ? ", oma budjettisi " : ", your budget "}
+            <span className="personal-greeting-value" data-status="good">
+              {personalBudget.toFixed(2)} €
+            </span>
+            {locale === "fi" ? "/pv" : "/day"}
+          </>
         )}
-        {remaining > 0
-          ? (locale === "fi"
-            ? `Jäljellä ${remaining.toFixed(2)} €.`
-            : `${remaining.toFixed(2)} € remaining.`)
-          : (locale === "fi"
-            ? `Päiväbudjetti ylitetty.`
-            : `Daily budget exceeded.`)}
+        {". "}
+        {exceeded
+          ? <span className="personal-greeting-exceeded">
+              {locale === "fi" ? `Budjetti ylitetty ${Math.abs(remaining).toFixed(2)} € !` : `Budget exceeded by ${Math.abs(remaining).toFixed(2)} €!`}
+            </span>
+          : <>
+              {locale === "fi" ? "Jäljellä " : "Remaining "}
+              <span className="personal-greeting-value" data-status={remainingStatus(remaining, personalBudget)}>
+                {remaining.toFixed(2)} €
+              </span>
+              {"."}
+            </>
+        }
       </p>
     </div>
   );

@@ -2,10 +2,33 @@
 
 .personal-greeting {
   padding: 0 0.25rem;
+  margin-top: -0.5rem;
 }
 
 .personal-greeting-text {
-  font-size: 0.875rem;
+  font-size: 1rem;
   line-height: 1.5;
-  color: var(--muted-foreground);
+  font-weight: 600;
+  color: #acacac;
+}
+
+.personal-greeting-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.personal-greeting-value[data-status="good"] {
+  color: var(--positive);
+}
+
+.personal-greeting-value[data-status="tight"] {
+  color: var(--chart-3);
+}
+
+.personal-greeting-value[data-status="danger"] {
+  color: var(--negative);
+}
+
+.personal-greeting-exceeded {
+  color: var(--negative);
+  font-weight: 700;
 }

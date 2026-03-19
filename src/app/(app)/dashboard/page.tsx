@@ -116,8 +116,8 @@ export default function DashboardPage() {
   const dailyBurnRate = daysPassed > 0 ? Math.round((realSpendingTotal / daysPassed) * 100) / 100 : 0;
   const projectedMonthEnd = Math.round((availableBalance + upcomingIncome - (dailyBurnRate * daysLeft)) * 100) / 100;
 
-  // Today's spending
-  const todayStr = now.toISOString().slice(0, 10);
+  // Today's spending (use local date, not UTC)
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const todaySpent = data.transactions
     .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category))
     .reduce((s, t) => s + Math.abs(t.amount), 0);

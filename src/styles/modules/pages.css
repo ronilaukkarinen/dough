@@ -545,10 +545,33 @@
 }
 
 .settings-account-item input[type="checkbox"] {
-  width: 1rem;
-  height: 1rem;
-  accent-color: var(--primary);
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 2px solid var(--input);
+  border-radius: 0.25rem;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: background-color 150ms, border-color 150ms;
+  position: relative;
+}
+
+.settings-account-item input[type="checkbox"]:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.settings-account-item input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 0;
+  width: 6px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 .settings-account-name {
@@ -560,6 +583,10 @@
   font-size: 0.75rem;
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
+}
+
+.settings-help-mb {
+  margin-bottom: 0.5rem;
 }
 
 .settings-error {
@@ -692,11 +719,11 @@
 /* Settings input */
 .input.settings-input,
 .select-trigger.settings-input {
-  max-width: 28rem;
+  max-width: 100%;
 }
 
 .settings-textarea {
-  max-width: 28rem;
+  max-width: 100%;
   width: 100%;
   height: auto;
   min-height: 4.5rem;

@@ -328,9 +328,9 @@ export default function SettingsPage() {
             </div>
             {allAccounts.length > 0 && (
               <div className="form-field">
-                <Label>{locale === "fi" ? "Omat tilit" : "My accounts"}</Label>
-                <p className="settings-help" style={{ marginBottom: "0.5rem" }}>
-                  {locale === "fi" ? "Valitse tilit joita käytät henkilökohtaisesti" : "Select accounts you use personally"}
+                <Label>{locale === "fi" ? "Oma käyttötili" : "My spending account"}</Label>
+                <p className="settings-help settings-help-mb">
+                  {locale === "fi" ? "Valitse tili jolta maksat ostoksia (korttimaksut)" : "Select the account you make payments from (card transactions)"}
                 </p>
                 <div className="settings-account-list">
                   {allAccounts.map((a) => (
