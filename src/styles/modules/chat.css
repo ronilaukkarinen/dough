@@ -125,7 +125,7 @@
 }
 
 .chat-message-text p {
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.5em;
 }
 
 .chat-message-text p:last-child {
