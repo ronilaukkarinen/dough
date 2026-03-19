@@ -57,6 +57,31 @@ export function isMatchedThisMonth(sourceType: "income" | "bill", sourceId: numb
   return !!row;
 }
 
+function patternToMatcher(pattern: string): (payee: string) => boolean {
+  const trimmed = pattern.trim();
+
+  // *wildcard* syntax: *Dude* matches anything containing "Dude"
+  if (trimmed.startsWith("*") && trimmed.endsWith("*")) {
+    const inner = trimmed.slice(1, -1).toLowerCase();
+    return (payee) => payee.toLowerCase().includes(inner);
+  }
+
+  // *suffix syntax: *Oy matches anything ending with "Oy"
+  if (trimmed.startsWith("*")) {
+    const inner = trimmed.slice(1).toLowerCase();
+    return (payee) => payee.toLowerCase().endsWith(inner);
+  }
+
+  // prefix* syntax: Dude* matches anything starting with "Dude"
+  if (trimmed.endsWith("*")) {
+    const inner = trimmed.slice(0, -1).toLowerCase();
+    return (payee) => payee.toLowerCase().startsWith(inner);
+  }
+
+  // Exact match (case insensitive)
+  return (payee) => payee.toLowerCase() === trimmed.toLowerCase();
+}
+
 export function runAutoMatch(transactions: any[], month: string): { matched: number; details: string[] } {
   const db = getDb();
   const patterns = getAllPatterns();
@@ -64,10 +89,10 @@ export function runAutoMatch(transactions: any[], month: string): { matched: num
   const details: string[] = [];
 
   for (const pattern of patterns) {
-    const regex = new RegExp(pattern.payee_pattern, "i");
+    const matcher = patternToMatcher(pattern.payee_pattern);
     const matchingTx = transactions.find((tx: any) => {
       const payee = tx.payee || tx.payee_name || "";
-      return regex.test(payee);
+      return matcher(payee);
     });
 
     if (matchingTx) {

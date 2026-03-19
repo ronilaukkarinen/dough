@@ -277,7 +277,7 @@ export default function IncomePage() {
                     <Input
                       value={newPattern}
                       onChange={(e) => setNewPattern(e.target.value)}
-                      placeholder={locale === "fi" ? "YNAB-saajan nimi tai regex" : "YNAB payee name or regex"}
+                      placeholder={locale === "fi" ? "esim. Digitoimisto Dude Oy tai *Dude*" : "e.g. Company Name or *partial*"}
                       className="match-pattern-input"
                     />
                     <Button type="button" size="sm" onClick={() => handleAddPattern(income.id)}>{locale === "fi" ? "Lisää" : "Add"}</Button>
