@@ -125,7 +125,7 @@
 }
 
 .chat-message-text p {
-  margin: 0 0 0.5em;
+  margin: 0 0 0.85em;
 }
 
 .chat-message-text p:last-child {
@@ -133,7 +133,12 @@
 }
 
 .chat-message-text strong {
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.chat-message-bubble[data-type="assistant"] .chat-message-text strong {
+  color: var(--primary);
 }
 
 .chat-message-text em {
