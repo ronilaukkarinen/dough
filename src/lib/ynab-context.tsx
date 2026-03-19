@@ -106,9 +106,14 @@ export function YnabProvider({ children }: { children: ReactNode }) {
           setSavingRate(parseFloat(d.settings.saving_rate));
         }
         if (d.settings?.ynab_connected && d.settings?.ynab_budget_id) {
-          console.info("[ynab-context] YNAB connected, auto-syncing");
           setConnected(true);
-          sync();
+          // Only sync if no cached data (first load). Subsequent syncs are manual.
+          if (!data) {
+            console.info("[ynab-context] YNAB connected, initial sync");
+            sync();
+          } else {
+            setLoading(false);
+          }
         } else {
           console.debug("[ynab-context] YNAB not connected or no budget ID");
           setLoading(false);
@@ -120,16 +125,8 @@ export function YnabProvider({ children }: { children: ReactNode }) {
       });
   }, [sync]);
 
-  // SSE: re-sync when another user triggers sync or adds data
-  useEvent("sync:complete", useCallback(() => {
-    console.info("[ynab-context] SSE sync:complete received, re-syncing");
-    sync();
-  }, [sync]));
-
-  useEvent("data:updated", useCallback(() => {
-    console.info("[ynab-context] SSE data:updated received, re-syncing");
-    sync();
-  }, [sync]));
+  // SSE: don't auto re-sync on events (causes YNAB rate limiting)
+  // Users should manually sync via the sync button
 
   return (
     <YnabContext.Provider value={{ data, loading, error, connected, savingRate, sync }}>
