@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { getYnabToken, getYnabBudgetId } from "@/lib/household";
+import { getYnabToken, getYnabBudgetId, getHouseholdSetting } from "@/lib/household";
+import { DEFAULT_SUMMARY_INSTRUCTIONS } from "@/lib/ai/default-prompts";
 import { getBudgetSummary, getTransactions, getMonthBudget } from "@/lib/ynab/client";
 import { spawn } from "child_process";
 
@@ -125,9 +126,9 @@ export async function GET(request: Request) {
       ? incomeSources.map((i) => `${i.name}: ${i.amount} euros (day ${i.expected_day})`).join(", ")
       : "No income sources configured";
 
-    const prompt = `${lang} You are a personal finance advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} Write 3-5 sentences. Be direct, specific with numbers. Use euro sign. No greeting, no bullet points, no markdown.
+    const summaryInstructions = getHouseholdSetting("prompt_summary_instructions") || DEFAULT_SUMMARY_INSTRUCTIONS;
 
-Include: current situation summary, whether they can afford anything extra or need to cut spending, specific tips based on their spending categories, and projected month-end balance accounting for upcoming income.
+    const prompt = `${lang} You are a personal finance advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} ${summaryInstructions}
 
 Data:
 - Checking+savings balance: ${Math.round(checkingSavings)} euros

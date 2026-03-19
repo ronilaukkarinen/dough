@@ -28,8 +28,12 @@ export async function GET() {
     const { getHouseholdSetting } = await import("@/lib/household");
     const householdProfile = getHouseholdSetting("household_profile") || "";
 
+    const { getHouseholdSetting: getSetting } = await import("@/lib/household");
+    const { DEFAULT_DEBT_INSTRUCTIONS } = await import("@/lib/ai/default-prompts");
+    const debtInstructions = getSetting("prompt_debt_instructions") || DEFAULT_DEBT_INSTRUCTIONS;
+
     const lang = user.locale === "fi" ? "Respond in Finnish." : "Respond in English.";
-    const prompt = `${lang} You are a debt advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} Given these debts, suggest which to prioritize paying off and why. Be specific and actionable. 2-3 sentences max. No markdown.
+    const prompt = `${lang} You are a debt advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} ${debtInstructions}
 
 Debts:
 ${debts.join("\n")}`;

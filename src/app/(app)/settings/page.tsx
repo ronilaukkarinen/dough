@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2, PiggyBank, Users } from "lucide-react";
+import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2, PiggyBank, Users, Sparkles } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import type { Locale } from "@/lib/i18n";
 
@@ -43,6 +43,8 @@ export default function SettingsPage() {
   const [savingRateSaved, setSavingRateSaved] = useState(false);
   const [householdProfile, setHouseholdProfile] = useState("");
   const [householdSaved, setHouseholdSaved] = useState(false);
+  const [prompts, setPrompts] = useState({ chat: "", summary: "", debt: "" });
+  const [promptSaved, setPromptSaved] = useState("");
   const { t, locale, setLocale } = useLocale();
 
   useEffect(() => {
@@ -68,6 +70,15 @@ export default function SettingsPage() {
           }
           if (householdData.settings?.household_profile) {
             setHouseholdProfile(householdData.settings.household_profile);
+          }
+          if (householdData.settings?.prompt_chat_guidelines) {
+            setPrompts((p) => ({ ...p, chat: householdData.settings.prompt_chat_guidelines }));
+          }
+          if (householdData.settings?.prompt_summary_instructions) {
+            setPrompts((p) => ({ ...p, summary: householdData.settings.prompt_summary_instructions }));
+          }
+          if (householdData.settings?.prompt_debt_instructions) {
+            setPrompts((p) => ({ ...p, debt: householdData.settings.prompt_debt_instructions }));
           }
           if (householdData.settings?.ynab_connected) {
             fetch("/api/ynab/budgets")
@@ -482,6 +493,59 @@ export default function SettingsPage() {
                 </Button>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* AI prompts */}
+        <Card className="settings-card">
+          <CardHeader>
+            <CardTitle className="settings-card-title">
+              <Sparkles />
+              {locale === "fi" ? "AI-ohjeet" : "AI prompts"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="form-stack">
+            {([
+              { key: "chat" as const, dbKey: "prompt_chat_guidelines", label: locale === "fi" ? "Keskustelun ohjeet" : "Chat guidelines" },
+              { key: "summary" as const, dbKey: "prompt_summary_instructions", label: locale === "fi" ? "Yhteenvedon ohjeet" : "Summary instructions" },
+              { key: "debt" as const, dbKey: "prompt_debt_instructions", label: locale === "fi" ? "Velkaneuvonnan ohjeet" : "Debt advice instructions" },
+            ]).map(({ key, dbKey, label }) => (
+              <div key={key} className="form-field">
+                <Label>{label}</Label>
+                <textarea
+                  className="settings-textarea"
+                  value={prompts[key]}
+                  onChange={(e) => setPrompts((p) => ({ ...p, [key]: e.target.value }))}
+                  placeholder={locale === "fi" ? "Tyhjä = oletusohje" : "Empty = default prompt"}
+                  rows={4}
+                />
+                <div className="settings-row">
+                  <button
+                    type="button"
+                    className="button"
+                    data-variant="outline"
+                    data-size="sm"
+                    onClick={async () => {
+                      await fetch("/api/household", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ [dbKey]: prompts[key] || "" }),
+                      });
+                      setPromptSaved(key);
+                      setTimeout(() => setPromptSaved(""), 2000);
+                    }}
+                  >
+                    {t.common.save}
+                  </button>
+                  {promptSaved === key && <span className="settings-saved">{t.common.saved}</span>}
+                </div>
+              </div>
+            ))}
+            <p className="settings-help">
+              {locale === "fi"
+                ? "Muokkaa AI:n toimintaohjeita. Tyhjennä kenttä palauttaaksesi oletusohje."
+                : "Edit AI behavior. Clear a field to restore the default prompt."}
+            </p>
           </CardContent>
         </Card>
       </div>

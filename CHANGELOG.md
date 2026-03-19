@@ -106,6 +106,9 @@
 * Support day 0 as "last day of month" for income expected date
 * Update income API PUT to support full field editing
 * Relax expected_day constraint to allow 0
+* Move all AI prompts to editable settings stored in DB
+* Add AI prompts section in settings with chat, summary and debt instruction editors
+* Clear field to restore default prompt
 
 ### 0.2.0: 2026-03-18
 

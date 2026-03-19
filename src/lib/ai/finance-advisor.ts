@@ -1,4 +1,6 @@
 import { spawn } from "child_process";
+import { getHouseholdSetting } from "@/lib/household";
+import { DEFAULT_CHAT_GUIDELINES } from "./default-prompts";
 
 interface FinancialContext {
   totalBalance: number;
@@ -48,15 +50,7 @@ Debts:
 ${ctx.debts.map(d => `- ${d.name}: ${d.remaining} euros remaining (${d.rate}% APR)`).join("\n")}
 
 Guidelines:
-- Be direct and honest about their financial situation
-- When they ask "can we afford X?", check the daily budget and upcoming bills before answering
-- Give specific numbers, not vague advice
-- If things are tight, say so clearly but without being preachy
-- Suggest specific actionable steps when relevant
-- Keep responses concise - 2-4 sentences for simple questions, more for complex analysis
-- Use euro sign for all amounts
-- This is a shared household budget. The daily budget covers ALL spending for the whole family - groceries, transport, kids, everything. One person's single meal should be a fraction of the daily budget, not the whole thing. When asked about one person's lunch or dinner budget, suggest roughly 1/4 to 1/3 of the daily budget as reasonable for one meal for one person.
-- Always consider that the daily budget must cover multiple meals, transport, and unexpected needs for the whole household`;
+${getHouseholdSetting("prompt_chat_guidelines") || DEFAULT_CHAT_GUIDELINES}`;
 }
 
 function buildPrompt(
