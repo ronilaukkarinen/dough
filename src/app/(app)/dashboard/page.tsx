@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const { data, loading, connected, error: ynabError, sync, savingRate } = useYnab();
   const [incomes, setIncomes] = useState<IncomeSource[]>([]);
   const [matchedIncomeIds, setMatchedIncomeIds] = useState<Set<number>>(new Set());
+  const [matchedBillIds, setMatchedBillIds] = useState<Set<number>>(new Set());
   const [bills, setBills] = useState<{ id: number; amount: number; due_day: number; is_active: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [lastYnabSync, setLastYnabSync] = useState<string | null>(null);
@@ -53,11 +54,14 @@ export default function DashboardPage() {
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       if (billsData.bills) setBills(billsData.bills);
       if (matchData.monthlyMatches) {
-        const ids = new Set<number>();
+        const incIds = new Set<number>();
+        const billIds = new Set<number>();
         for (const m of matchData.monthlyMatches) {
-          if (m.source_type === "income") ids.add(m.source_id);
+          if (m.source_type === "income") incIds.add(m.source_id);
+          if (m.source_type === "bill") billIds.add(m.source_id);
         }
-        setMatchedIncomeIds(ids);
+        setMatchedIncomeIds(incIds);
+        setMatchedBillIds(billIds);
       }
     }).catch(() => {});
   }, []);
@@ -143,7 +147,17 @@ export default function DashboardPage() {
     .filter((t) => t.amount < 0 && !isTransfer(t.payee, t.category))
     .reduce((s, t) => s + Math.abs(t.amount), 0);
   const dailyBurnRate = daysPassed > 0 ? Math.round((realSpendingTotal / daysPassed) * 100) / 100 : 0;
-  const projectedMonthEnd = Math.round((availableBalance + upcomingIncome - (dailyBurnRate * daysLeft)) * 100) / 100;
+
+  // Separate bills from discretionary for accurate projection
+  const totalBillsAmount = bills.filter((b) => b.is_active).reduce((s, b) => s + b.amount, 0);
+  const paidBillsAmount = bills
+    .filter((b) => b.is_active && (matchedBillIds.has(b.id) || b.due_day < today))
+    .reduce((s, b) => s + b.amount, 0);
+  const unpaidBillsAmount = totalBillsAmount - paidBillsAmount;
+  const discretionarySpending = Math.max(0, realSpendingTotal - paidBillsAmount);
+  const dailyDiscretionary = daysPassed > 0 ? Math.round((discretionarySpending / daysPassed) * 100) / 100 : 0;
+
+  const projectedMonthEnd = Math.round((availableBalance + upcomingIncome - unpaidBillsAmount - (dailyDiscretionary * daysLeft)) * 100) / 100;
 
   // Week-over-week spending trend
   const thisWeekStart = today - ((today - 1) % 7);
@@ -307,7 +321,7 @@ export default function DashboardPage() {
         todaySpentAll={todaySpentAll}
         todayRemaining={todayRemaining}
         monthIncome={combinedIncome}
-        monthExpenses={Math.round(dailyBurnRate * daysInMonth)}
+        monthExpenses={Math.round(realSpendingTotal + unpaidBillsAmount + (dailyDiscretionary * daysLeft))}
         trendPercent={trendPercent}
       />
 
