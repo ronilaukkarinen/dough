@@ -136,8 +136,7 @@ export function YnabProvider({ children }: { children: ReactNode }) {
         }
         if (d.settings?.ynab_connected && d.settings?.ynab_budget_id) {
           setConnected(true);
-          // Try to sync in background (will use cached data if API fails)
-          sync();
+          setLoading(false);
         } else {
           console.debug("[ynab-context] YNAB not connected or no budget ID");
           setLoading(false);

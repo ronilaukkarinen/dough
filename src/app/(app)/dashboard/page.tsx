@@ -38,6 +38,7 @@ export default function DashboardPage() {
   const [matchedIncomeIds, setMatchedIncomeIds] = useState<Set<number>>(new Set());
   const [bills, setBills] = useState<{ id: number; amount: number; due_day: number; is_active: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
+  const [lastYnabSync, setLastYnabSync] = useState<string | null>(null);
 
   const loadSideData = useCallback(() => {
     Promise.all([
@@ -45,8 +46,10 @@ export default function DashboardPage() {
       fetch("/api/matches").then((r) => r.json()),
       fetch("/api/bills").then((r) => r.json()),
       fetch("/api/profile").then((r) => r.json()),
-    ]).then(([incomeData, matchData, billsData, profileData]) => {
+      fetch("/api/household").then((r) => r.json()),
+    ]).then(([incomeData, matchData, billsData, profileData, householdData]) => {
       if (profileData.linkedAccountIds) setLinkedAccountIds(profileData.linkedAccountIds);
+      if (householdData.settings?.last_ynab_sync) setLastYnabSync(householdData.settings.last_ynab_sync);
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       if (billsData.bills) setBills(billsData.bills);
       if (matchData.monthlyMatches) {
@@ -249,16 +252,9 @@ export default function DashboardPage() {
       <div className="page-header-row">
         <h1 className="page-heading">{t.dashboard.title}</h1>
         <div className="sync-row">
-          {data?.syncedAt && (
+          {lastYnabSync && (
             <span className="sync-time">
-              {(() => {
-                const syncDate = new Date(data.syncedAt);
-                const mins = Math.round((Date.now() - syncDate.getTime()) / 60000);
-                if (mins < 1) return locale === "fi" ? "juuri nyt" : "just now";
-                if (mins < 60) return `${mins} min`;
-                const hours = Math.round(mins / 60);
-                return `${hours}h`;
-              })()}
+              {formatDistanceToNow(new Date(lastYnabSync), { addSuffix: true, locale: locale === "fi" ? fiFns : enUS })}
             </span>
           )}
           <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
