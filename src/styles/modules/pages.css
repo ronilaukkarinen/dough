@@ -137,6 +137,7 @@
   gap: 0.75rem;
   padding: 0.875rem 1rem;
   transition: background-color 150ms;
+  cursor: pointer;
 }
 
 @media (min-width: 640px) {
