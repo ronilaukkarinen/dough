@@ -73,12 +73,11 @@ export const fi = {
   chat: {
     title: "AI-neuvoja",
     placeholder: "Kysy taloudestasi...",
-    greeting: `Hei! Olen talousneuvonantajasi. Näen YNAB-tietosi ja autan sinua tekemään parempia rahapäätöksiä.
+    greeting: `Hei! Tunnen taloustilanteenne, kulutustottumukset ja tilisaldot. Kysy mitä vain.
 
-Kokeile kysyä esimerkiksi:
 \u2022 "Onko varaa syödä ulkona tänään?"
-\u2022 "Paljonko ruokakauppaan on mennyt tässä kuussa?"
-\u2022 "Mitä tilauksia voisin perua?"
+\u2022 "Paljonko ruokakauppaan on mennyt?"
+\u2022 "Mistä voisi säästää?"
 \u2022 "Milloin olemme velattomia?"`,
     thinking: "Mietitään...",
     errorProcess: "En pystynyt käsittelemään pyyntöä. Yritä uudelleen.",

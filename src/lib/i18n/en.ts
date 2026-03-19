@@ -73,12 +73,11 @@ export const en = {
   chat: {
     title: "AI advisor",
     placeholder: "Ask about your finances...",
-    greeting: `Hi! I'm your financial advisor. I can see your YNAB data and help you make better money decisions.
+    greeting: `Hi! I know your financial situation, spending habits and account balances. Ask me anything.
 
-Try asking me things like:
 \u2022 "Can we afford eating out tonight?"
-\u2022 "How much have we spent on groceries this month?"
-\u2022 "What subscriptions can I cut?"
+\u2022 "How much have we spent on groceries?"
+\u2022 "What can we cut to save money?"
 \u2022 "When will we be debt-free?"`,
     thinking: "Thinking...",
     errorProcess: "Sorry, I couldn't process that. Try again.",
