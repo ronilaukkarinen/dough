@@ -44,19 +44,28 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [unreadChat, setUnreadChat] = useState(0);
   const { t } = useLocale();
 
-  // Initial unread check
+  // Initial unread check + reset when navigating to chat
   useEffect(() => {
-    fetch("/api/chat/unread").then((r) => r.json()).then((d) => {
-      setUnreadChat(d.unread || 0);
-    }).catch(() => {});
-  }, []);
+    if (pathname === "/chat") {
+      setUnreadChat(0);
+      fetch("/api/chat/unread", { method: "POST" }).catch(() => {});
+    } else {
+      fetch("/api/chat/unread").then((r) => r.json()).then((d) => {
+        setUnreadChat(d.unread || 0);
+      }).catch(() => {});
+    }
+  }, [pathname]);
 
-  // SSE: increment unread on new chat message (if not on chat page)
+  // SSE: increment unread on new chat message (only when not on chat page)
   useEvent("chat:message", useCallback((data: unknown) => {
     const msg = data as { userId: number | null };
-    // Only count messages from other users when not on chat page
-    if (pathname !== "/chat" && msg.userId !== null) {
-      setUnreadChat((prev) => prev + 1);
+    if (msg.userId !== null) {
+      if (pathname === "/chat") {
+        // On chat page — mark as read immediately
+        fetch("/api/chat/unread", { method: "POST" }).catch(() => {});
+      } else {
+        setUnreadChat((prev) => prev + 1);
+      }
     }
   }, [pathname]));
 
