@@ -1,4 +1,4 @@
-### 1.0.0: 2026-03-19
+### 1.1.0: 2026-03-20
 
 * Remove right padding on AI summary last action icon
 * Move personal budget share to per-user profile setting so each user can have their own %
@@ -18,6 +18,9 @@
 * Include investment monthly contributions in dashboard month status calculation
 * Color income green and expenses red in month status sub label
 * Fix month status projection to separate bills from discretionary spending
+
+### 1.0.0: 2026-03-19
+
 * Change bill due text to "Erääntyy X. päivä" in Finnish
 * Fix greeting value colors to only apply to euro amounts
 * Align sidebar collapse button to left
