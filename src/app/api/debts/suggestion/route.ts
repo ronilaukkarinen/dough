@@ -38,7 +38,7 @@ export async function GET() {
 Debts:
 ${debts.join("\n")}`;
 
-    const claudePath = process.env.CLAUDE_PATH || "/home/rolle/.local/bin/claude";
+    const claudePath = process.env.CLAUDE_PATH || "claude";
 
     const suggestion = await new Promise<string>((resolve, reject) => {
       const proc = spawn(claudePath, ["-p", "-"], {

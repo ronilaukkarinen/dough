@@ -1,5 +1,10 @@
 ### 1.0.0: 2026-03-19
 
+* Fix dashboard grid by moving today remaining into hero card
+* Remove hardcoded /home/rolle path from claude CLI fallback
+* Fix Finnish translations: "Varma kuukausitulo", "perhe yhteensä", "Suurimmat kuluerät"
+* Add CLAUDE_PATH to env example
+* Audit and clean sensitive data for open source readiness
 * Make income, bills, net worth shared across all household users
 * Remove user_id filters from income, bills, net worth API queries
 * Fix chat clear to delete all shared messages

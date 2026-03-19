@@ -55,26 +55,20 @@ export function DailyAllowance({
             {status === "danger" && ` \u2014 ${t.dashboard.cutNonEssentials}`}
             {status === "tight" && ` \u2014 ${t.dashboard.beCareful}`}
           </p>
-        </div>
-        <div className="daily-allowance-hero-bg">
-          <Wallet />
-        </div>
-      </Card>
-
-      <Card className="metric-card">
-        <div className="metric-card-row">
-          <div className="metric-card-icon" data-color={todayRemaining > 0 ? "positive" : "negative"}>
-            <CalendarClock />
-          </div>
-          <div>
-            <p className="metric-card-label">{locale === "fi" ? "Tänään jäljellä" : "Today remaining"}</p>
-            <p className="metric-card-value" data-status={todayRemaining > dailyBudget * 0.5 ? undefined : todayRemaining > 0 ? undefined : undefined}>
+          {todaySpentAll > 0 && (
+            <p className="daily-allowance-hero-note">
+              {locale === "fi" ? "Tänään käytetty " : "Spent today "}
+              {todaySpentAll.toFixed(2)} {currency}
+              {" \u2014 "}
+              {locale === "fi" ? "jäljellä " : "remaining "}
               <span className={todayRemaining <= 0 ? "text-negative" : todayRemaining < dailyBudget * 0.3 ? "text-chart-3" : "text-positive"}>
                 {todayRemaining.toFixed(2)} {currency}
               </span>
             </p>
-            <p className="metric-card-note">{locale === "fi" ? "käytetty" : "spent"} {todaySpentAll.toFixed(2)} {currency}</p>
-          </div>
+          )}
+        </div>
+        <div className="daily-allowance-hero-bg">
+          <Wallet />
         </div>
       </Card>
 

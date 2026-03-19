@@ -41,7 +41,7 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
         </span>
         {todaySpentAll > todaySpentPersonal && (
           <>
-            {locale === "fi" ? ", talous yhteensä " : ", household total "}
+            {locale === "fi" ? ", perhe yhteensä " : ", household total "}
             <span className="personal-greeting-value" data-status={todaySpentAll > dailyBudget * 0.8 ? "danger" : todaySpentAll > dailyBudget * 0.5 ? "tight" : "good"}>
               {todaySpentAll.toFixed(2)} €
             </span>

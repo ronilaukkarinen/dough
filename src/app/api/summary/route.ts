@@ -159,7 +159,7 @@ Data:
     }).join(", ") : "none configured"}
 - Total monthly bills: ${recurringBills.reduce((s, b) => s + b.amount, 0)} euros`;
 
-    const claudePath = process.env.CLAUDE_PATH || "/home/rolle/.local/bin/claude";
+    const claudePath = process.env.CLAUDE_PATH || "claude";
     console.info("[summary] Calling claude CLI");
 
     const summaryText = await new Promise<string>((resolve, reject) => {

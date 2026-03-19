@@ -76,7 +76,7 @@ export async function getFinancialAdvice(
 
   try {
     console.info("[ai] Calling claude CLI via stdin pipe");
-    const claudePath = process.env.CLAUDE_PATH || "/home/rolle/.local/bin/claude";
+    const claudePath = process.env.CLAUDE_PATH || "claude";
 
     const response = await new Promise<string>((resolve, reject) => {
       const proc = spawn(claudePath, ["-p", "-"], {
