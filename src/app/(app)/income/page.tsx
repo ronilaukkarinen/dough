@@ -339,16 +339,18 @@ export default function IncomePage() {
                   </div>
                   <div className="list-item-actions">
                     <p className="list-item-amount-value" data-positive>+{income.amount.toFixed(2)} €</p>
-                    <button type="button" className="list-item-link-btn" onClick={() => startEdit(income)}>
-                      <Pencil />
-                    </button>
-                    <button type="button" className="list-item-link-btn" onClick={() => setAddingPattern(addingPattern === income.id ? null : income.id)}>
-                      <Link2 />
-                    </button>
-                    <button type="button" className="list-item-link-btn" onClick={() => deleteIncome(income.id)}>
-                      <Trash2 />
-                    </button>
                     <Switch checked={!!income.is_active} onCheckedChange={() => toggleIncome(income.id, income.is_active)} />
+                    <div className="list-item-actions-row">
+                      <button type="button" className="list-item-link-btn" onClick={() => startEdit(income)}>
+                        <Pencil />
+                      </button>
+                      <button type="button" className="list-item-link-btn" onClick={() => setAddingPattern(addingPattern === income.id ? null : income.id)}>
+                        <Link2 />
+                      </button>
+                      <button type="button" className="list-item-link-btn" onClick={() => deleteIncome(income.id)}>
+                        <Trash2 />
+                      </button>
+                    </div>
                   </div>
                 </div>
                 )}

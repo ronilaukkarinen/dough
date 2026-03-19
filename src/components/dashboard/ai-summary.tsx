@@ -66,7 +66,10 @@ export function AiSummary() {
 
   const handleRefresh = () => {
     console.info("[ai-summary] Refresh clicked");
-    fetchSummary(true);
+    setRefreshing(true);
+    setSummary(null);
+    // Small delay so skeleton is visible even on fast cached responses
+    setTimeout(() => fetchSummary(true), 300);
   };
 
   if (!loading && !summary && !refreshing) return null;
