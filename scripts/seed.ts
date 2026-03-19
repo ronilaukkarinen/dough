@@ -93,8 +93,8 @@ db.exec(`
 
 // Seed users
 const users = [
-  { email: "rolle", password: "v4kh9wklsz5jTXw", name: "Rolle", locale: "en" },
-  { email: "mustikkasoppa", password: "IPuoj5Wyv0sNsJke", name: "Mustikkasoppa", locale: "fi" },
+  { email: process.env.USER1_EMAIL || "user1", password: process.env.USER1_PASSWORD || "changeme", name: process.env.USER1_NAME || "User 1", locale: "en" },
+  { email: process.env.USER2_EMAIL || "user2", password: process.env.USER2_PASSWORD || "changeme", name: process.env.USER2_NAME || "User 2", locale: "fi" },
 ];
 
 const insertUser = db.prepare(
