@@ -22,18 +22,20 @@ interface SpendingFlowProps {
 }
 
 function ratioToColor(r: number): string {
+  // r = actual/target. Under 1.0 = good, over = bad
+  // 0-0.95 green, 0.95-1.0 green→yellow, 1.0-1.03 yellow→red, 1.03+ red
   const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
   const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
   const green = [74, 222, 128];
   const yellow = [250, 204, 21];
   const red = [248, 113, 113];
-  if (r <= 0.85) return `rgb(${green.join(",")})`;
+  if (r <= 0.95) return `rgb(${green.join(",")})`;
   if (r <= 1.0) {
-    const t = clamp((r - 0.85) / 0.15, 0, 1);
+    const t = clamp((r - 0.95) / 0.05, 0, 1);
     return `rgb(${lerp(green[0], yellow[0], t)},${lerp(green[1], yellow[1], t)},${lerp(green[2], yellow[2], t)})`;
   }
-  if (r <= 1.15) {
-    const t = clamp((r - 1.0) / 0.15, 0, 1);
+  if (r <= 1.03) {
+    const t = clamp((r - 1.0) / 0.03, 0, 1);
     return `rgb(${lerp(yellow[0], red[0], t)},${lerp(yellow[1], red[1], t)},${lerp(yellow[2], red[2], t)})`;
   }
   return `rgb(${red.join(",")})`;
@@ -106,8 +108,8 @@ export function SpendingFlow({
 
     const bw = bubbleLabel.length * 5.8 + 6;
     const bh = 20;
-    const bx = x + 10;
-    const by = y - bh - 6;
+    const bx = x + 8;
+    const by = y - bh - 8;
 
     return (
       <g>
