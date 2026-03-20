@@ -1,6 +1,8 @@
 ### 1.2.0: 2026-03-21
 
-* Fix daily budget cash flow: obligations due on/after salary day are covered by salary, not subtracted from pre-salary balance. Extracted shared calculateDailyBudget helper (DRY)
+* Add white-space nowrap to AI summary and chat amounts to prevent orphan € symbol
+* Require due day for debt overrides, disable save without it, skip due_day=0 in all calculations
+* Fix daily budget cash flow: obligations due on/after salary day are covered by salary, skip debts without due date. Extracted shared calculateDailyBudget helper (DRY)
 * Apply time-window cash flow simulation to dashboard, AI chat, AI summary, and spending flow chart
 
 ### 1.1.0: 2026-03-20

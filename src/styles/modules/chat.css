@@ -203,6 +203,7 @@
 .chat-message-text strong {
   font-weight: 700;
   color: var(--foreground);
+  white-space: nowrap;
 }
 
 .chat-message-bubble[data-type="assistant"] .chat-message-text strong {
@@ -211,14 +212,17 @@
 
 .chat-amount-positive {
   color: var(--positive);
+  white-space: nowrap;
 }
 
 .chat-amount-negative {
   color: var(--negative);
+  white-space: nowrap;
 }
 
 .chat-amount-neutral {
   color: var(--chart-3);
+  white-space: nowrap;
 }
 
 .chat-message-text em {

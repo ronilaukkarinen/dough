@@ -133,6 +133,7 @@
 
 .ai-summary-text strong {
   font-weight: 700;
+  white-space: nowrap;
 }
 
 /* Skeleton loading */
