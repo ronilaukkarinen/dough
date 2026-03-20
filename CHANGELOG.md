@@ -1,5 +1,7 @@
 ### 1.1.0: 2026-03-20
 
+* Fix AI daily budget to match dashboard, keep after-bills number as secondary context for affordability questions
+* Include today's expected income in daily spendable calculation, skip already-matched income
 * Fix add expense button style consistency, remove AI category help text from modal
 * Dim green target and grey projection dashed lines in spending flow chart
 * Fix dashboard grid: month status span 2, other metric cards each 1 column on desktop

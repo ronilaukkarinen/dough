@@ -121,9 +121,20 @@ export async function POST(request: Request) {
           const unpaidBillsTotal = unpaidBills.reduce((s, b) => s + b.amount, 0);
           const debtPaymentsTotal = debts.reduce((s: number, d: any) => s + (d.minimumPayment || 0), 0);
 
-          // Income arriving before last day of month (before salary)
-          const incomeBeforePayday = incomeRows
-            .filter((i) => i.expected_day > today && i.expected_day < daysInMonth)
+          // Income arriving before last day of month (before salary), including today
+          // Check which income sources are already matched to avoid double-counting
+          const chatIncomeMatches = chatDb
+            .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'income' AND month = ?")
+            .all(chatMonth) as { source_id: number }[];
+          const matchedIncomeIds = new Set(chatIncomeMatches.map((m) => m.source_id));
+
+          // Load income source IDs for matching
+          const incomeWithIds = chatDb
+            .prepare("SELECT id, name, amount, expected_day FROM income_sources WHERE is_active = 1 ORDER BY expected_day ASC")
+            .all() as { id: number; name: string; amount: number; expected_day: number }[];
+
+          const incomeBeforePayday = incomeWithIds
+            .filter((i) => i.expected_day >= today && i.expected_day < daysInMonth && !matchedIncomeIds.has(i.id))
             .reduce((s, i) => s + i.amount, 0);
 
           // Available before payday = current balance + small incomes before payday - bills - debts
