@@ -34,7 +34,7 @@ export async function queryClaudeWithImage(
   console.debug("[claude-image] Sending image prompt, text length:", textPrompt.length, "image size:", Math.round(imageBase64.length / 1024), "KB");
 
   return new Promise((resolve, reject) => {
-    const proc = spawn(claudePath, ["-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose"], {
+    const proc = spawn(claudePath, ["-p", "--model", "opus", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose"], {
       env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "cli" },
       timeout: timeoutMs,
     });

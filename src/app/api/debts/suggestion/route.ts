@@ -49,7 +49,7 @@ Total debt: ${debtAccounts.reduce((s: number, a: any) => s + Math.abs(a.balance)
     const claudePath = process.env.CLAUDE_PATH || "claude";
 
     const suggestion = await new Promise<string>((resolve, reject) => {
-      const proc = spawn(claudePath, ["-p", "-"], {
+      const proc = spawn(claudePath, ["-p", "--model", "opus", "-"], {
         env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "cli" },
         timeout: 120000,
       });

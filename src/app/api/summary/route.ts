@@ -228,7 +228,7 @@ Pre-calculated analysis:
     console.info("[summary] Calling claude CLI");
 
     const summaryText = await new Promise<string>((resolve, reject) => {
-      const proc = spawn(claudePath, ["-p", "-"], {
+      const proc = spawn(claudePath, ["-p", "--model", "opus", "-"], {
         env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "cli" },
         timeout: 120000,
       });

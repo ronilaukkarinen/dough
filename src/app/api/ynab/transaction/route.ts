@@ -13,7 +13,7 @@ async function aiCategorize(payeeName: string, categories: string[]): Promise<st
   try {
     console.debug("[ynab/transaction] AI categorizing:", payeeName);
     const result = await new Promise<string>((resolve, reject) => {
-      const proc = spawn(claudePath, ["-p", "-"], { timeout: 30000 });
+      const proc = spawn(claudePath, ["-p", "--model", "opus", "-"], { timeout: 30000 });
       let stdout = "";
       proc.stdout.on("data", (d: Buffer) => { stdout += d.toString(); });
       proc.on("close", (code: number) => {

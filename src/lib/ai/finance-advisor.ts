@@ -116,7 +116,7 @@ export async function getFinancialAdvice(
     console.info("[ai] Calling claude CLI via stdin pipe");
 
     const response = await new Promise<string>((resolve, reject) => {
-      const proc = spawn(claudePath, ["-p", "-"], {
+      const proc = spawn(claudePath, ["-p", "--model", "opus", "-"], {
         env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "cli" },
         timeout: 120000,
       });
