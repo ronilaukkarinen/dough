@@ -85,10 +85,7 @@ export function SpendingFlow({
   const todayTarget = targetPerDay > 0 ? Math.round(targetPerDay * daysPassed) : 0;
   const todayDiff = todayTarget - lastActual;
   const todayRatio = todayTarget > 0 ? lastActual / todayTarget : 0;
-  const status = todayDiff > todayTarget * 0.05 ? "good" : todayDiff >= 0 ? "tight" : "danger";
   const ballColor = targetPerDay > 0 ? ratioToColor(todayRatio) : "#818cf8";
-  const statusColor = status === "good" ? "#4ade80" : status === "tight" ? "#facc15" : "#f87171";
-
   // Gradient stops
   const gradientStops = data.filter((d) => d.actual !== undefined).map((d, i, arr) => {
     const pos = arr.length > 1 ? i / (arr.length - 1) : 0.5;
@@ -113,18 +110,6 @@ export function SpendingFlow({
   return (
     <div className="spending-flow">
       <div className="spending-flow-chart">
-        {monthEndTarget > 0 && daysPassed > 0 && (
-          <div
-            className="spending-flow-bubble"
-            data-status={status}
-            style={{ left: `calc(${bubbleLeftPct}% + 8px)` }}
-          >
-            <span className="spending-flow-bubble-text">{bubbleLabel}</span>
-            <svg className="spending-flow-bubble-tip" width="10" height="8" viewBox="0 0 10 8">
-              <path d="M0,0 L10,0 L2,8 Z" fill={`${statusColor}33`} />
-            </svg>
-          </div>
-        )}
         <ResponsiveContainer width="100%" height={160}>
           <AreaChart data={data} margin={{ top: 6, right: 16, left: -20, bottom: 0 }}>
             <defs>
