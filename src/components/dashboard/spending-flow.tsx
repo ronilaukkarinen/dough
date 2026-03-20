@@ -204,7 +204,7 @@ export function SpendingFlow({
                 r={7}
                 fill="#09090b"
                 stroke={ballColor}
-                strokeWidth={3}
+                strokeWidth={5}
                 label={renderDotLabel}
               />
             )}

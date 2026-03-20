@@ -5,13 +5,16 @@
 - Daily budget calculated from available checking/savings balance
 - Personal greeting with today's spending (personal + household)
 - AI-generated financial summary with skeleton loading and refresh
-- Spending chart (cumulative, excludes transfers)
+- Spending flow hero chart with gradient line (green/yellow/red), projected spending, savings target line, and status bubble
+- Spending chart (cumulative, excludes transfers) with savings target dashed line
 - Category breakdown pie chart
-- Monthly cash flow bar chart
+- Monthly cash flow bar chart (current + 3 historical months)
 - Recent transactions list (excludes transfers)
 - Net worth section with investments and debts
 - Entry reminder after 6 hours of no new transactions
 - Burn rate and projected month-end balance
+- Personal budget share with configurable % or auto-calculated from spending history
+- Configurable decimal places (0-2) for all euro amounts
 - Sync button with relative last-sync time
 
 ### AI advisor
