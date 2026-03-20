@@ -1,5 +1,8 @@
 ### 1.1.0: 2026-03-20
 
+* Fix add expense button style consistency, remove AI category help text from modal
+* Dim green target and grey projection dashed lines in spending flow chart
+* Fix dashboard grid: month status span 2, other metric cards each 1 column on desktop
 * Add receipt image recognition via Claude CLI to expense modal with auto-fill payee and amount
 * Add image attachment to AI chat for receipt/document analysis
 * Auto-detect YNAB account from user profile, remove account dropdown from expense modal
