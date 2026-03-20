@@ -57,11 +57,12 @@ export function ChatInterface() {
       .then((data) => {
         if (data.messages?.length > 0) {
           console.info("[chat] Loaded", data.messages.length, "messages");
-          const msgs = data.messages.map((m: { id: number; role: string; content: string; sender?: string }) => ({
+          const msgs = data.messages.map((m: { id: number; role: string; content: string; sender?: string; image_thumb?: string }) => ({
             id: m.id.toString(),
             role: m.role as "user" | "assistant",
             content: m.content,
             sender: m.sender,
+            image_thumb: m.image_thumb || undefined,
           }));
           setMessages(msgs);
           messageCountRef.current = msgs.length;

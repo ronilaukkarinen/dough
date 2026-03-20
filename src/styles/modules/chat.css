@@ -5,10 +5,15 @@
 }
 
 .chat-page {
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100dvh - 3.5rem);
   display: flex;
   flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .chat-page {
+    height: 100dvh;
+  }
 }
 
 .chat-container {
