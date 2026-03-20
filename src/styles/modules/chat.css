@@ -1,17 +1,13 @@
 /* Module: chat */
 
-.chat-page {
-  height: calc(100vh - 4rem);
-  display: flex;
-  flex-direction: column;
-  padding: 0.75rem;
+.l-page-container:has(.chat-page) {
+  padding: 0;
 }
 
-@media (min-width: 768px) {
-  .chat-page {
-    height: calc(100vh - 4.5rem);
-    padding: 1rem;
-  }
+.chat-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-container {
