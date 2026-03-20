@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { ArrowDown, ArrowUp, CalendarClock, Wallet, Info } from "lucide-react";
@@ -43,6 +44,7 @@ export function DailyAllowance({
   currency = "€",
 }: DailyAllowanceProps) {
   const { t, locale, fmt } = useLocale();
+  const [infoOpen, setInfoOpen] = useState(false);
   const effectiveBudget = todaySpentAll > 0 ? Math.max(0, todayRemaining) : dailyBudget;
   const overspent = todayRemaining < 0;
   const status =
@@ -111,8 +113,8 @@ export function DailyAllowance({
               <p className="metric-card-label">
                 {locale === "fi" ? "Kuukauden tilanne" : "Month status"}
                 <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger className="metric-info-trigger">
+                  <Tooltip open={infoOpen} onOpenChange={setInfoOpen}>
+                    <TooltipTrigger className="metric-info-trigger" onClick={() => setInfoOpen((v) => !v)}>
                       <Info />
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
