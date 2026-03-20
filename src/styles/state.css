@@ -52,14 +52,14 @@
   font-size: 1.75rem;
 }
 
-.privacy-mode .ai-summary-text,
-.privacy-mode .chat-message-text,
-.privacy-mode .personal-greeting-text {
-  filter: blur(5px);
+.privacy-mode .ai-summary-text {
+  color: transparent !important;
+  background: var(--muted);
+  border-radius: 0.25rem;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.privacy-mode .chat-bubble-image {
-  filter: blur(16px);
+.privacy-mode .ai-summary-text * {
+  color: transparent !important;
 }
