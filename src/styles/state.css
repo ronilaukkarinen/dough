@@ -16,3 +16,40 @@
 .is-hidden {
   display: none;
 }
+
+/* Privacy mode: mask all sensitive financial data for screenshots */
+.privacy-mode .metric-card-value,
+.privacy-mode .metric-card-value-3xl,
+.privacy-mode .daily-allowance-hero-value,
+.privacy-mode .daily-allowance-hero-note,
+.privacy-mode .list-item-amount-value,
+.privacy-mode .list-item-name,
+.privacy-mode .list-item-meta,
+.privacy-mode .debt-item-name,
+.privacy-mode .debt-item-amount,
+.privacy-mode .debt-item-meta,
+.privacy-mode .personal-greeting-text,
+.privacy-mode .ai-summary-text,
+.privacy-mode .metric-card-note,
+.privacy-mode .chat-message-text,
+.privacy-mode .chat-message-sender,
+.privacy-mode .payoff-stats-value,
+.privacy-mode .category-breakdown-donut-total,
+.privacy-mode .category-breakdown-legend-text,
+.privacy-mode .category-breakdown-legend-amount,
+.privacy-mode .net-worth-card-value,
+.privacy-mode .spending-flow-bubble-text {
+  color: transparent !important;
+  background: var(--muted);
+  border-radius: 0.25rem;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.privacy-mode .spending-flow-bubble-text {
+  background: var(--muted) !important;
+}
+
+.privacy-mode .chat-bubble-image {
+  filter: blur(16px);
+}

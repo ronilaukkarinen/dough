@@ -15,6 +15,8 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Eye,
+  EyeOff,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -37,15 +39,17 @@ const navKeys = [
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  privacyMode?: boolean;
+  onTogglePrivacy?: () => void;
 }
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, privacyMode, onTogglePrivacy }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [unreadChat, setUnreadChat] = useState(0);
   const [unreadTx, setUnreadTx] = useState(0);
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   // Initial unread check + reset when navigating to page
   useEffect(() => {
@@ -152,6 +156,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <Settings className="l-sidebar-link-icon" />
           {!collapsed && <span>{t.common.settings}</span>}
         </Link>
+        {onTogglePrivacy && (
+          <button
+            type="button"
+            onClick={onTogglePrivacy}
+            className="l-sidebar-link"
+          >
+            {privacyMode ? <EyeOff className="l-sidebar-link-icon" /> : <Eye className="l-sidebar-link-icon" />}
+            {!collapsed && <span>{privacyMode ? (locale === "fi" ? "Näytä tiedot" : "Show data") : (locale === "fi" ? "Piilota tiedot" : "Hide data")}</span>}
+          </button>
+        )}
         <button
           type="button"
           onClick={handleLogout}
