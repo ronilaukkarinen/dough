@@ -1,5 +1,10 @@
 ### 1.1.0: 2026-03-20
 
+* Add receipt image recognition via Claude CLI to expense modal with auto-fill payee and amount
+* Add image attachment to AI chat for receipt/document analysis
+* Auto-detect YNAB account from user profile, remove account dropdown from expense modal
+* Add name-based account routing: memo mentioning another user routes to their account
+* Move sync button to left of add expense button, make button style consistent with other pages
 * Fix mark unpaid button to override YNAB auto-match by storing explicit is_paid=0
 * Add spending flow hero chart with gradient line, projected spending, savings target, and status bubble
 * Change savings target label to "Vakaa talous" in Finnish

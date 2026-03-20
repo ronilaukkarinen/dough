@@ -72,6 +72,11 @@ All endpoints require authentication via `dough-session` cookie (except `/api/au
 - `GET /api/chat/unread` — get unread count for current user
 - `POST /api/chat/unread` — mark all as read
 
+### Receipt
+
+- `POST /api/receipt` — parse receipt image via Claude vision, returns amount, payee, date
+- `POST /api/receipt/resolve-account` — resolve YNAB account from memo text (name-based routing)
+
 ### Payee matching
 
 - `GET /api/matches` — list patterns and monthly matches

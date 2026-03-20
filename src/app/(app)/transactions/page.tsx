@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocale } from "@/lib/locale-context";
 import { isTransfer } from "@/lib/transaction-utils";
 import { useYnab } from "@/lib/ynab-context";
@@ -18,28 +18,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   ArrowUpRight,
   ArrowDownLeft,
   Search,
   RefreshCw,
   Loader2,
   Plus,
+  Paperclip,
 } from "lucide-react";
 
 type FilterType = "all" | "income" | "expenses" | "transfers";
-
-interface YnabAccount {
-  id: string;
-  name: string;
-  balance: number;
-}
 
 export default function TransactionsPage() {
   const { t, locale, fmt } = useLocale();
@@ -47,31 +35,97 @@ export default function TransactionsPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
   const [addOpen, setAddOpen] = useState(false);
-  const [accounts, setAccounts] = useState<YnabAccount[]>([]);
-  const [addAccount, setAddAccount] = useState("");
   const [addAmount, setAddAmount] = useState("");
   const [addPayee, setAddPayee] = useState("");
   const [addMemo, setAddMemo] = useState("");
   const [addLoading, setAddLoading] = useState(false);
+  const [linkedAccountId, setLinkedAccountId] = useState("");
+  const [linkedAccountName, setLinkedAccountName] = useState("");
+  const [receiptParsing, setReceiptParsing] = useState(false);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Auto-detect user's linked account
   useEffect(() => {
-    if (connected) {
-      fetch("/api/ynab/accounts").then((r) => r.json()).then((d) => {
-        if (d.accounts?.length) setAccounts(d.accounts);
-      }).catch(() => {});
+    console.debug("[transactions] Loading user profile for account auto-detect");
+    Promise.all([
+      fetch("/api/profile").then((r) => r.json()),
+      fetch("/api/ynab/accounts").then((r) => r.json()).catch(() => ({ accounts: [] })),
+    ]).then(([profileData, accountsData]) => {
+      const ids = profileData.linkedAccountIds || [];
+      if (ids.length > 0 && accountsData.accounts) {
+        setLinkedAccountId(ids[0]);
+        const account = accountsData.accounts.find((a: { id: string; name: string }) => a.id === ids[0]);
+        if (account) setLinkedAccountName(account.name);
+        console.info("[transactions] Auto-detected account:", account?.name || ids[0]);
+      }
+    }).catch(() => {});
+  }, []);
+
+  // Resolve account from memo (name-based routing)
+  const resolveAccountFromMemo = async (memo: string) => {
+    if (!memo.trim()) return;
+    try {
+      const res = await fetch("/api/receipt/resolve-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memo }),
+      });
+      const data = await res.json();
+      if (data.account_id && data.account_id !== linkedAccountId) {
+        setLinkedAccountId(data.account_id);
+        setLinkedAccountName(data.account_name || "");
+        console.info("[transactions] Routed to:", data.routed_to, data.account_name);
+      }
+    } catch {
+      // ignore routing errors
     }
-  }, [connected]);
+  };
+
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    console.info("[transactions] Receipt uploaded:", file.name, file.type, Math.round(file.size / 1024), "KB");
+    setReceiptParsing(true);
+
+    // Show preview
+    const preview = URL.createObjectURL(file);
+    setReceiptPreview(preview);
+
+    // Read as base64
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(",")[1];
+      try {
+        const res = await fetch("/api/receipt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: base64, media_type: file.type }),
+        });
+        const data = await res.json();
+        if (data.payee) setAddPayee(data.payee);
+        if (data.amount) setAddAmount(data.amount);
+        console.info("[transactions] Receipt parsed:", data);
+      } catch (err) {
+        console.error("[transactions] Receipt parse error:", err);
+      } finally {
+        setReceiptParsing(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleAddExpense = async () => {
-    if (!addAccount || !addAmount || !addPayee) return;
+    if (!linkedAccountId || !addAmount || !addPayee) return;
     setAddLoading(true);
-    console.info("[transactions] Adding expense:", addPayee, addAmount);
+    console.info("[transactions] Adding expense:", addPayee, addAmount, "to account:", linkedAccountId);
     try {
       const res = await fetch("/api/ynab/transaction", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          account_id: addAccount,
+          account_id: linkedAccountId,
           amount: addAmount.replace(",", "."),
           payee_name: addPayee,
           memo: addMemo || undefined,
@@ -82,6 +136,7 @@ export default function TransactionsPage() {
         setAddAmount("");
         setAddPayee("");
         setAddMemo("");
+        setReceiptPreview(null);
         sync();
       }
     } catch (err) {
@@ -133,7 +188,10 @@ export default function TransactionsPage() {
           <p className="page-subtitle">{t.transactions.subtitle}</p>
         </div>
         <div className="sync-row">
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
+          <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
+            <RefreshCw className={loading ? "icon-sm animate-spin" : "icon-sm"} />
+          </Button>
+          <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) { setReceiptPreview(null); } }}>
             <DialogTrigger render={<Button size="sm" />}>
               <Plus className="icon-sm" />
               {locale === "fi" ? "Lisää kulu" : "Add expense"}
@@ -143,41 +201,54 @@ export default function TransactionsPage() {
                 <DialogTitle>{locale === "fi" ? "Lisää puuttuva kulu" : "Add missing expense"}</DialogTitle>
               </DialogHeader>
               <div className="form-stack">
-                <div className="form-field">
-                  <Label>{locale === "fi" ? "Tili" : "Account"}</Label>
-                  <Select value={addAccount} onValueChange={(v) => v && setAddAccount(v)}>
-                    <SelectTrigger className="settings-input">
-                      <SelectValue placeholder={locale === "fi" ? "Valitse tili" : "Select account"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {accounts.map((a) => (
-                        <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {linkedAccountName && (
+                  <p className="settings-help">{locale === "fi" ? "Tili" : "Account"}: {linkedAccountName}</p>
+                )}
                 <div className="form-field">
                   <Label>{locale === "fi" ? "Saaja" : "Payee"}</Label>
-                  <Input value={addPayee} onChange={(e) => setAddPayee(e.target.value)} placeholder={locale === "fi" ? "esim. K-Market" : "e.g. Store name"} />
+                  <div className="settings-row">
+                    <Input value={addPayee} onChange={(e) => setAddPayee(e.target.value)} placeholder={locale === "fi" ? "esim. K-Market" : "e.g. Store name"} />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleReceiptUpload}
+                      hidden
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={receiptParsing}
+                    >
+                      {receiptParsing ? <Loader2 className="icon-sm animate-spin" /> : <Paperclip className="icon-sm" />}
+                    </Button>
+                  </div>
                 </div>
+                {receiptPreview && (
+                  <img src={receiptPreview} alt="Receipt" className="receipt-preview" />
+                )}
                 <div className="form-field">
                   <Label>{locale === "fi" ? "Summa (€)" : "Amount (€)"}</Label>
                   <Input type="text" inputMode="decimal" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} placeholder="0.00" />
                 </div>
                 <div className="form-field">
                   <Label>{locale === "fi" ? "Kuvaus" : "Description"}</Label>
-                  <Input value={addMemo} onChange={(e) => setAddMemo(e.target.value)} placeholder={locale === "fi" ? "esim. Lotan bussikortti" : "e.g. Bus card for kids"} />
+                  <Input
+                    value={addMemo}
+                    onChange={(e) => setAddMemo(e.target.value)}
+                    onBlur={() => resolveAccountFromMemo(addMemo)}
+                    placeholder={locale === "fi" ? "esim. Lotan bussikortti" : "e.g. Bus card for kids"}
+                  />
                 </div>
                 <p className="settings-help">{locale === "fi" ? "Kategoria valitaan automaattisesti tekoälyllä" : "Category is auto-selected by AI"}</p>
-                <Button type="button" onClick={handleAddExpense} disabled={addLoading || !addAccount || !addAmount || !addPayee}>
+                <Button type="button" onClick={handleAddExpense} disabled={addLoading || !linkedAccountId || !addAmount || !addPayee}>
                   {addLoading ? (locale === "fi" ? "Lisätään..." : "Adding...") : (locale === "fi" ? "Lisää" : "Add")}
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
-          <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
-            <RefreshCw className={loading ? "icon-sm animate-spin" : "icon-sm"} />
-          </Button>
         </div>
       </div>
 
@@ -235,8 +306,8 @@ export default function TransactionsPage() {
             );
           })}
           {filtered.length === 0 && (
-            <div className="list-item">
-              <p className="list-item-meta">{t.transactions.search}</p>
+            <div className="list-empty">
+              <p>{locale === "fi" ? "Ei tapahtumia" : "No transactions"}</p>
             </div>
           )}
         </Card>

@@ -91,13 +91,27 @@ function buildPrompt(
 
 export async function getFinancialAdvice(
   messages: { role: "user" | "assistant"; content: string }[],
-  context: FinancialContext
+  context: FinancialContext,
+  image?: string,
+  imageMediaType?: string
 ): Promise<string> {
   const prompt = buildPrompt(messages, context);
+  const claudePath = process.env.CLAUDE_PATH || "claude";
+
+  // If image attached, use stream-json format for multimodal
+  if (image && imageMediaType) {
+    console.info("[ai] Calling claude CLI with image via stream-json");
+    const { queryClaudeWithImage } = await import("./claude-image");
+    const result = await queryClaudeWithImage(prompt, image, imageMediaType, 120000);
+    if (result.error) {
+      console.error("[ai] Image query error:", result.error);
+      return "Sorry, something went wrong with the AI advisor. Please try again.";
+    }
+    return result.text;
+  }
 
   try {
     console.info("[ai] Calling claude CLI via stdin pipe");
-    const claudePath = process.env.CLAUDE_PATH || "claude";
 
     const response = await new Promise<string>((resolve, reject) => {
       const proc = spawn(claudePath, ["-p", "-"], {

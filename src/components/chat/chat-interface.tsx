@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, Copy, Check } from "lucide-react";
+import { Send, Bot, User, Copy, Check, Paperclip, X } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import { useEvent } from "@/lib/use-events";
 import ReactMarkdown from "react-markdown";
@@ -26,6 +26,10 @@ export function ChatInterface() {
   const [currentUser, setCurrentUser] = useState("");
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [chatImage, setChatImage] = useState<string | null>(null);
+  const [chatImagePreview, setChatImagePreview] = useState<string | null>(null);
+  const [chatImageType, setChatImageType] = useState("");
+  const chatFileRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messageCountRef = useRef(0);
@@ -162,13 +166,22 @@ export function ChatInterface() {
       messageCountRef.current++;
     } catch {}
 
-    // Fire AI request
+    // Fire AI request (include image if attached)
+    const chatBody: Record<string, unknown> = {
+      messages: [...messages, userMessage].map((m) => ({ role: m.role, content: m.content })),
+    };
+    if (chatImage) {
+      chatBody.image = chatImage;
+      chatBody.image_media_type = chatImageType;
+      setChatImage(null);
+      setChatImagePreview(null);
+      setChatImageType("");
+    }
+
     fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: [...messages, userMessage].map((m) => ({ role: m.role, content: m.content })),
-      }),
+      body: JSON.stringify(chatBody),
     })
       .then((r) => r.json())
       .then(() => {
@@ -265,7 +278,37 @@ export function ChatInterface() {
       </ScrollArea>
 
       <div className="chat-input-area">
+        {chatImagePreview && (
+          <div className="chat-image-preview">
+            <img src={chatImagePreview} alt="Attached" />
+            <button type="button" className="chat-image-remove" onClick={() => { setChatImage(null); setChatImagePreview(null); setChatImageType(""); }}>
+              <X />
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="chat-input-form">
+          <input
+            ref={chatFileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              console.info("[chat] Image attached:", file.name, file.type);
+              setChatImagePreview(URL.createObjectURL(file));
+              setChatImageType(file.type);
+              const reader = new FileReader();
+              reader.onload = () => {
+                setChatImage((reader.result as string).split(",")[1]);
+              };
+              reader.readAsDataURL(file);
+              e.target.value = "";
+            }}
+          />
+          <button type="button" className="chat-attach-btn" onClick={() => chatFileRef.current?.click()} disabled={loading}>
+            <Paperclip />
+          </button>
           <textarea
             ref={inputRef as unknown as React.RefObject<HTMLTextAreaElement>}
             value={input}

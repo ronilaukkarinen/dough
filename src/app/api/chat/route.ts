@@ -8,7 +8,7 @@ import { eventBus } from "@/lib/event-bus";
 
 export async function POST(request: Request) {
   try {
-    const { messages } = await request.json();
+    const { messages, image, image_media_type } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
@@ -182,7 +182,7 @@ export async function POST(request: Request) {
       };
     }
 
-    const response = await getFinancialAdvice(messages, context);
+    const response = await getFinancialAdvice(messages, context, image, image_media_type);
 
     // Save assistant response to DB for persistence
     if (user && response) {
