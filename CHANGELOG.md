@@ -1,5 +1,6 @@
 ### 1.1.0: 2026-03-20
 
+* Increase spending flow dashed line opacity slightly for better visibility
 * Add PDF support for receipt uploads in both expense modal and AI chat
 * Auto-add expense to YNAB when image is sent in AI chat
 * Show uploaded image thumbnail in chat message bubbles, persisted to DB

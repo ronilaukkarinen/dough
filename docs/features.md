@@ -29,7 +29,9 @@
 - Current date/time awareness
 - Shared chat visible to all household members
 - Sender names on message bubbles
-- Image attachment for receipt/document analysis via Claude vision
+- Image and PDF attachment for receipt/document analysis via Claude vision
+- Auto-add expense to YNAB when image sent in chat
+- Image thumbnails displayed in chat message bubbles
 - Three bubble styles: self (right), other user (left, warm), AI (left, cool)
 
 ### Transactions
@@ -38,7 +40,7 @@
 - Filter by all, expenses, income, transfers
 - Search by payee or category
 - Add missing expense with AI auto-categorization and receipt image recognition
-- Receipt photo attachment auto-fills payee and amount via Claude vision
+- Receipt photo or PDF attachment auto-fills payee and amount via Claude vision
 - Auto-detect YNAB account from user profile, name-based routing for other household members
 - Description/memo field
 - Unread indicator dot when new data synced

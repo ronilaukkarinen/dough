@@ -73,7 +73,7 @@ data/                     # SQLite database (gitignored)
 - `investment_overrides` — monthly contribution and expected return overrides for YNAB investment accounts
 - `payee_matches` — YNAB payee patterns for matching
 - `monthly_matches` — matched transactions per source per month
-- `chat_messages` — shared chat history
+- `chat_messages` — shared chat history with optional image thumbnails
 - `chat_last_seen` — per-user read tracking
 - `typing_status` — real-time typing indicators
 - `transactions_last_seen` — per-user transaction read tracking
