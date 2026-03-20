@@ -178,42 +178,46 @@ export async function GET(request: Request) {
     const projectedRemainingExpenses = Math.round(unpaidBillsAmount + (dailyDiscretionary * daysLeft));
     const projectedTotalExpenses = Math.round(monthActivity + projectedRemainingExpenses + totalInvestmentContributions + totalDebtPayments);
 
-    // Daily budget: simulate day-by-day cash flow (same as dashboard)
+    // Daily budget: time-window cash flow simulation (same as dashboard)
     const resolveDay = (day: number) => day === 0 ? daysInMonth : day;
-    const unpaidBillsList = recurringBills.filter((b) => !matchedBillIds.has(b.id) && b.due_day >= now.getDate());
-    const overdueBills = recurringBills.filter((b) => !matchedBillIds.has(b.id) && b.due_day < now.getDate());
-    const unreceivedIncomes = incomeSources.filter((i) => resolveDay(i.expected_day) > now.getDate());
+    const unpaidBillsList = recurringBills.filter((b) => !matchedBillIds.has(b.id));
 
-    // Get income matches to exclude already received
     const incomeMatches = db
       .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'income' AND month = ?")
       .all(billMonth) as { source_id: number }[];
     const matchedIncomeIds = new Set(incomeMatches.map((m) => m.source_id));
-    const unreceivedIncomesFiltered = unreceivedIncomes.filter((i) => {
-      const allIncome = db.prepare("SELECT id FROM income_sources WHERE name = ? AND amount = ?").get(i.name, i.amount) as { id: number } | undefined;
-      return allIncome ? !matchedIncomeIds.has(allIncome.id) : true;
-    });
 
-    let simulatedBalance = checkingSavings - savingGoal;
-    for (let d = now.getDate() + 1; d <= daysInMonth; d++) {
-      for (const inc of unreceivedIncomesFiltered) {
-        if (resolveDay(inc.expected_day) === d) simulatedBalance += inc.amount;
-      }
-      for (const bill of unpaidBillsList) {
-        if (bill.due_day === d) simulatedBalance -= bill.amount;
-      }
-      for (const debt of debtAccounts) {
-        if (debt.dueDay === d && debt.payment > 0) simulatedBalance -= debt.payment;
-      }
-    }
-    for (const bill of overdueBills) {
-      simulatedBalance -= bill.amount;
+    const incomeWithIds = db
+      .prepare("SELECT id, amount, expected_day FROM income_sources WHERE is_active = 1")
+      .all() as { id: number; amount: number; expected_day: number }[];
+    const unreceivedIncomesFiltered = incomeWithIds.filter((i) => resolveDay(i.expected_day) > daysPassed && !matchedIncomeIds.has(i.id));
+
+    let summaryBalance = checkingSavings - savingGoal;
+    for (const bill of unpaidBillsList) {
+      if (bill.due_day <= daysPassed || bill.due_day === 0) summaryBalance -= bill.amount;
     }
     for (const debt of debtAccounts) {
-      if ((debt.dueDay <= now.getDate() || debt.dueDay === 0) && debt.payment > 0) simulatedBalance -= debt.payment;
+      if ((debt.dueDay <= daysPassed || debt.dueDay === 0) && debt.payment > 0) summaryBalance -= debt.payment;
     }
-    const spendableBalance = Math.max(0, simulatedBalance);
-    const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
+    let minDailyBudget = daysLeft > 0 ? summaryBalance / daysLeft : 0;
+    let summaryRunning = summaryBalance;
+    for (let d = daysPassed + 1; d <= daysInMonth; d++) {
+      for (const inc of unreceivedIncomesFiltered) {
+        if (resolveDay(inc.expected_day) === d) summaryRunning += inc.amount;
+      }
+      for (const bill of unpaidBillsList) {
+        if (bill.due_day === d) summaryRunning -= bill.amount;
+      }
+      for (const debt of debtAccounts) {
+        if (debt.dueDay === d && debt.payment > 0) summaryRunning -= debt.payment;
+      }
+      const daysFromHere = daysInMonth - d + 1;
+      if (daysFromHere > 0) {
+        const budgetFromHere = summaryRunning / daysFromHere;
+        if (budgetFromHere < minDailyBudget) minDailyBudget = budgetFromHere;
+      }
+    }
+    const dailyBudget = Math.max(0, Math.round(minDailyBudget * 100) / 100);
 
     const prompt = `${lang} You are a personal finance advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} ${summaryInstructions}
 

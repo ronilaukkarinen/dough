@@ -163,39 +163,44 @@ export default function DashboardPage() {
     .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
     .reduce((s, i) => s + i.amount, 0);
 
-  // Daily budget: simulate day-by-day cash flow from today to month end.
-  // Start with current balance, subtract saving goal.
-  // Each future day: add income arriving that day, subtract bills/debts due that day.
-  // Whatever is left after all obligations = total discretionary pool / days left.
+  // Daily budget: time-window cash flow simulation.
+  // Find the lowest daily balance between now and month end.
+  // This prevents future income (like salary on day 31) from inflating today's budget.
   const unpaidBillsList = bills.filter((b) => b.is_active && !b.is_paid);
   const unreceivedIncomes = incomes
     .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id));
 
-  let simulatedBalance = availableBalance - savingRate;
-  for (let d = today + 1; d <= daysInMonth; d++) {
-    // Add income arriving on this day
-    for (const inc of unreceivedIncomes) {
-      if (resolveDay(inc.expected_day) === d) simulatedBalance += inc.amount;
-    }
-    // Subtract bills due on this day
-    for (const bill of unpaidBillsList) {
-      if (bill.due_day === d) simulatedBalance -= bill.amount;
-    }
-    // Subtract debts due on this day
-    for (const debt of debtItems) {
-      if (debt.dueDay === d && debt.amount > 0) simulatedBalance -= debt.amount;
-    }
-  }
-  // Also subtract bills/debts with due_day = 0 (unknown) or already overdue but unpaid
+  // Start with current balance minus saving goal minus overdue obligations
+  let balance = availableBalance - savingRate;
   for (const bill of unpaidBillsList) {
-    if (bill.due_day <= today || bill.due_day === 0) simulatedBalance -= bill.amount;
+    if (bill.due_day <= today || bill.due_day === 0) balance -= bill.amount;
   }
   for (const debt of debtItems) {
-    if ((debt.dueDay <= today || debt.dueDay === 0) && debt.amount > 0) simulatedBalance -= debt.amount;
+    if ((debt.dueDay <= today || debt.dueDay === 0) && debt.amount > 0) balance -= debt.amount;
   }
 
-  const spendableBalance = Math.max(0, simulatedBalance);
-  const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
+  // Walk each future day, track the minimum balance at each point
+  // The daily budget = minimum future balance / days from that point
+  let minDailyBudget = daysLeft > 0 ? balance / daysLeft : 0;
+  let runningBalance = balance;
+  for (let d = today + 1; d <= daysInMonth; d++) {
+    for (const inc of unreceivedIncomes) {
+      if (resolveDay(inc.expected_day) === d) runningBalance += inc.amount;
+    }
+    for (const bill of unpaidBillsList) {
+      if (bill.due_day === d) runningBalance -= bill.amount;
+    }
+    for (const debt of debtItems) {
+      if (debt.dueDay === d && debt.amount > 0) runningBalance -= debt.amount;
+    }
+    const daysFromHere = daysInMonth - d + 1;
+    if (daysFromHere > 0) {
+      const budgetFromHere = runningBalance / daysFromHere;
+      if (budgetFromHere < minDailyBudget) minDailyBudget = budgetFromHere;
+    }
+  }
+
+  const dailyBudget = Math.max(0, Math.round(minDailyBudget * 100) / 100);
 
   // Burn rate = average daily real spending this month
   const daysPassed = now.getDate();

@@ -1,6 +1,6 @@
 ### 1.2.0: 2026-03-21
 
-* Implement day-by-day cash flow simulation for daily budget: starts with balance, adds each income on its expected day, subtracts each bill/debt on its due day, divides remaining by days left
+* Implement minimum-balance cash flow simulation for daily budget: walks each future day tracking balance as income/obligations flow, takes the tightest point to prevent future salary from inflating today's budget
 * Apply cash flow simulation to dashboard, AI chat, AI summary, and spending flow chart
 
 ### 1.1.0: 2026-03-20
