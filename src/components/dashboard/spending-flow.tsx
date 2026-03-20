@@ -176,7 +176,7 @@ export function SpendingFlow({
                 strokeDasharray="6 4"
                 fill="none"
                 dot={false}
-                strokeOpacity={0.4}
+                strokeOpacity={0.15}
               />
             )}
             <Area
@@ -187,7 +187,7 @@ export function SpendingFlow({
               strokeDasharray="4 4"
               fill="none"
               dot={false}
-              strokeOpacity={0.5}
+              strokeOpacity={0.2}
             />
             <Area
               type="monotone"
