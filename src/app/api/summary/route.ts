@@ -178,8 +178,9 @@ export async function GET(request: Request) {
     const projectedRemainingExpenses = Math.round(unpaidBillsAmount + (dailyDiscretionary * daysLeft));
     const projectedTotalExpenses = Math.round(monthActivity + projectedRemainingExpenses + totalInvestmentContributions + totalDebtPayments);
 
-    // Daily budget matches dashboard: (balance - saving goal - unpaid bills - debts - investments) / days left
-    const spendableBalance = Math.max(0, checkingSavings - savingGoal - unpaidBillsAmount - totalDebtPayments - totalInvestmentContributions);
+    // Daily budget matches dashboard: (balance - saving goal - unpaid bills) / days left
+    // Debts and investments are YNAB transfers, not spending
+    const spendableBalance = Math.max(0, checkingSavings - savingGoal - unpaidBillsAmount);
     const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
     const prompt = `${lang} You are a personal finance advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} ${summaryInstructions}

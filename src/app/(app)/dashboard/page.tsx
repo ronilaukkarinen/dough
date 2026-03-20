@@ -158,10 +158,10 @@ export default function DashboardPage() {
     .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
     .reduce((s, i) => s + i.amount, 0);
 
-  // Daily budget = (balance - saving goal - unpaid bills - debt payments - investments) / days left
-  // Shows what's actually available for daily spending after all obligations
+  // Daily budget = (balance - saving goal - unpaid bills) / days left
+  // Debts and investments are YNAB transfers, not spending — excluded from daily budget
   const unpaidBillsForBudget = bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0);
-  const spendableBalance = Math.max(0, availableBalance - savingRate - unpaidBillsForBudget - debtMonthly - investmentMonthly);
+  const spendableBalance = Math.max(0, availableBalance - savingRate - unpaidBillsForBudget);
   const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
   // Burn rate = average daily real spending this month

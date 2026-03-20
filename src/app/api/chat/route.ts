@@ -120,8 +120,9 @@ export async function POST(request: Request) {
           const debtPaymentsTotal = debts.reduce((s: number, d: any) => s + (d.minimumPayment || 0), 0);
           const investmentContributions = investmentAccounts.reduce((s: number, i: any) => s + (i.monthlyContribution || 0), 0);
 
-          // Daily budget matches dashboard: balance - saving goal - unpaid bills - debts - investments
-          const spendableBalance = Math.max(0, checkingSavings - savingRate - unpaidBillsTotal - debtPaymentsTotal - investmentContributions);
+          // Daily budget matches dashboard: balance - saving goal - unpaid bills
+          // Debts and investments are YNAB transfers, not spending
+          const spendableBalance = Math.max(0, checkingSavings - savingRate - unpaidBillsTotal);
           const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
           // Income arriving before last day of month (before salary), including today
