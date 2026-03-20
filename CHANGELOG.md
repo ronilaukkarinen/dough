@@ -1,5 +1,6 @@
 ### 1.1.0: 2026-03-20
 
+* Fix greeting to hide household remaining when same as personal, fix label to "jäljellä"
 * Add blur glass effect to mobile top bar with backdrop-filter
 * Tint dark theme backgrounds with subtle deep purple-black
 * Fix AI chat messages not appearing by adding fetch response fallback with dedup

@@ -56,14 +56,18 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
               {locale === "fi" ? " verran. Huomenna parempi kulukuri sitten." : "."}
             </>
           : <>
-              {locale === "fi" ? "Suositeltu käyttösumma sinulle " : "Suggested for you "}
+              {locale === "fi" ? "Käytettävissä sinulle " : "Available for you "}
               <span className="personal-greeting-value" data-status={valueStatus(suggestedForYou, dailyBudget)}>
                 {fmt(suggestedForYou)} €
               </span>
-              {locale === "fi" ? ", perheelle yhteensä " : ", household total "}
-              <span className="personal-greeting-value" data-status={valueStatus(todayRemaining, dailyBudget)}>
-                {fmt(todayRemaining)} €
-              </span>
+              {Math.abs(todayRemaining - suggestedForYou) > 1 && (
+                <>
+                  {locale === "fi" ? ", perheelle jäljellä " : ", household remaining "}
+                  <span className="personal-greeting-value" data-status={valueStatus(todayRemaining, dailyBudget)}>
+                    {fmt(todayRemaining)} €
+                  </span>
+                </>
+              )}
               {"."}
             </>
         }
