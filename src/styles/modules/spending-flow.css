@@ -7,43 +7,4 @@
 
 .spending-flow-chart {
   width: 100%;
-  position: relative;
-}
-
-/* Dot at end of actual line */
-.spending-flow-dot {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid var(--background);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 3;
-}
-
-/* Speech bubble to top-right of dot */
-.spending-flow-bubble {
-  position: absolute;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  pointer-events: none;
-  z-index: 4;
-}
-
-.spending-flow-bubble-text {
-  padding: 0.2rem 0.5rem;
-  border-radius: 0.3rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  line-height: 1.2;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Angled tip pointing bottom-left toward the dot */
-.spending-flow-bubble-tip {
-  display: block;
-  margin-left: 0;
 }

@@ -8,6 +8,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  ReferenceDot,
 } from "recharts";
 
 interface SpendingFlowProps {
@@ -50,7 +51,6 @@ export function SpendingFlow({
   const { locale, fmt } = useLocale();
   const target = combinedIncome - savingRate;
 
-  // Build full month data
   const data: { day: number; label: string; actual?: number; projected?: number; target?: number }[] = [];
   let cumulative = 0;
 
@@ -81,12 +81,11 @@ export function SpendingFlow({
   const lastActual = data[daysPassed - 1]?.actual || 0;
   const monthEndTarget = target > 0 ? target : 0;
 
-  // Difference at TODAY
   const todayTarget = targetPerDay > 0 ? Math.round(targetPerDay * daysPassed) : 0;
   const todayDiff = todayTarget - lastActual;
   const todayRatio = todayTarget > 0 ? lastActual / todayTarget : 0;
   const ballColor = targetPerDay > 0 ? ratioToColor(todayRatio) : "#818cf8";
-  // Gradient stops
+
   const gradientStops = data.filter((d) => d.actual !== undefined).map((d, i, arr) => {
     const pos = arr.length > 1 ? i / (arr.length - 1) : 0.5;
     const dayTarget = targetPerDay > 0 ? targetPerDay * d.day : 0;
@@ -98,20 +97,43 @@ export function SpendingFlow({
     ? `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "alle" : "under"}`
     : `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "yli" : "over"}`;
 
-  // Position dot + bubble as HTML overlay
-  // X: percentage across the chart (days)
-  const dotLeftPct = ((daysPassed - 0.5) / daysInMonth) * 100;
-  // Y: percentage from top of chart area. Need min/max of all values.
-  const allValues = data.flatMap((d) => [d.actual, d.projected, d.target].filter((v): v is number => v !== undefined));
-  const maxVal = Math.max(...allValues, 1);
-  const minVal = 0;
-  const dotTopPct = maxVal > minVal ? (1 - (lastActual - minVal) / (maxVal - minVal)) * 100 : 50;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const renderDotLabel = (props: any) => {
+    const { viewBox } = props;
+    if (!viewBox) return null;
+    const { x, y } = viewBox;
+    if (!monthEndTarget) return null;
+
+    const bw = bubbleLabel.length * 6.5 + 14;
+    const bh = 20;
+    const bx = x + 14;
+    const by = y - bh - 12;
+
+    return (
+      <g>
+        <path d={`M${bx},${by + bh} L${bx + 7},${by + bh} L${x + 5},${y - 5}`} fill={ballColor} fillOpacity={0.25} />
+        <rect x={bx} y={by} width={bw} height={bh} rx={5} fill={ballColor} fillOpacity={0.25} />
+        <text
+          x={bx + bw / 2}
+          y={by + bh / 2 + 1}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill={ballColor}
+          fontSize={11}
+          fontWeight={600}
+          style={{ fontVariantNumeric: "tabular-nums" }}
+        >
+          {bubbleLabel}
+        </text>
+      </g>
+    );
+  };
 
   return (
     <div className="spending-flow">
       <div className="spending-flow-chart">
         <ResponsiveContainer width="100%" height={160}>
-          <AreaChart data={data} margin={{ top: 6, right: 16, left: -20, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 36, right: 16, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="flowLineGrad" x1="0" y1="0" x2="1" y2="0">
                 {gradientStops.map((s, i) => (
@@ -171,35 +193,19 @@ export function SpendingFlow({
               fill="none"
               dot={false}
             />
+            {daysPassed > 0 && (
+              <ReferenceDot
+                x={data[daysPassed - 1]?.label}
+                y={lastActual}
+                r={8}
+                fill={ballColor}
+                stroke="var(--background)"
+                strokeWidth={2}
+                label={renderDotLabel}
+              />
+            )}
           </AreaChart>
         </ResponsiveContainer>
-        {daysPassed > 0 && (
-          <div
-            className="spending-flow-dot"
-            style={{
-              left: `calc(${dotLeftPct}%)`,
-              top: `calc(${dotTopPct}% - 2px)`,
-              background: ballColor,
-              boxShadow: `0 0 8px ${ballColor}66`,
-            }}
-          />
-        )}
-        {monthEndTarget > 0 && daysPassed > 0 && (
-          <div
-            className="spending-flow-bubble"
-            style={{
-              left: `calc(${dotLeftPct}% + 14px)`,
-              top: `calc(${dotTopPct}% - 28px)`,
-            }}
-          >
-            <span className="spending-flow-bubble-text" style={{ background: `${ballColor}33`, color: ballColor }}>
-              {bubbleLabel}
-            </span>
-            <svg className="spending-flow-bubble-tip" width="10" height="8" viewBox="0 0 10 8">
-              <path d="M0,0 L8,0 L0,8 Z" fill={`${ballColor}33`} />
-            </svg>
-          </div>
-        )}
       </div>
     </div>
   );
