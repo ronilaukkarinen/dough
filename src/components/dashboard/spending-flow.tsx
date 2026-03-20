@@ -8,7 +8,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  ReferenceDot,
 } from "recharts";
 
 interface SpendingFlowProps {
@@ -102,8 +101,14 @@ export function SpendingFlow({
     ? `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "alle" : "under"}`
     : `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "yli" : "over"}`;
 
-  // Estimate bubble X position as % of chart width (accounting for left margin)
-  const bubbleLeftPct = ((daysPassed - 0.5) / daysInMonth) * 100;
+  // Position dot + bubble as HTML overlay
+  // X: percentage across the chart (days)
+  const dotLeftPct = ((daysPassed - 0.5) / daysInMonth) * 100;
+  // Y: percentage from top of chart area. Need min/max of all values.
+  const allValues = data.flatMap((d) => [d.actual, d.projected, d.target].filter((v): v is number => v !== undefined));
+  const maxVal = Math.max(...allValues, 1);
+  const minVal = 0;
+  const dotTopPct = maxVal > minVal ? (1 - (lastActual - minVal) / (maxVal - minVal)) * 100 : 50;
 
   return (
     <div className="spending-flow">
@@ -181,18 +186,35 @@ export function SpendingFlow({
               fill="none"
               dot={false}
             />
-            {daysPassed > 0 && (
-              <ReferenceDot
-                x={data[daysPassed - 1]?.label}
-                y={lastActual}
-                r={7}
-                fill={ballColor}
-                stroke="var(--background)"
-                strokeWidth={2}
-              />
-            )}
           </AreaChart>
         </ResponsiveContainer>
+        {daysPassed > 0 && (
+          <div
+            className="spending-flow-dot"
+            style={{
+              left: `calc(${dotLeftPct}%)`,
+              top: `calc(${dotTopPct}% - 2px)`,
+              background: ballColor,
+              boxShadow: `0 0 8px ${ballColor}66`,
+            }}
+          />
+        )}
+        {monthEndTarget > 0 && daysPassed > 0 && (
+          <div
+            className="spending-flow-bubble"
+            style={{
+              left: `calc(${dotLeftPct}% + 14px)`,
+              top: `calc(${dotTopPct}% - 28px)`,
+            }}
+          >
+            <span className="spending-flow-bubble-text" style={{ background: `${ballColor}33`, color: ballColor }}>
+              {bubbleLabel}
+            </span>
+            <svg className="spending-flow-bubble-tip" width="10" height="8" viewBox="0 0 10 8">
+              <path d="M0,0 L8,0 L0,8 Z" fill={`${ballColor}33`} />
+            </svg>
+          </div>
+        )}
       </div>
     </div>
   );
