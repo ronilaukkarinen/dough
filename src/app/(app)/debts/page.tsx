@@ -88,22 +88,28 @@ export default function DebtsPage() {
   const [saving, setSaving] = useState<string | null>(null);
 
   useEffect(() => {
-    console.debug("[debts] Loading debts and cached suggestion");
-    Promise.all([
-      fetch("/api/debts").then((r) => r.json()),
-      fetch("/api/debts/suggestion").then((r) => r.json()),
-    ]).then(([debtData, suggestionData]) => {
-      if (debtData.debts) {
-        console.info("[debts] Loaded", debtData.debts.length, "debts");
-        setDebts(debtData.debts);
-      }
-      if (suggestionData.suggestion) {
-        console.info("[debts] Loaded cached AI suggestion");
-        setAiSuggestion(suggestionData.suggestion);
-      }
-    })
+    console.debug("[debts] Loading debts");
+    fetch("/api/debts")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.debts) {
+          console.info("[debts] Loaded", data.debts.length, "debts");
+          setDebts(data.debts);
+        }
+      })
       .catch((err) => console.error("[debts] Load error:", err))
       .finally(() => setLoading(false));
+
+    // Load cached suggestion separately (don't block page, cache only)
+    fetch("/api/debts/suggestion?cache_only=1")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.suggestion) {
+          console.info("[debts] Loaded cached AI suggestion");
+          setAiSuggestion(data.suggestion);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const fetchAiSuggestion = () => {

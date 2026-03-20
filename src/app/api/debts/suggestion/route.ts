@@ -4,12 +4,13 @@ import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { spawn } from "child_process";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const user = await getSession();
     if (!user) return NextResponse.json({ suggestion: null }, { status: 401 });
 
-    console.info("[debts/suggestion] Fetching data for AI suggestion");
+    const url = new URL(request.url);
+    const cacheOnly = url.searchParams.get("cache_only") === "1";
 
     const db = getDb();
 
@@ -24,6 +25,14 @@ export async function GET() {
         return NextResponse.json({ suggestion: cachedSuggestion.content });
       }
     }
+
+    // If cache_only, don't generate fresh — just return null
+    if (cacheOnly) {
+      console.debug("[debts/suggestion] No cache, cache_only mode, returning null");
+      return NextResponse.json({ suggestion: null });
+    }
+
+    console.info("[debts/suggestion] Generating fresh AI suggestion");
 
     const cached = db.prepare("SELECT data FROM ynab_cache WHERE id = 1").get() as { data: string } | undefined;
     if (!cached) return NextResponse.json({ suggestion: null });
