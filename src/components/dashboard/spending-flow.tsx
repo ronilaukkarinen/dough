@@ -199,10 +199,10 @@ export function SpendingFlow({
               <ReferenceDot
                 x={data[daysPassed - 1]?.label}
                 y={lastActual}
-                r={8}
-                fill={ballColor}
-                stroke="var(--background)"
-                strokeWidth={2}
+                r={7}
+                fill="#09090b"
+                stroke={ballColor}
+                strokeWidth={3}
                 label={renderDotLabel}
               />
             )}
