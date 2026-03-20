@@ -104,15 +104,15 @@ export function SpendingFlow({
     const { x, y } = viewBox;
     if (!monthEndTarget) return null;
 
-    const bw = bubbleLabel.length * 6 + 8;
+    const bw = bubbleLabel.length * 5.8 + 6;
     const bh = 20;
-    const bx = x + 14;
-    const by = y - bh - 12;
+    const bx = x + 10;
+    const by = y - bh - 6;
 
     return (
       <g>
-        {/* Short rounded tip from bubble bottom-left toward dot */}
-        <path d={`M${bx},${by + bh} L${bx + 8},${by + bh} L${bx},${by + bh + 6} Z`} fill={ballColor} />
+        {/* Short tip from bubble bottom-left toward dot */}
+        <path d={`M${bx + 2},${by + bh} L${bx + 9},${by + bh} L${bx + 2},${by + bh + 5} Z`} fill={ballColor} />
         {/* Solid background bubble */}
         <rect x={bx} y={by} width={bw} height={bh} rx={5} fill={ballColor} />
         <text
