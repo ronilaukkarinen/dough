@@ -112,7 +112,7 @@ export function SpendingFlow({
     return (
       <g>
         {/* Short tip from bubble bottom-left toward dot */}
-        <path d={`M${bx + 2},${by + bh} L${bx + 9},${by + bh} L${bx + 2},${by + bh + 5} Z`} fill={ballColor} />
+        <path d={`M${bx + 2},${by + bh - 2} L${bx + 9},${by + bh - 2} L${bx + 2},${by + bh + 5} Z`} fill={ballColor} />
         {/* Solid background bubble */}
         <rect x={bx} y={by} width={bw} height={bh} rx={5} fill={ballColor} />
         <text
