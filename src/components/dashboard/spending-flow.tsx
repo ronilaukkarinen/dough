@@ -104,7 +104,7 @@ export function SpendingFlow({
     const { x, y } = viewBox;
     if (!monthEndTarget) return null;
 
-    const bw = bubbleLabel.length * 6.5 + 14;
+    const bw = bubbleLabel.length * 6 + 8;
     const bh = 20;
     const bx = x + 14;
     const by = y - bh - 12;
