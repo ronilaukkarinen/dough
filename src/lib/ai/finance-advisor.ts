@@ -73,6 +73,8 @@ ${ctx.savingGoal > 0 ? `Savings goal: ${ctx.savingGoal} euros/month` : ""}
 ${ctx.monthlyHistory.length > 0 ? `Previous months (for trends/comparisons):
 ${ctx.monthlyHistory.map(m => `- ${m.month}: income ${m.income} euros, expenses ${m.expenses} euros, net ${m.net} euros`).join("\n")}` : ""}
 
+IMPORTANT: When users attach a receipt/image and ask you to add an expense, the system automatically adds it to YNAB before you respond. Look for "SYSTEM NOTE" in the user message for the result. Confirm naturally what was added, do NOT say you cannot add expenses.
+
 Guidelines:
 ${getHouseholdSetting("prompt_chat_guidelines") || DEFAULT_CHAT_GUIDELINES}`;
 }

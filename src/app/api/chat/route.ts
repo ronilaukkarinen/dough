@@ -193,8 +193,8 @@ export async function POST(request: Request) {
       };
     }
 
-    // Auto-add expense if image attached
-    let expenseAdded = "";
+    // Auto-add expense if image attached, BEFORE calling AI so it knows
+    let expenseContext = "";
     if (image && image_media_type && add_expense && user) {
       try {
         console.info("[chat] Attempting to auto-add expense from image");
@@ -209,7 +209,6 @@ export async function POST(request: Request) {
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           if (parsed.amount && parsed.payee) {
-            // Get user's linked account
             const linkedAcc = getDb()
               .prepare("SELECT ynab_account_id FROM user_linked_accounts WHERE user_id = ? LIMIT 1")
               .get(user.id) as { ynab_account_id: string } | undefined;
@@ -227,8 +226,10 @@ export async function POST(request: Request) {
                 }),
               });
               if (txRes.ok) {
-                expenseAdded = `\n\n[Added ${parsed.amount} € from ${parsed.payee} to YNAB]`;
+                expenseContext = `SYSTEM NOTE: You successfully added ${parsed.amount} euros from ${parsed.payee} to YNAB. Confirm this naturally in your response (e.g. "I added X € from Y to your expenses"). Do NOT say you cannot add expenses.`;
                 console.info("[chat] Auto-added expense:", parsed.payee, parsed.amount);
+              } else {
+                expenseContext = `SYSTEM NOTE: Attempted to add ${parsed.amount} euros from ${parsed.payee} but the YNAB API returned an error. Let the user know it failed.`;
               }
             }
           }
@@ -238,8 +239,19 @@ export async function POST(request: Request) {
       }
     }
 
-    const response = await getFinancialAdvice(messages, context, image, image_media_type);
-    const fullResponse = response + expenseAdded;
+    // Append expense context to the last user message so AI knows what happened
+    const messagesWithContext = [...messages];
+    if (expenseContext && messagesWithContext.length > 0) {
+      const last = messagesWithContext[messagesWithContext.length - 1];
+      if (last.role === "user") {
+        messagesWithContext[messagesWithContext.length - 1] = {
+          ...last,
+          content: last.content + "\n\n" + expenseContext,
+        };
+      }
+    }
+
+    const fullResponse = await getFinancialAdvice(messagesWithContext, context, image, image_media_type);
 
     // Save assistant response to DB for persistence
     if (user && fullResponse) {
