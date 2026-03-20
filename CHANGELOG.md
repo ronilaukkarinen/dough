@@ -1,5 +1,6 @@
 ### 1.1.0: 2026-03-20
 
+* Add white-space nowrap to all euro amount elements to prevent orphan € on own line
 * Fix spending flow chart and spending chart to show discretionary spending only (excluding bills/debts/investments)
 * Fix daily budget to subtract unpaid bills, debt payments, and investments from balance before dividing by days
 * Force Claude Opus model for all AI features (chat, summary, debts, categorization, receipt parsing)

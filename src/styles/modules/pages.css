@@ -359,6 +359,7 @@
   line-height: 1.25rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   color: var(--foreground);
 }
 
@@ -432,6 +433,7 @@
   line-height: 1.25rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   color: var(--foreground);
 }
 
@@ -700,6 +702,7 @@
   color: var(--foreground);
   margin-top: 0.25rem;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 @media (min-width: 768px) {
@@ -771,9 +774,9 @@
 }
 
 /* Text colors used across pages */
-.text-positive { color: var(--positive); }
-.text-negative { color: var(--negative); }
-.text-chart-3 { color: var(--chart-3); }
+.text-positive { color: var(--positive); white-space: nowrap; }
+.text-negative { color: var(--negative); white-space: nowrap; }
+.text-chart-3 { color: var(--chart-3); white-space: nowrap; }
 .text-foreground { color: var(--foreground); }
 .text-muted { color: var(--muted-foreground); }
 
