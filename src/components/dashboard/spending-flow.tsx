@@ -111,14 +111,16 @@ export function SpendingFlow({
 
     return (
       <g>
-        <path d={`M${bx},${by + bh} L${bx + 7},${by + bh} L${x + 5},${y - 5}`} fill={ballColor} fillOpacity={0.25} />
-        <rect x={bx} y={by} width={bw} height={bh} rx={5} fill={ballColor} fillOpacity={0.25} />
+        {/* Short rounded tip from bubble bottom-left toward dot */}
+        <path d={`M${bx},${by + bh} L${bx + 8},${by + bh} L${bx},${by + bh + 6} Z`} fill={ballColor} />
+        {/* Solid background bubble */}
+        <rect x={bx} y={by} width={bw} height={bh} rx={5} fill={ballColor} />
         <text
           x={bx + bw / 2}
           y={by + bh / 2 + 1}
           textAnchor="middle"
           dominantBaseline="middle"
-          fill={ballColor}
+          fill="#09090b"
           fontSize={11}
           fontWeight={600}
           style={{ fontVariantNumeric: "tabular-nums" }}
