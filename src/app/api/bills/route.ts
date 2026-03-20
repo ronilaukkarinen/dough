@@ -126,7 +126,10 @@ export async function PUT(request: Request) {
         `).run(id, month, body.paid_amount || null);
         console.info("[bills] Manually marked bill", id, "as paid");
       } else {
-        db.prepare("DELETE FROM bill_manual_status WHERE bill_id = ? AND month = ?").run(id, month);
+        db.prepare(`
+          INSERT INTO bill_manual_status (bill_id, month, is_paid, paid_amount) VALUES (?, ?, 0, NULL)
+          ON CONFLICT(bill_id, month) DO UPDATE SET is_paid = 0, paid_amount = NULL
+        `).run(id, month);
         console.info("[bills] Manually marked bill", id, "as unpaid");
       }
       eventBus.emit("data:updated", { source: "bill-status-changed" });
