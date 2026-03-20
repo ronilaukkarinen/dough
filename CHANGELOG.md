@@ -2,6 +2,7 @@
 
 * Remove chat page heading, make chat full height with margins
 * Reduce spending flow circle size, adjust tooltip position
+* Add info tooltip to "Kuukauden tilanne" card explaining the calculation
 * Add due day field to debt overrides, show in debts page, pass to AI chat, summary, and debt suggestion
 * Fix chat image thumbnails not loading from DB when revisiting chat
 * Fix AI to naturally confirm added expenses instead of saying it cannot add them

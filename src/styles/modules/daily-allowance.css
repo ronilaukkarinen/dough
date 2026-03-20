@@ -154,6 +154,30 @@
   line-height: 1rem;
   font-weight: 500;
   color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.metric-info-trigger {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: help;
+  color: var(--muted-foreground);
+  opacity: 0.5;
+  transition: opacity 150ms;
+}
+
+.metric-info-trigger:hover {
+  opacity: 1;
+}
+
+.metric-info-trigger svg {
+  width: 0.6875rem;
+  height: 0.6875rem;
 }
 
 .metric-card-value {

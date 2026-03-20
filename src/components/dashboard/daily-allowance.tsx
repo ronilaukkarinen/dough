@@ -1,7 +1,8 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { ArrowDown, ArrowUp, CalendarClock, Wallet } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { ArrowDown, ArrowUp, CalendarClock, Wallet, Info } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 
 interface DailyAllowanceProps {
@@ -107,7 +108,21 @@ export function DailyAllowance({
               {monthIncome - monthExpenses >= 0 ? <ArrowDown /> : <ArrowUp />}
             </div>
             <div>
-              <p className="metric-card-label">{locale === "fi" ? "Kuukauden tilanne" : "Month status"}</p>
+              <p className="metric-card-label">
+                {locale === "fi" ? "Kuukauden tilanne" : "Month status"}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="metric-info-trigger">
+                      <Info />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      {locale === "fi"
+                        ? "Tulot (odotetut tai saadut) miinus menot: toteutuneet kulut + maksamattomat laskut + arvioitu loppukuun kulutus + sijoitukset + velkaerät"
+                        : "Income (expected or received) minus expenses: actual spending + unpaid bills + projected remaining spending + investments + debt payments"}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </p>
               <p className="metric-card-value">
                 <span className={monthIncome - monthExpenses >= 0 ? "text-positive" : "text-negative"}>
                   {monthIncome - monthExpenses >= 0 ? "+" : "\u2212"}{fmt(Math.abs(monthIncome - monthExpenses))} {currency}
