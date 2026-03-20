@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { getYnabToken, getYnabBudgetId } from "@/lib/household";
+import { eventBus } from "@/lib/event-bus";
 
 export async function GET() {
   try {
@@ -113,6 +114,7 @@ export async function PUT(request: Request) {
     `).run(ynab_account_id, interest_rate ?? 0, minimum_payment ?? 0, due_day ?? 0, notes ?? "");
 
     console.info("[debts] Override saved for", ynab_account_id);
+    eventBus.emit("data:updated", { source: "debt-updated" });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[debts] PUT error:", error);
