@@ -8,7 +8,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  ReferenceDot,
+  Customized,
 } from "recharts";
 
 interface SpendingFlowProps {
@@ -19,6 +19,24 @@ interface SpendingFlowProps {
   targetPerDay: number;
   combinedIncome: number;
   savingRate: number;
+}
+
+function ratioToColor(r: number): string {
+  const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+  const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
+  const green = [74, 222, 128];
+  const yellow = [250, 204, 21];
+  const red = [248, 113, 113];
+  if (r <= 0.85) return `rgb(${green.join(",")})`;
+  if (r <= 1.0) {
+    const t = clamp((r - 0.85) / 0.15, 0, 1);
+    return `rgb(${lerp(green[0], yellow[0], t)},${lerp(green[1], yellow[1], t)},${lerp(green[2], yellow[2], t)})`;
+  }
+  if (r <= 1.15) {
+    const t = clamp((r - 1.0) / 0.15, 0, 1);
+    return `rgb(${lerp(yellow[0], red[0], t)},${lerp(yellow[1], red[1], t)},${lerp(yellow[2], red[2], t)})`;
+  }
+  return `rgb(${red.join(",")})`;
 }
 
 export function SpendingFlow({
@@ -47,7 +65,6 @@ export function SpendingFlow({
         target: targetPerDay > 0 ? Math.round(targetPerDay * d) : undefined,
       });
     } else {
-      // Projected: last actual + daily discretionary per remaining day
       const projected = cumulative + dailyDiscretionary * (d - daysPassed);
       data.push({
         day: d,
@@ -65,38 +82,15 @@ export function SpendingFlow({
 
   const lastActual = data[daysPassed - 1]?.actual || 0;
   const monthEndTarget = target > 0 ? target : 0;
-  const diff = monthEndTarget > 0 ? monthEndTarget - lastActual : 0;
-  const projectedEnd = lastActual + dailyDiscretionary * (daysInMonth - daysPassed);
-  const endDiff = monthEndTarget > 0 ? monthEndTarget - projectedEnd : 0;
 
-  // Status: based on projected end-of-month vs target
-  const status = endDiff > monthEndTarget * 0.05 ? "good" : endDiff >= 0 ? "tight" : "danger";
-  // Ball color = end of line gradient color (matches the last data point's ratio)
-  const lastDayTarget = targetPerDay > 0 ? targetPerDay * daysPassed : 0;
-  const lastRatio = lastDayTarget > 0 ? lastActual / lastDayTarget : 0;
-  const ballColor = targetPerDay > 0 ? ratioToColor(lastRatio) : "#818cf8";
-  const statusColor = status === "good" ? "#4ade80" : status === "tight" ? "#facc15" : "#f87171";
+  // Difference at TODAY: how far actual is from target right now
+  const todayTarget = targetPerDay > 0 ? Math.round(targetPerDay * daysPassed) : 0;
+  const todayDiff = todayTarget - lastActual; // positive = under target, negative = over
+  const todayRatio = todayTarget > 0 ? lastActual / todayTarget : 0;
+  const status = todayDiff > todayTarget * 0.05 ? "good" : todayDiff >= 0 ? "tight" : "danger";
+  const ballColor = targetPerDay > 0 ? ratioToColor(todayRatio) : "#818cf8";
 
-  // Gradient stops: smooth RGB blend based on spending ratio vs target
-  function ratioToColor(r: number): string {
-    // 0.0-0.85 = green, 0.85-1.0 = green→yellow, 1.0-1.15 = yellow→red, 1.15+ = red
-    const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
-    const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
-    const green = [74, 222, 128];   // #4ade80
-    const yellow = [250, 204, 21];  // #facc15
-    const red = [248, 113, 113];    // #f87171
-    if (r <= 0.85) return `rgb(${green.join(",")})`;
-    if (r <= 1.0) {
-      const t = clamp((r - 0.85) / 0.15, 0, 1);
-      return `rgb(${lerp(green[0], yellow[0], t)},${lerp(green[1], yellow[1], t)},${lerp(green[2], yellow[2], t)})`;
-    }
-    if (r <= 1.15) {
-      const t = clamp((r - 1.0) / 0.15, 0, 1);
-      return `rgb(${lerp(yellow[0], red[0], t)},${lerp(yellow[1], red[1], t)},${lerp(yellow[2], red[2], t)})`;
-    }
-    return `rgb(${red.join(",")})`;
-  }
-
+  // Gradient stops
   const gradientStops = data.filter((d) => d.actual !== undefined).map((d, i, arr) => {
     const pos = arr.length > 1 ? i / (arr.length - 1) : 0.5;
     const dayTarget = targetPerDay > 0 ? targetPerDay * d.day : 0;
@@ -104,11 +98,80 @@ export function SpendingFlow({
     return { pos, color: ratioToColor(r) };
   });
 
+  const bubbleLabel = todayDiff >= 0
+    ? `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "alle" : "under"}`
+    : `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "yli" : "over"}`;
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  function DotAndBubble(props: any) {
+    const { xAxisMap, yAxisMap } = props;
+    if (!xAxisMap || !yAxisMap) return null;
+    const xAxis = Object.values(xAxisMap)[0] as any;
+    const yAxis = Object.values(yAxisMap)[0] as any;
+    if (!xAxis?.scale || !yAxis?.scale) return null;
+
+    const dotIndex = daysPassed - 1;
+    if (dotIndex < 0) return null;
+
+    const cx = xAxis.scale(dotIndex) + (xAxis.bandSize ? xAxis.bandSize / 2 : 0);
+    const cy = yAxis.scale(lastActual);
+    if (isNaN(cx) || isNaN(cy)) return null;
+
+    const statusHex = status === "good" ? "#4ade80" : status === "tight" ? "#facc15" : "#f87171";
+    const bgOpacity = status === "good" ? "33" : status === "tight" ? "33" : "33";
+
+    // Bubble dimensions
+    const bw = bubbleLabel.length * 6 + 16;
+    const bh = 20;
+    const bx = cx + 12;
+    const by = cy - bh - 8;
+    // Tip: from bottom-left of bubble, pointing toward dot
+    const tipX1 = bx;
+    const tipY1 = by + bh;
+    const tipX2 = bx + 6;
+    const tipY2 = by + bh;
+    const tipX3 = cx + 5;
+    const tipY3 = cy - 5;
+
+    return (
+      <g>
+        {/* Dot */}
+        <circle cx={cx} cy={cy} r={7} fill={ballColor} stroke="var(--background)" strokeWidth={2} />
+        {/* Speech bubble */}
+        {monthEndTarget > 0 && (
+          <>
+            {/* Tip pointing to ball */}
+            <polygon
+              points={`${tipX1},${tipY1} ${tipX2},${tipY2} ${tipX3},${tipY3}`}
+              fill={`${statusHex}${bgOpacity}`}
+            />
+            {/* Body */}
+            <rect x={bx} y={by} width={bw} height={bh} rx={5} fill={`${statusHex}${bgOpacity}`} />
+            {/* Text */}
+            <text
+              x={bx + bw / 2}
+              y={by + bh / 2 + 1}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill={statusHex}
+              fontSize={11}
+              fontWeight={600}
+              fontFamily="var(--font-geist-sans), system-ui, sans-serif"
+              style={{ fontVariantNumeric: "tabular-nums" }}
+            >
+              {bubbleLabel}
+            </text>
+          </>
+        )}
+      </g>
+    );
+  }
+
   return (
     <div className="spending-flow">
       <div className="spending-flow-chart">
-        <ResponsiveContainer width="100%" height={140}>
-          <AreaChart data={data} margin={{ top: 32, right: 12, left: -20, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={160}>
+          <AreaChart data={data} margin={{ top: 36, right: 16, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="flowLineGrad" x1="0" y1="0" x2="1" y2="0">
                 {gradientStops.map((s, i) => (
@@ -168,35 +231,9 @@ export function SpendingFlow({
               fill="none"
               dot={false}
             />
-            {daysPassed > 0 && (
-              <ReferenceDot
-                x={data[daysPassed - 1]?.label}
-                y={lastActual}
-                r={7}
-                fill={ballColor}
-                stroke="var(--background)"
-                strokeWidth={2}
-              />
-            )}
+            <Customized component={DotAndBubble} />
           </AreaChart>
         </ResponsiveContainer>
-        {monthEndTarget > 0 && daysPassed > 0 && (
-          <div
-            className="spending-flow-bubble"
-            style={{
-              left: `${(daysPassed / daysInMonth) * 100}%`,
-            }}
-            data-status={status}
-          >
-            <span className="spending-flow-bubble-text">
-              {endDiff >= 0
-                ? `${fmt(Math.abs(endDiff))} € ${locale === "fi" ? "alle" : "under"}`
-                : `${fmt(Math.abs(endDiff))} € ${locale === "fi" ? "yli" : "over"}`
-              }
-            </span>
-            <span className="spending-flow-bubble-tip" data-status={status} />
-          </div>
-        )}
       </div>
     </div>
   );
