@@ -8,7 +8,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Customized,
+  ReferenceDot,
 } from "recharts";
 
 interface SpendingFlowProps {
@@ -51,7 +51,7 @@ export function SpendingFlow({
   const { locale, fmt } = useLocale();
   const target = combinedIncome - savingRate;
 
-  // Build full month data: actual (past) + projected (future)
+  // Build full month data
   const data: { day: number; label: string; actual?: number; projected?: number; target?: number }[] = [];
   let cumulative = 0;
 
@@ -75,7 +75,6 @@ export function SpendingFlow({
     }
   }
 
-  // Bridge: add projected start at last actual point
   if (daysPassed > 0 && daysPassed < daysInMonth) {
     data[daysPassed - 1].projected = data[daysPassed - 1].actual;
   }
@@ -83,12 +82,13 @@ export function SpendingFlow({
   const lastActual = data[daysPassed - 1]?.actual || 0;
   const monthEndTarget = target > 0 ? target : 0;
 
-  // Difference at TODAY: how far actual is from target right now
+  // Difference at TODAY
   const todayTarget = targetPerDay > 0 ? Math.round(targetPerDay * daysPassed) : 0;
-  const todayDiff = todayTarget - lastActual; // positive = under target, negative = over
+  const todayDiff = todayTarget - lastActual;
   const todayRatio = todayTarget > 0 ? lastActual / todayTarget : 0;
   const status = todayDiff > todayTarget * 0.05 ? "good" : todayDiff >= 0 ? "tight" : "danger";
   const ballColor = targetPerDay > 0 ? ratioToColor(todayRatio) : "#818cf8";
+  const statusColor = status === "good" ? "#4ade80" : status === "tight" ? "#facc15" : "#f87171";
 
   // Gradient stops
   const gradientStops = data.filter((d) => d.actual !== undefined).map((d, i, arr) => {
@@ -102,110 +102,26 @@ export function SpendingFlow({
     ? `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "alle" : "under"}`
     : `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "yli" : "over"}`;
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  function DotAndBubble(props: any) {
-    console.debug("[spending-flow] Customized props keys:", Object.keys(props));
-    console.debug("[spending-flow] formattedGraphicalItems:", props.formattedGraphicalItems?.length);
-
-    // Try multiple approaches to find the dot position
-    const { formattedGraphicalItems, xAxisMap, yAxisMap, offset } = props;
-
-    let cx: number | null = null;
-    let cy: number | null = null;
-
-    // Approach 1: formattedGraphicalItems
-    if (formattedGraphicalItems) {
-      for (const item of formattedGraphicalItems) {
-        const dk = item.item?.props?.dataKey || item.props?.dataKey;
-        console.debug("[spending-flow] item dataKey:", dk, "points:", item.props?.points?.length);
-        if (dk === "actual" && item.props?.points) {
-          const dotIndex = daysPassed - 1;
-          const point = item.props.points[dotIndex];
-          if (point && !isNaN(point.x) && !isNaN(point.y)) {
-            cx = point.x;
-            cy = point.y;
-            break;
-          }
-        }
-      }
-    }
-
-    // Approach 2: xAxisMap/yAxisMap
-    if (cx === null && xAxisMap && yAxisMap) {
-      const xAxis = Object.values(xAxisMap)[0] as any;
-      const yAxis = Object.values(yAxisMap)[0] as any;
-      if (xAxis?.scale && yAxis?.scale) {
-        const label = data[daysPassed - 1]?.label;
-        const tryX = xAxis.scale(label);
-        const tryY = yAxis.scale(lastActual);
-        console.debug("[spending-flow] axis approach:", { label, tryX, tryY, bandSize: xAxis.bandSize });
-        if (!isNaN(tryX) && !isNaN(tryY)) {
-          cx = tryX + (xAxis.bandSize || 0) / 2;
-          cy = tryY;
-        }
-      }
-    }
-
-    if (cx === null || cy === null) {
-      console.warn("[spending-flow] Could not determine dot position");
-      return null;
-    }
-
-    const statusHex = status === "good" ? "#4ade80" : status === "tight" ? "#facc15" : "#f87171";
-    const bgOpacity = status === "good" ? "33" : status === "tight" ? "33" : "33";
-
-    // Bubble dimensions
-    const bw = bubbleLabel.length * 6 + 16;
-    const bh = 20;
-    const bx = cx + 12;
-    const by = cy - bh - 8;
-    // Tip: from bottom-left of bubble, pointing toward dot
-    const tipX1 = bx;
-    const tipY1 = by + bh;
-    const tipX2 = bx + 6;
-    const tipY2 = by + bh;
-    const tipX3 = cx + 5;
-    const tipY3 = cy - 5;
-
-    return (
-      <g>
-        {/* Dot */}
-        <circle cx={cx} cy={cy} r={7} fill={ballColor} stroke="var(--background)" strokeWidth={2} />
-        {/* Speech bubble */}
-        {monthEndTarget > 0 && (
-          <>
-            {/* Tip pointing to ball */}
-            <polygon
-              points={`${tipX1},${tipY1} ${tipX2},${tipY2} ${tipX3},${tipY3}`}
-              fill={`${statusHex}${bgOpacity}`}
-            />
-            {/* Body */}
-            <rect x={bx} y={by} width={bw} height={bh} rx={5} fill={`${statusHex}${bgOpacity}`} />
-            {/* Text */}
-            <text
-              x={bx + bw / 2}
-              y={by + bh / 2 + 1}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fill={statusHex}
-              fontSize={11}
-              fontWeight={600}
-              fontFamily="var(--font-geist-sans), system-ui, sans-serif"
-              style={{ fontVariantNumeric: "tabular-nums" }}
-            >
-              {bubbleLabel}
-            </text>
-          </>
-        )}
-      </g>
-    );
-  }
+  // Estimate bubble X position as % of chart width (accounting for left margin)
+  const bubbleLeftPct = ((daysPassed - 0.5) / daysInMonth) * 100;
 
   return (
     <div className="spending-flow">
       <div className="spending-flow-chart">
+        {monthEndTarget > 0 && daysPassed > 0 && (
+          <div
+            className="spending-flow-bubble"
+            data-status={status}
+            style={{ left: `calc(${bubbleLeftPct}% + 8px)` }}
+          >
+            <span className="spending-flow-bubble-text">{bubbleLabel}</span>
+            <svg className="spending-flow-bubble-tip" width="10" height="8" viewBox="0 0 10 8">
+              <path d="M0,0 L10,0 L2,8 Z" fill={`${statusColor}33`} />
+            </svg>
+          </div>
+        )}
         <ResponsiveContainer width="100%" height={160}>
-          <AreaChart data={data} margin={{ top: 36, right: 16, left: -20, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 6, right: 16, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="flowLineGrad" x1="0" y1="0" x2="1" y2="0">
                 {gradientStops.map((s, i) => (
@@ -265,7 +181,16 @@ export function SpendingFlow({
               fill="none"
               dot={false}
             />
-            <Customized component={DotAndBubble} />
+            {daysPassed > 0 && (
+              <ReferenceDot
+                x={data[daysPassed - 1]?.label}
+                y={lastActual}
+                r={7}
+                fill={ballColor}
+                stroke="var(--background)"
+                strokeWidth={2}
+              />
+            )}
           </AreaChart>
         </ResponsiveContainer>
       </div>
