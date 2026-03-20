@@ -122,7 +122,7 @@ export function SpendingFlow({
           y={by + bh / 2 + 1}
           textAnchor="middle"
           dominantBaseline="middle"
-          fill="#09090b"
+          fill="#0a0a10"
           fontSize={11}
           fontWeight={600}
           style={{ fontVariantNumeric: "tabular-nums" }}
@@ -202,7 +202,7 @@ export function SpendingFlow({
                 x={data[daysPassed - 1]?.label}
                 y={lastActual}
                 r={5}
-                fill="#09090b"
+                fill="#0a0a10"
                 stroke={ballColor}
                 strokeWidth={4}
                 label={renderDotLabel}

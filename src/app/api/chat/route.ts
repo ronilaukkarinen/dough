@@ -265,8 +265,9 @@ export async function POST(request: Request) {
         chatDb.prepare("INSERT INTO chat_messages (user_id, role, content) VALUES (?, ?, ?)")
           .run(user.id, "assistant", fullResponse);
         console.info("[chat] Saved assistant response to DB");
+        const lastId = chatDb.prepare("SELECT last_insert_rowid() as id").get() as { id: number };
         eventBus.emit("chat:message", {
-          id: chatDb.prepare("SELECT last_insert_rowid() as id").get(),
+          id: lastId.id,
           role: "assistant",
           content: fullResponse,
           sender: null,

@@ -1,5 +1,8 @@
 ### 1.1.0: 2026-03-20
 
+* Add blur glass effect to mobile top bar with backdrop-filter
+* Tint dark theme backgrounds with subtle deep purple-black
+* Fix AI chat messages not appearing by adding fetch response fallback with dedup
 * Remove chat page heading, make chat full height with margins
 * Reduce spending flow circle size, adjust tooltip position
 * Add info tooltip to "Kuukauden tilanne" card explaining the calculation

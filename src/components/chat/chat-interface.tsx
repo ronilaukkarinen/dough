@@ -189,11 +189,20 @@ export function ChatInterface() {
       body: JSON.stringify(chatBody),
     })
       .then((r) => r.json())
-      .then(() => {
-        // Response handled via SSE broadcast — don't add here to avoid duplicates
+      .then((data) => {
+        // Add from fetch response if SSE hasn't delivered it yet (dedup prevents doubles)
+        if (data.message) {
+          setMessages((prev) => {
+            if (prev.some((m) => m.role === "assistant" && m.content === data.message)) return prev;
+            console.info("[chat] Adding assistant message from fetch response");
+            return [...prev, { id: `fallback-${Date.now()}`, role: "assistant" as const, content: data.message }];
+          });
+          setLoading(false);
+        }
       })
       .catch(() => {
-        console.warn("[chat] AI request failed, SSE will pick up response if it completes");
+        console.warn("[chat] AI request failed");
+        setLoading(false);
       });
   };
 

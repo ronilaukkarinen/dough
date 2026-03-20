@@ -18,8 +18,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 0.5rem;
-  background-color: var(--sidebar);
-  border-bottom: 1px solid var(--border);
+  background-color: color-mix(in srgb, var(--sidebar) 75%, transparent);
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 }
 
 @media (min-width: 768px) {
