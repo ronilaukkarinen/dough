@@ -104,18 +104,23 @@ export function SpendingFlow({
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   function DotAndBubble(props: any) {
-    const { xAxisMap, yAxisMap } = props;
-    if (!xAxisMap || !yAxisMap) return null;
-    const xAxis = Object.values(xAxisMap)[0] as any;
-    const yAxis = Object.values(yAxisMap)[0] as any;
-    if (!xAxis?.scale || !yAxis?.scale) return null;
+    const { formattedGraphicalItems } = props;
+    if (!formattedGraphicalItems) return null;
+
+    // Find the "actual" area's rendered points
+    const actualArea = formattedGraphicalItems.find((item: any) =>
+      item.item?.props?.dataKey === "actual"
+    );
+    if (!actualArea?.props?.points) return null;
 
     const dotIndex = daysPassed - 1;
-    if (dotIndex < 0) return null;
+    if (dotIndex < 0 || dotIndex >= actualArea.props.points.length) return null;
 
-    const cx = xAxis.scale(dotIndex) + (xAxis.bandSize ? xAxis.bandSize / 2 : 0);
-    const cy = yAxis.scale(lastActual);
-    if (isNaN(cx) || isNaN(cy)) return null;
+    const point = actualArea.props.points[dotIndex];
+    if (!point || isNaN(point.x) || isNaN(point.y)) return null;
+
+    const cx = point.x;
+    const cy = point.y;
 
     const statusHex = status === "good" ? "#4ade80" : status === "tight" ? "#facc15" : "#f87171";
     const bgOpacity = status === "good" ? "33" : status === "tight" ? "33" : "33";
