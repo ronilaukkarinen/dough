@@ -2,6 +2,11 @@
 
 * Remove chat page heading, make chat full height with margins
 * Reduce spending flow circle size, adjust tooltip position
+* Fix chat image thumbnails not loading from DB when revisiting chat
+* Fix AI to naturally confirm added expenses instead of saying it cannot add them
+* Trigger YNAB sync after adding expense from chat so it shows in dashboard
+* Fix mobile chat height to account for topbar
+* Remove gap from AI summary action buttons
 * Increase spending flow dashed line opacity slightly for better visibility
 * Add PDF support for receipt uploads in both expense modal and AI chat
 * Auto-add expense to YNAB when image is sent in AI chat
