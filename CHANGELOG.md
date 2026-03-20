@@ -1,5 +1,7 @@
 ### 1.1.0: 2026-03-20
 
+* Remove chat page heading, make chat full height with margins
+* Reduce spending flow circle size, adjust tooltip position
 * Increase spending flow dashed line opacity slightly for better visibility
 * Add PDF support for receipt uploads in both expense modal and AI chat
 * Auto-add expense to YNAB when image is sent in AI chat

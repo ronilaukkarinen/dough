@@ -109,7 +109,7 @@ export function SpendingFlow({
     const bw = bubbleLabel.length * 5.8 + 6;
     const bh = 20;
     const bx = x + 8;
-    const by = y - bh - 8;
+    const by = y - bh - 5;
 
     return (
       <g>
@@ -201,10 +201,10 @@ export function SpendingFlow({
               <ReferenceDot
                 x={data[daysPassed - 1]?.label}
                 y={lastActual}
-                r={7}
+                r={5}
                 fill="#09090b"
                 stroke={ballColor}
-                strokeWidth={5}
+                strokeWidth={4}
                 label={renderDotLabel}
               />
             )}

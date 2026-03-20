@@ -13,10 +13,7 @@ export default function ChatPage() {
   }, []);
 
   return (
-    <div className="page-stack">
-      <div>
-        <h1 className="page-heading">{t.chat.title}</h1>
-      </div>
+    <div className="chat-page">
       <ChatInterface />
     </div>
   );

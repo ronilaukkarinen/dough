@@ -1,18 +1,27 @@
 /* Module: chat */
 
+.chat-page {
+  height: calc(100vh - 4rem);
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .chat-page {
+    height: calc(100vh - 4.5rem);
+    padding: 1rem;
+  }
+}
+
 .chat-container {
   display: flex;
-  height: calc(100vh - 9rem);
+  flex: 1;
+  min-height: 0;
   flex-direction: column;
   border-radius: 0.75rem;
   border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
   background-color: color-mix(in srgb, var(--card) 80%, transparent);
-}
-
-@media (min-width: 768px) {
-  .chat-container {
-    height: calc(100vh - 10rem);
-  }
 }
 
 .chat-messages {
