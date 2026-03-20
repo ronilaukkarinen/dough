@@ -43,15 +43,15 @@
 
 .category-breakdown-donut {
   position: relative;
-  height: 320px;
-  width: 320px;
+  height: 280px;
+  width: 280px;
   flex-shrink: 0;
 }
 
 @media (max-width: 639px) {
   .category-breakdown-donut {
     width: 100%;
-    max-width: 320px;
+    max-width: 280px;
     margin: 0 auto;
   }
 }
