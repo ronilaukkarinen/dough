@@ -88,15 +88,20 @@ export default function DebtsPage() {
   const [saving, setSaving] = useState<string | null>(null);
 
   useEffect(() => {
-    console.debug("[debts] Loading debts");
-    fetch("/api/debts")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.debts) {
-          console.info("[debts] Loaded", data.debts.length, "debts");
-          setDebts(data.debts);
-        }
-      })
+    console.debug("[debts] Loading debts and cached suggestion");
+    Promise.all([
+      fetch("/api/debts").then((r) => r.json()),
+      fetch("/api/debts/suggestion").then((r) => r.json()),
+    ]).then(([debtData, suggestionData]) => {
+      if (debtData.debts) {
+        console.info("[debts] Loaded", debtData.debts.length, "debts");
+        setDebts(debtData.debts);
+      }
+      if (suggestionData.suggestion) {
+        console.info("[debts] Loaded cached AI suggestion");
+        setAiSuggestion(suggestionData.suggestion);
+      }
+    })
       .catch((err) => console.error("[debts] Load error:", err))
       .finally(() => setLoading(false));
   }, []);
@@ -203,9 +208,11 @@ export default function DebtsPage() {
       <Card className="ai-summary-card">
         <div className="ai-summary-header">
           <div className="ai-summary-icon"><Sparkles /></div>
-          <button type="button" className="ai-summary-refresh" onClick={fetchAiSuggestion} disabled={aiLoading}>
-            <RefreshCw className={aiLoading ? "animate-spin" : ""} />
-          </button>
+          <div className="ai-summary-actions">
+            <button type="button" className="ai-summary-refresh" onClick={fetchAiSuggestion} disabled={aiLoading}>
+              <RefreshCw className={aiLoading ? "animate-spin" : ""} />
+            </button>
+          </div>
         </div>
         {aiLoading ? (
           <div className="typing-dots"><span /><span /><span /></div>

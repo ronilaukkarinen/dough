@@ -12,6 +12,19 @@ export async function GET() {
     console.info("[debts/suggestion] Fetching data for AI suggestion");
 
     const db = getDb();
+
+    // Check for cached suggestion (valid for 24 hours)
+    const cachedSuggestion = db
+      .prepare("SELECT content, created_at FROM ai_summaries WHERE user_id = ? AND locale = 'debt' ORDER BY created_at DESC LIMIT 1")
+      .get(user.id) as { content: string; created_at: string } | undefined;
+    if (cachedSuggestion) {
+      const age = Date.now() - new Date(cachedSuggestion.created_at + "Z").getTime();
+      if (age < 24 * 60 * 60 * 1000) {
+        console.debug("[debts/suggestion] Returning cached suggestion, age:", Math.round(age / 60000), "min");
+        return NextResponse.json({ suggestion: cachedSuggestion.content });
+      }
+    }
+
     const cached = db.prepare("SELECT data FROM ynab_cache WHERE id = 1").get() as { data: string } | undefined;
     if (!cached) return NextResponse.json({ suggestion: null });
 
@@ -67,6 +80,11 @@ Total debt: ${debtAccounts.reduce((s: number, a: any) => s + Math.abs(a.balance)
     });
 
     console.info("[debts/suggestion] AI suggestion generated");
+
+    // Cache to DB
+    db.prepare("INSERT INTO ai_summaries (user_id, locale, content) VALUES (?, 'debt', ?)")
+      .run(user.id, suggestion);
+
     return NextResponse.json({ suggestion });
   } catch (error) {
     console.error("[debts/suggestion] Error:", error);
