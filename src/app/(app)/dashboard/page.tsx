@@ -248,16 +248,15 @@ export default function DashboardPage() {
   const discretionaryBudget = Math.max(0, combinedIncome - savingRate - totalBillsFull - debtMonthly - investmentMonthly);
   const discretionaryTargetPerDay = discretionaryBudget > 0 ? discretionaryBudget / daysInMonth : 0;
 
-  // Spending chart: discretionary only (cumulative ALL spending minus paid bills)
-  const spendingData = Array.from({ length: now.getDate() }, (_, i) => {
-    const cumulativeAll = spendingByDay[i + 1] || (i > 0 ? spendingByDay[i] || 0 : 0);
-    const discretionary = Math.max(0, cumulativeAll - paidBillsAmount);
-    return {
-      date: `${i + 1}.`,
-      spent: discretionary,
-      ...(discretionaryTargetPerDay > 0 ? { savingsTarget: Math.round(discretionaryTargetPerDay * (i + 1)) } : {}),
-    };
-  });
+  // Spending chart: ALL spending with Vakaa talous target (income - savings) / days
+  const totalTargetPerDay = combinedIncome > 0 && savingRate > 0
+    ? (combinedIncome - savingRate) / daysInMonth
+    : 0;
+  const spendingData = Array.from({ length: now.getDate() }, (_, i) => ({
+    date: `${i + 1}.`,
+    spent: spendingByDay[i + 1] || (i > 0 ? spendingByDay[i] || 0 : 0),
+    ...(totalTargetPerDay > 0 ? { savingsTarget: Math.round(totalTargetPerDay * (i + 1)) } : {}),
+  }));
   // Fill forward missing days
   for (let i = 1; i < spendingData.length; i++) {
     if (spendingData[i].spent === 0 && spendingData[i - 1].spent > 0) {
