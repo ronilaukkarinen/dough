@@ -132,34 +132,20 @@ export async function POST(request: Request) {
 
           const resolveDay = (day: number) => day === 0 ? daysInMonth : day;
 
-          // Daily budget: time-window cash flow simulation (same as dashboard)
-          const unreceivedIncomes = incomeWithIds.filter((i) => resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id));
-          let chatBalance = checkingSavings - savingRate;
-          for (const bill of unpaidBills) {
-            if (bill.dueDay <= today || bill.dueDay === 0) chatBalance -= bill.amount;
-          }
-          for (const debt of debts) {
-            if ((debt.dueDay <= today || debt.dueDay === 0) && debt.minimumPayment > 0) chatBalance -= debt.minimumPayment;
-          }
-          let minDailyBudget = daysLeft > 0 ? chatBalance / daysLeft : 0;
-          let chatRunning = chatBalance;
-          for (let d = today + 1; d <= daysInMonth; d++) {
-            for (const inc of unreceivedIncomes) {
-              if (resolveDay(inc.expected_day) === d) chatRunning += inc.amount;
-            }
-            for (const bill of unpaidBills) {
-              if (bill.dueDay === d) chatRunning -= bill.amount;
-            }
-            for (const debt of debts) {
-              if (debt.dueDay === d && debt.minimumPayment > 0) chatRunning -= debt.minimumPayment;
-            }
-            const daysFromHere = daysInMonth - d + 1;
-            if (daysFromHere > 0) {
-              const budgetFromHere = chatRunning / daysFromHere;
-              if (budgetFromHere < minDailyBudget) minDailyBudget = budgetFromHere;
-            }
-          }
-          const dailyBudget = Math.max(0, Math.round(minDailyBudget * 100) / 100);
+          // Daily budget via shared cash flow simulation
+          const { calculateDailyBudget } = await import("@/lib/daily-budget");
+          const dailyBudget = calculateDailyBudget({
+            balance: checkingSavings,
+            savingGoal: savingRate,
+            today,
+            daysInMonth,
+            unpaidBills: unpaidBills.map((b) => ({ amount: b.amount, dueDay: b.dueDay })),
+            debts: debts.map((d: any) => ({ amount: d.minimumPayment || 0, dueDay: d.dueDay || 0 })),
+            unreceivedIncomes: incomeWithIds
+              .filter((i) => resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
+              .map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
+            resolveDay,
+          });
 
           const incomeBeforePayday = incomeWithIds
             .filter((i) => i.expected_day >= today && i.expected_day < daysInMonth && !matchedIncomeIds.has(i.id))
