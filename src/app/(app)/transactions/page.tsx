@@ -242,7 +242,6 @@ export default function TransactionsPage() {
                     placeholder={locale === "fi" ? "esim. Lotan bussikortti" : "e.g. Bus card for kids"}
                   />
                 </div>
-                <p className="settings-help">{locale === "fi" ? "Kategoria valitaan automaattisesti tekoälyllä" : "Category is auto-selected by AI"}</p>
                 <Button type="button" onClick={handleAddExpense} disabled={addLoading || !linkedAccountId || !addAmount || !addPayee}>
                   {addLoading ? (locale === "fi" ? "Lisätään..." : "Adding...") : (locale === "fi" ? "Lisää" : "Add")}
                 </Button>
