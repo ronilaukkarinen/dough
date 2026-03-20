@@ -228,6 +228,11 @@ export async function POST(request: Request) {
               if (txRes.ok) {
                 expenseContext = `SYSTEM NOTE: You successfully added ${parsed.amount} euros from ${parsed.payee} to YNAB. Confirm this naturally in your response (e.g. "I added X € from Y to your expenses"). Do NOT say you cannot add expenses.`;
                 console.info("[chat] Auto-added expense:", parsed.payee, parsed.amount);
+                // Trigger background sync so the expense shows in the UI
+                fetch(new URL("/api/ynab/sync", request.url).toString(), {
+                  method: "POST",
+                  headers: { cookie: request.headers.get("cookie") || "" },
+                }).catch((err) => console.warn("[chat] Background sync after expense failed:", err));
               } else {
                 expenseContext = `SYSTEM NOTE: Attempted to add ${parsed.amount} euros from ${parsed.payee} but the YNAB API returned an error. Let the user know it failed.`;
               }
