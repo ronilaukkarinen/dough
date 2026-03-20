@@ -41,18 +41,22 @@ export function calculateDailyBudget(params: {
   const salaryDay = largestIncome ? resolveDay(largestIncome.expectedDay) : daysInMonth + 1;
 
   // Start with balance minus saving goal minus overdue obligations
+  // Debts/bills with dueDay=0 (not set) are excluded — user needs to set due dates
   let startBalance = balance - savingGoal;
   for (const bill of unpaidBills) {
-    if (bill.dueDay <= today || bill.dueDay === 0) startBalance -= bill.amount;
+    if (bill.dueDay > 0 && bill.dueDay <= today) startBalance -= bill.amount;
   }
   for (const debt of debts) {
-    if ((debt.dueDay <= today || debt.dueDay === 0) && debt.amount > 0) startBalance -= debt.amount;
+    if (debt.dueDay > 0 && debt.dueDay <= today && debt.amount > 0) startBalance -= debt.amount;
   }
 
+  console.debug("[daily-budget] balance:", Math.round(balance), "savingGoal:", savingGoal, "startBalance:", Math.round(startBalance), "salaryDay:", salaryDay, "today:", today, "daysLeft:", daysLeft);
+
   // Walk each future day up to salary day
-  let minDailyBudget = startBalance / daysLeft;
-  let runningBalance = startBalance;
   const budgetHorizon = Math.min(salaryDay, daysInMonth + 1);
+  const daysUntilSalary = budgetHorizon - today - 1;
+  let minDailyBudget = daysUntilSalary > 0 ? startBalance / daysUntilSalary : startBalance / Math.max(1, daysLeft);
+  let runningBalance = startBalance;
 
   for (let d = today + 1; d < budgetHorizon; d++) {
     // Add smaller incomes arriving this day (not salary)
@@ -69,10 +73,13 @@ export function calculateDailyBudget(params: {
       if (debt.dueDay === d && debt.amount > 0) runningBalance -= debt.amount;
     }
     // Check if this is the tightest point
-    const daysUntilSalary = budgetHorizon - d;
-    if (daysUntilSalary > 0) {
-      const budgetFromHere = runningBalance / daysUntilSalary;
-      if (budgetFromHere < minDailyBudget) minDailyBudget = budgetFromHere;
+    const remainingDays = budgetHorizon - d;
+    if (remainingDays > 0) {
+      const budgetFromHere = runningBalance / remainingDays;
+      if (budgetFromHere < minDailyBudget) {
+        console.debug("[daily-budget] New min at day", d, "balance:", Math.round(runningBalance), "days:", remainingDays, "budget:", Math.round(budgetFromHere));
+        minDailyBudget = budgetFromHere;
+      }
     }
   }
 
