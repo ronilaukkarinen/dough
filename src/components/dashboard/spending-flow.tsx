@@ -104,23 +104,52 @@ export function SpendingFlow({
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   function DotAndBubble(props: any) {
-    const { formattedGraphicalItems } = props;
-    if (!formattedGraphicalItems) return null;
+    console.debug("[spending-flow] Customized props keys:", Object.keys(props));
+    console.debug("[spending-flow] formattedGraphicalItems:", props.formattedGraphicalItems?.length);
 
-    // Find the "actual" area's rendered points
-    const actualArea = formattedGraphicalItems.find((item: any) =>
-      item.item?.props?.dataKey === "actual"
-    );
-    if (!actualArea?.props?.points) return null;
+    // Try multiple approaches to find the dot position
+    const { formattedGraphicalItems, xAxisMap, yAxisMap, offset } = props;
 
-    const dotIndex = daysPassed - 1;
-    if (dotIndex < 0 || dotIndex >= actualArea.props.points.length) return null;
+    let cx: number | null = null;
+    let cy: number | null = null;
 
-    const point = actualArea.props.points[dotIndex];
-    if (!point || isNaN(point.x) || isNaN(point.y)) return null;
+    // Approach 1: formattedGraphicalItems
+    if (formattedGraphicalItems) {
+      for (const item of formattedGraphicalItems) {
+        const dk = item.item?.props?.dataKey || item.props?.dataKey;
+        console.debug("[spending-flow] item dataKey:", dk, "points:", item.props?.points?.length);
+        if (dk === "actual" && item.props?.points) {
+          const dotIndex = daysPassed - 1;
+          const point = item.props.points[dotIndex];
+          if (point && !isNaN(point.x) && !isNaN(point.y)) {
+            cx = point.x;
+            cy = point.y;
+            break;
+          }
+        }
+      }
+    }
 
-    const cx = point.x;
-    const cy = point.y;
+    // Approach 2: xAxisMap/yAxisMap
+    if (cx === null && xAxisMap && yAxisMap) {
+      const xAxis = Object.values(xAxisMap)[0] as any;
+      const yAxis = Object.values(yAxisMap)[0] as any;
+      if (xAxis?.scale && yAxis?.scale) {
+        const label = data[daysPassed - 1]?.label;
+        const tryX = xAxis.scale(label);
+        const tryY = yAxis.scale(lastActual);
+        console.debug("[spending-flow] axis approach:", { label, tryX, tryY, bandSize: xAxis.bandSize });
+        if (!isNaN(tryX) && !isNaN(tryY)) {
+          cx = tryX + (xAxis.bandSize || 0) / 2;
+          cy = tryY;
+        }
+      }
+    }
+
+    if (cx === null || cy === null) {
+      console.warn("[spending-flow] Could not determine dot position");
+      return null;
+    }
 
     const statusHex = status === "good" ? "#4ade80" : status === "tight" ? "#facc15" : "#f87171";
     const bgOpacity = status === "good" ? "33" : status === "tight" ? "33" : "33";
