@@ -277,6 +277,7 @@ export default function DebtsPage() {
                   variant="ghost"
                   size="icon-sm"
                   onClick={() => saveOverride(debt)}
+                  disabled={!debt.dueDay || debt.dueDay < 1}
                 >
                   {saving === debt.id ? <Check /> : <Save />}
                 </Button>

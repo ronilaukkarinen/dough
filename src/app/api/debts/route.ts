@@ -98,6 +98,7 @@ export async function PUT(request: Request) {
     const { ynab_account_id, interest_rate, minimum_payment, due_day, notes } = body;
 
     if (!ynab_account_id) return NextResponse.json({ error: "Account ID required" }, { status: 400 });
+    if (!due_day || due_day < 1 || due_day > 31) return NextResponse.json({ error: "Due day (1-31) required" }, { status: 400 });
 
     const db = getDb();
     db.prepare(`
