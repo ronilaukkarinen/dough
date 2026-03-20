@@ -50,10 +50,12 @@
   color: #fff;
 }
 
-.button[data-variant="default"]:hover,
-.button:not([data-variant]):hover {
-  opacity: 0.9;
-  box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 30%, transparent);
+@media (hover: hover) {
+  .button[data-variant="default"]:hover,
+  .button:not([data-variant]):hover {
+    opacity: 0.9;
+    box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 30%, transparent);
+  }
 }
 
 .button[data-variant="default"]:active,
@@ -66,11 +68,13 @@
   background-color: var(--background);
 }
 
-.button[data-variant="outline"]:hover {
-  background-color: var(--muted);
-  color: var(--foreground);
-  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 15%, transparent);
+@media (hover: hover) {
+  .button[data-variant="outline"]:hover {
+    background-color: var(--muted);
+    color: var(--foreground);
+    border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 15%, transparent);
+  }
 }
 
 .button[data-variant="outline"]:active {
@@ -87,8 +91,10 @@
   background-color: color-mix(in srgb, var(--input) 30%, transparent);
 }
 
-.dark .button[data-variant="outline"]:hover {
-  background-color: color-mix(in srgb, var(--input) 50%, transparent);
+@media (hover: hover) {
+  .dark .button[data-variant="outline"]:hover {
+    background-color: color-mix(in srgb, var(--input) 50%, transparent);
+  }
 }
 
 .button[data-variant="secondary"] {
@@ -96,9 +102,11 @@
   color: var(--secondary-foreground);
 }
 
-.button[data-variant="secondary"]:hover {
-  background-color: color-mix(in srgb, var(--secondary) 80%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 10%, transparent);
+@media (hover: hover) {
+  .button[data-variant="secondary"]:hover {
+    background-color: color-mix(in srgb, var(--secondary) 80%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 10%, transparent);
+  }
 }
 
 .button[data-variant="secondary"]:active {
@@ -110,13 +118,15 @@
   border-color: transparent;
 }
 
-.button[data-variant="ghost"]:hover {
-  background-color: var(--muted);
-  color: var(--foreground);
-}
+@media (hover: hover) {
+  .button[data-variant="ghost"]:hover {
+    background-color: var(--muted);
+    color: var(--foreground);
+  }
 
-.dark .button[data-variant="ghost"]:hover {
-  background-color: color-mix(in srgb, var(--muted) 50%, transparent);
+  .dark .button[data-variant="ghost"]:hover {
+    background-color: color-mix(in srgb, var(--muted) 50%, transparent);
+  }
 }
 
 .button[data-variant="ghost"][aria-expanded="true"] {
@@ -129,8 +139,10 @@
   color: var(--destructive);
 }
 
-.button[data-variant="destructive"]:hover {
-  background-color: color-mix(in srgb, var(--destructive) 20%, transparent);
+@media (hover: hover) {
+  .button[data-variant="destructive"]:hover {
+    background-color: color-mix(in srgb, var(--destructive) 20%, transparent);
+  }
 }
 
 .button[data-variant="destructive"]:focus-visible {
@@ -143,8 +155,10 @@
   background-color: color-mix(in srgb, var(--destructive) 20%, transparent);
 }
 
-.dark .button[data-variant="destructive"]:hover {
-  background-color: color-mix(in srgb, var(--destructive) 30%, transparent);
+@media (hover: hover) {
+  .dark .button[data-variant="destructive"]:hover {
+    background-color: color-mix(in srgb, var(--destructive) 30%, transparent);
+  }
 }
 
 .button[data-variant="link"] {
@@ -154,8 +168,10 @@
   border-color: transparent;
 }
 
-.button[data-variant="link"]:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .button[data-variant="link"]:hover {
+    text-decoration: underline;
+  }
 }
 
 /* Sizes */

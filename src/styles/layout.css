@@ -51,9 +51,11 @@
   transition: color 150ms, background-color 150ms;
 }
 
-.l-topbar-btn:hover {
-  background-color: var(--accent);
-  color: var(--foreground);
+@media (hover: hover) {
+  .l-topbar-btn:hover {
+    background-color: var(--accent);
+    color: var(--foreground);
+  }
 }
 
 .l-topbar-btn svg {
@@ -197,14 +199,15 @@
   text-align: left;
 }
 
-.l-sidebar-link:hover {
-  background-color: var(--accent);
-  color: var(--foreground);
+@media (hover: hover) {
+  .l-sidebar-link:hover {
+    background-color: var(--accent);
+    color: var(--foreground);
+  }
 }
 
 .l-sidebar-link:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: -2px;
+  outline: none;
 }
 
 .l-sidebar-link.is-active {
