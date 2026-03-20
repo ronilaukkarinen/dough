@@ -101,7 +101,7 @@ export function DailyAllowance({
       </Card>
 
       {monthIncome > 0 && (
-        <Card className="metric-card">
+        <Card className="metric-card metric-card-span2">
           <div className="metric-card-row">
             <div className="metric-card-icon" data-color={monthIncome - monthExpenses >= 0 ? "positive" : "negative"}>
               {monthIncome - monthExpenses >= 0 ? <ArrowDown /> : <ArrowUp />}
@@ -150,7 +150,7 @@ export function DailyAllowance({
         </div>
       </Card>
 
-      <Card className="metric-card metric-card-half">
+      <Card className="metric-card">
         <div className="metric-card-row">
           <div className="metric-card-icon" data-color="positive">
             <ArrowDown />
@@ -163,7 +163,7 @@ export function DailyAllowance({
         </div>
       </Card>
 
-      <Card className="metric-card metric-card-half">
+      <Card className="metric-card">
         <div className="metric-card-row">
           <div className="metric-card-icon" data-color="chart-3">
             <CalendarClock />

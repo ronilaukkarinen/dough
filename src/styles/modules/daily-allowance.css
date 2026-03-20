@@ -183,9 +183,9 @@
   margin-top: 0.25rem;
 }
 
-/* Half-width on md+ */
+/* Span 2 columns on md+ */
 @media (min-width: 768px) {
-  .metric-card-half {
+  .metric-card-span2 {
     grid-column: span 2;
   }
 }
