@@ -15,6 +15,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   sender?: string;
+  image_thumb?: string;
 }
 
 export function ChatInterface() {
@@ -142,11 +143,13 @@ export function ChatInterface() {
     if (!input.trim() || loading) return;
 
     const userContent = input.trim();
+    const thumb = chatImagePreview || undefined;
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
       content: userContent,
       sender: currentUser,
+      image_thumb: thumb,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -156,12 +159,12 @@ export function ChatInterface() {
     // Stop typing indicator
     fetch("/api/chat/typing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ typing: false }) }).catch(() => {});
 
-    // Save user message
+    // Save user message with thumbnail
     try {
       await fetch("/api/chat/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: "user", content: userContent }),
+        body: JSON.stringify({ role: "user", content: userContent, image_thumb: thumb }),
       });
       messageCountRef.current++;
     } catch {}
@@ -173,6 +176,7 @@ export function ChatInterface() {
     if (chatImage) {
       chatBody.image = chatImage;
       chatBody.image_media_type = chatImageType;
+      chatBody.add_expense = true;
       setChatImage(null);
       setChatImagePreview(null);
       setChatImageType("");
@@ -219,6 +223,12 @@ export function ChatInterface() {
                 </div>
               )}
               <div className="chat-message-bubble" data-type={bubbleType}>
+                {message.image_thumb && message.image_thumb !== "pdf" && (
+                  <img src={message.image_thumb} alt="" className="chat-bubble-image" />
+                )}
+                {message.image_thumb === "pdf" && (
+                  <span className="chat-pdf-badge">PDF</span>
+                )}
                 {isOtherUser && message.sender && (
                   <div className="chat-message-sender">{message.sender}</div>
                 )}
@@ -280,7 +290,7 @@ export function ChatInterface() {
       <div className="chat-input-area">
         {chatImagePreview && (
           <div className="chat-image-preview">
-            <img src={chatImagePreview} alt="Attached" />
+            {chatImagePreview === "pdf" ? <span className="chat-pdf-badge">PDF</span> : <img src={chatImagePreview} alt="Attached" />}
             <button type="button" className="chat-image-remove" onClick={() => { setChatImage(null); setChatImagePreview(null); setChatImageType(""); }}>
               <X />
             </button>
@@ -290,17 +300,33 @@ export function ChatInterface() {
           <input
             ref={chatFileRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
             hidden
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
-              console.info("[chat] Image attached:", file.name, file.type);
-              setChatImagePreview(URL.createObjectURL(file));
+              console.info("[chat] File attached:", file.name, file.type);
               setChatImageType(file.type);
               const reader = new FileReader();
               reader.onload = () => {
-                setChatImage((reader.result as string).split(",")[1]);
+                const dataUrl = reader.result as string;
+                setChatImage(dataUrl.split(",")[1]);
+                // For images, create a small thumbnail for persistence. For PDFs, use a placeholder.
+                if (file.type.startsWith("image/")) {
+                  const img = new Image();
+                  img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    const maxSize = 200;
+                    const scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    canvas.getContext("2d")?.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    setChatImagePreview(canvas.toDataURL("image/jpeg", 0.7));
+                  };
+                  img.src = dataUrl;
+                } else {
+                  setChatImagePreview("pdf");
+                }
               };
               reader.readAsDataURL(file);
               e.target.value = "";

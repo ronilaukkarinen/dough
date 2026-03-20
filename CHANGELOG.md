@@ -1,5 +1,8 @@
 ### 1.1.0: 2026-03-20
 
+* Add PDF support for receipt uploads in both expense modal and AI chat
+* Auto-add expense to YNAB when image is sent in AI chat
+* Show uploaded image thumbnail in chat message bubbles, persisted to DB
 * Fix AI daily budget to match dashboard, keep after-bills number as secondary context for affordability questions
 * Include today's expected income in daily spendable calculation, skip already-matched income
 * Fix add expense button style consistency, remove AI category help text from modal

@@ -108,6 +108,28 @@
   color: var(--foreground);
 }
 
+/* PDF badge in chat */
+.chat-pdf-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  margin-bottom: 0.375rem;
+}
+
+/* Image thumbnail in chat bubble */
+.chat-bubble-image {
+  max-width: 8rem;
+  max-height: 6rem;
+  border-radius: 0.375rem;
+  object-fit: contain;
+  margin-bottom: 0.375rem;
+  display: block;
+}
+
 /* Copy button on assistant bubbles */
 .chat-copy-btn {
   position: absolute;

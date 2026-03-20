@@ -8,7 +8,7 @@ import { eventBus } from "@/lib/event-bus";
 
 export async function POST(request: Request) {
   try {
-    const { messages, image, image_media_type } = await request.json();
+    const { messages, image, image_media_type, add_expense } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
@@ -193,19 +193,65 @@ export async function POST(request: Request) {
       };
     }
 
+    // Auto-add expense if image attached
+    let expenseAdded = "";
+    if (image && image_media_type && add_expense && user) {
+      try {
+        console.info("[chat] Attempting to auto-add expense from image");
+        const { queryClaudeWithImage } = await import("@/lib/ai/claude-image");
+        const parseResult = await queryClaudeWithImage(
+          'Extract from this receipt: amount (number only), payee/store name. Reply with ONLY JSON: {"amount":"...","payee":"..."}',
+          image,
+          image_media_type,
+          30000
+        );
+        const jsonMatch = parseResult.text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.amount && parsed.payee) {
+            // Get user's linked account
+            const linkedAcc = getDb()
+              .prepare("SELECT ynab_account_id FROM user_linked_accounts WHERE user_id = ? LIMIT 1")
+              .get(user.id) as { ynab_account_id: string } | undefined;
+            if (linkedAcc) {
+              const txRes = await fetch(new URL("/api/ynab/transaction", request.url).toString(), {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  cookie: request.headers.get("cookie") || "",
+                },
+                body: JSON.stringify({
+                  account_id: linkedAcc.ynab_account_id,
+                  amount: String(parsed.amount).replace(",", "."),
+                  payee_name: parsed.payee,
+                }),
+              });
+              if (txRes.ok) {
+                expenseAdded = `\n\n[Added ${parsed.amount} € from ${parsed.payee} to YNAB]`;
+                console.info("[chat] Auto-added expense:", parsed.payee, parsed.amount);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("[chat] Auto-add expense failed:", err);
+      }
+    }
+
     const response = await getFinancialAdvice(messages, context, image, image_media_type);
+    const fullResponse = response + expenseAdded;
 
     // Save assistant response to DB for persistence
-    if (user && response) {
+    if (user && fullResponse) {
       try {
         const chatDb = getDb();
         chatDb.prepare("INSERT INTO chat_messages (user_id, role, content) VALUES (?, ?, ?)")
-          .run(user.id, "assistant", response);
+          .run(user.id, "assistant", fullResponse);
         console.info("[chat] Saved assistant response to DB");
         eventBus.emit("chat:message", {
           id: chatDb.prepare("SELECT last_insert_rowid() as id").get(),
           role: "assistant",
-          content: response,
+          content: fullResponse,
           sender: null,
           userId: null,
         });
@@ -214,7 +260,7 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({ message: response });
+    return NextResponse.json({ message: fullResponse });
   } catch (error) {
     console.error("[chat] API error:", error);
     return NextResponse.json(

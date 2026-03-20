@@ -13,8 +13,8 @@ export async function GET() {
     const db = getDb();
     // Shared chat — show all messages from all household members
     const messages = db
-      .prepare("SELECT cm.id, cm.role, cm.content, cm.created_at, u.display_name as sender FROM chat_messages cm LEFT JOIN users u ON cm.user_id = u.id ORDER BY cm.created_at ASC")
-      .all() as { id: number; role: string; content: string; created_at: string; sender: string }[];
+      .prepare("SELECT cm.id, cm.role, cm.content, cm.created_at, cm.image_thumb, u.display_name as sender FROM chat_messages cm LEFT JOIN users u ON cm.user_id = u.id ORDER BY cm.created_at ASC")
+      .all() as { id: number; role: string; content: string; created_at: string; image_thumb: string | null; sender: string }[];
 
     console.debug("[chat/messages] Loaded", messages.length, "messages for user", user.id);
 
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const { role, content } = await request.json();
+    const { role, content, image_thumb } = await request.json();
 
     if (!role || !content) {
       return NextResponse.json({ error: "Role and content required" }, { status: 400 });
@@ -40,8 +40,8 @@ export async function POST(request: Request) {
 
     const db = getDb();
     const result = db
-      .prepare("INSERT INTO chat_messages (user_id, role, content) VALUES (?, ?, ?)")
-      .run(user.id, role, content);
+      .prepare("INSERT INTO chat_messages (user_id, role, content, image_thumb) VALUES (?, ?, ?, ?)")
+      .run(user.id, role, content, image_thumb || null);
 
     console.debug("[chat/messages] Saved", role, "message for user", user.id, "id:", result.lastInsertRowid);
 

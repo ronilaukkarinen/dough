@@ -221,6 +221,13 @@ function initializeDb(db: Database.Database) {
     );
   `);
 
+  // Add image_thumb column to chat_messages if missing
+  const chatCols = db.prepare("PRAGMA table_info(chat_messages)").all() as { name: string }[];
+  if (!chatCols.some((c) => c.name === "image_thumb")) {
+    console.info("[db] Adding image_thumb column to chat_messages");
+    db.exec("ALTER TABLE chat_messages ADD COLUMN image_thumb TEXT");
+  }
+
   // Add budget_share column to users if missing
   const userCols = db.prepare("PRAGMA table_info(users)").all() as { name: string }[];
   if (!userCols.some((c) => c.name === "budget_share")) {
