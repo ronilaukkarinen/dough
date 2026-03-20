@@ -28,7 +28,7 @@
 }
 
 .category-breakdown-body {
-  margin-top: 0.75rem;
+  margin-top: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
