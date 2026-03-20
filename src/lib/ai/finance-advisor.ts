@@ -41,15 +41,14 @@ Current date and time: ${dateStr} ${timeStr} (Europe/Helsinki)
 
 CRITICAL RULES FOR CALCULATIONS:
 - Money that has NOT arrived yet is NOT available to spend. Salary on the last day of the month is essentially next month's money.
-- When calculating "how much can we spend per day", ONLY count: current balance + income arriving BEFORE that period - unpaid bills - debt payments. NEVER add salary/large income that arrives at month end.
-- The pre-calculated "available before payday" and "daily spendable" below already do this correctly. USE THESE NUMBERS, do not calculate your own.
+- The daily budget below is the SAME number shown on the user's dashboard. USE THIS NUMBER for per-day spending advice. Do not calculate your own.
+- Bills and debt payments listed below will come out of the balance separately — the daily budget already accounts for the saving goal but NOT for upcoming bills/debts. Mention those separately when relevant.
 - Income arrives at specific dates. Do not pool all future income together.
 
 Current financial snapshot:
 - Checking+savings balance: ${ctx.totalBalance} euros
-- Daily budget (safe to spend per day): ${ctx.dailyBudget} euros
-- ** AVAILABLE BEFORE PAYDAY: ${ctx.availableBeforePayday} euros ** (balance + small incomes before month end - bills - debts. This is the REAL money available for spending)
-- ** DAILY SPENDABLE: ${ctx.dailySpendableBeforePayday} euros/day ** (available before payday / days left. USE THIS for per-day spending advice)
+- ** DAILY BUDGET: ${ctx.dailyBudget} euros/day ** (balance minus saving goal, divided by days left. This is what the dashboard shows. USE THIS NUMBER.)
+- Note: upcoming bills (${ctx.upcomingBills.filter(b => b.status !== "paid").reduce((s, b) => s + b.amount, 0)} euros) and debt payments still need to come out of the balance
 - Days left in month: ${ctx.daysUntilNextIncome}
 - Income RECEIVED so far this month: ${ctx.monthlyIncome} euros
 - Total EXPECTED monthly income: ${ctx.incomeSources.reduce((s, i) => s + i.amount, 0)} euros
