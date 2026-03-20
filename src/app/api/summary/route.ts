@@ -178,8 +178,8 @@ export async function GET(request: Request) {
     const projectedRemainingExpenses = Math.round(unpaidBillsAmount + (dailyDiscretionary * daysLeft));
     const projectedTotalExpenses = Math.round(monthActivity + projectedRemainingExpenses + totalInvestmentContributions + totalDebtPayments);
 
-    // Daily budget matches dashboard: (balance - saving goal) / days left
-    const spendableBalance = Math.max(0, checkingSavings - savingGoal);
+    // Daily budget matches dashboard: (balance - saving goal - unpaid bills - debts - investments) / days left
+    const spendableBalance = Math.max(0, checkingSavings - savingGoal - unpaidBillsAmount - totalDebtPayments - totalInvestmentContributions);
     const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
     const prompt = `${lang} You are a personal finance advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} ${summaryInstructions}
@@ -207,7 +207,7 @@ Pre-calculated analysis:
 - Monthly investment contributions: ${totalInvestmentContributions} euros${savingGoal > 0 ? `\n- Savings goal: ${savingGoal} euros/month` : ""}
 - ** PROJECTED MONTH-END BALANCE: ${projectedMonthEnd} euros ** (USE THIS NUMBER, do not calculate your own)
 - Monthly surplus/deficit: ${totalExpectedMonthlyIncome - projectedTotalExpenses} euros (income minus projected expenses)
-- Daily budget (balance minus saving goal, divided by days left): ${dailyBudget} euros/day
+- Daily budget (balance minus saving goal minus unpaid bills minus debts minus investments, divided by days left): ${dailyBudget} euros/day
 - Spending by category: ${categoryBreakdown}
 - Top individual expenses: ${topExpenses}
 - Bills: ${recurringBills.length > 0 ? recurringBills.map((b) => {

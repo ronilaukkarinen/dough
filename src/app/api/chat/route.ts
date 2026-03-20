@@ -45,8 +45,6 @@ export async function POST(request: Request) {
 
           const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
           const daysLeft = daysInMonth - now.getDate();
-          // Daily budget = checking+savings balance / days left (same as dashboard)
-          const dailyBudget = daysLeft > 0 ? Math.round((checkingSavings / daysLeft) * 100) / 100 : 0;
 
           // Get debts from accounts with overrides
           const chatDb = getDb();
@@ -120,6 +118,11 @@ export async function POST(request: Request) {
           const unpaidBills = enrichedBills.filter((b) => b.status !== "paid");
           const unpaidBillsTotal = unpaidBills.reduce((s, b) => s + b.amount, 0);
           const debtPaymentsTotal = debts.reduce((s: number, d: any) => s + (d.minimumPayment || 0), 0);
+          const investmentContributions = investmentAccounts.reduce((s: number, i: any) => s + (i.monthlyContribution || 0), 0);
+
+          // Daily budget matches dashboard: balance - saving goal - unpaid bills - debts - investments
+          const spendableBalance = Math.max(0, checkingSavings - savingRate - unpaidBillsTotal - debtPaymentsTotal - investmentContributions);
+          const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
           // Income arriving before last day of month (before salary), including today
           // Check which income sources are already matched to avoid double-counting

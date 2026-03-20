@@ -47,9 +47,8 @@ CRITICAL RULES FOR CALCULATIONS:
 
 Current financial snapshot:
 - Checking+savings balance: ${ctx.totalBalance} euros
-- ** DAILY BUDGET: ${ctx.dailyBudget} euros/day ** (balance minus saving goal, divided by days left. This is what the dashboard shows. USE THIS NUMBER for general advice.)
-- After bills and debts: ${ctx.dailySpendableBeforePayday} euros/day (balance + expected income before payday - unpaid bills - debt payments, divided by days left. Use this for "can I afford X today" questions.)
-- Unpaid bills remaining: ${ctx.upcomingBills.filter(b => b.status !== "paid").reduce((s, b) => s + b.amount, 0)} euros
+- ** DAILY BUDGET: ${ctx.dailyBudget} euros/day ** (balance minus saving goal minus unpaid bills minus debt payments minus investments, divided by days left. This is what the dashboard shows. It already accounts for all fixed obligations. USE THIS NUMBER.)
+- With upcoming income before payday: ${ctx.dailySpendableBeforePayday} euros/day (adds expected income arriving before month end)
 - Days left in month: ${ctx.daysUntilNextIncome}
 - Income RECEIVED so far this month: ${ctx.monthlyIncome} euros
 - Total EXPECTED monthly income: ${ctx.incomeSources.reduce((s, i) => s + i.amount, 0)} euros

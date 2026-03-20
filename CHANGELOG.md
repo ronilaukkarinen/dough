@@ -1,5 +1,6 @@
 ### 1.1.0: 2026-03-20
 
+* Fix daily budget to subtract unpaid bills, debt payments, and investments from balance before dividing by days
 * Force Claude Opus model for all AI features (chat, summary, debts, categorization, receipt parsing)
 * Fix greeting to hide household remaining when same as personal, fix label to "jäljellä"
 * Add blur glass effect to mobile top bar with backdrop-filter

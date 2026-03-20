@@ -158,9 +158,10 @@ export default function DashboardPage() {
     .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
     .reduce((s, i) => s + i.amount, 0);
 
-  // Daily budget = (balance - saving goal) / days left
-  // Only count money you actually HAVE, not upcoming income
-  const spendableBalance = Math.max(0, availableBalance - savingRate);
+  // Daily budget = (balance - saving goal - unpaid bills - debt payments - investments) / days left
+  // Shows what's actually available for daily spending after all obligations
+  const unpaidBillsForBudget = bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0);
+  const spendableBalance = Math.max(0, availableBalance - savingRate - unpaidBillsForBudget - debtMonthly - investmentMonthly);
   const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
   // Burn rate = average daily real spending this month
