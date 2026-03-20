@@ -47,7 +47,7 @@ CRITICAL RULES FOR CALCULATIONS:
 
 Current financial snapshot:
 - Checking+savings balance: ${ctx.totalBalance} euros
-- ** DAILY BUDGET: ${ctx.dailyBudget} euros/day ** (balance minus saving goal minus unpaid bills, divided by days left. Debt payments and investments are YNAB transfers, not included. This is what the dashboard shows. USE THIS NUMBER.)
+- ** DAILY BUDGET: ${ctx.dailyBudget} euros/day ** (simulated cash flow: starts with current balance, adds each future income on its expected day, subtracts each bill/debt on its due day, then divides remaining by days left. This is what the dashboard shows. USE THIS NUMBER.)
 - With upcoming income before payday: ${ctx.dailySpendableBeforePayday} euros/day (adds expected income arriving before month end)
 - Days left in month: ${ctx.daysUntilNextIncome}
 - Income RECEIVED so far this month: ${ctx.monthlyIncome} euros

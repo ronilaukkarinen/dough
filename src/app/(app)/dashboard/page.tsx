@@ -41,6 +41,7 @@ export default function DashboardPage() {
   const [bills, setBills] = useState<{ id: number; amount: number; due_day: number; is_active: number; is_paid: boolean }[]>([]);
   const [investmentMonthly, setInvestmentMonthly] = useState(0);
   const [debtMonthly, setDebtMonthly] = useState(0);
+  const [debtItems, setDebtItems] = useState<{ amount: number; dueDay: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [householdSize, setHouseholdSize] = useState(1);
   const [personalBudgetShare, setPersonalBudgetShare] = useState(0);
@@ -73,6 +74,10 @@ export default function DashboardPage() {
         const totalDebtPayments = debtData.debts
           .reduce((s: number, d: { minimumPayment: number; monthlyTarget: number }) => s + (d.minimumPayment || d.monthlyTarget || 0), 0);
         setDebtMonthly(totalDebtPayments);
+        setDebtItems(debtData.debts.map((d: { minimumPayment: number; monthlyTarget: number; dueDay: number }) => ({
+          amount: d.minimumPayment || d.monthlyTarget || 0,
+          dueDay: d.dueDay || 0,
+        })));
       }
       if (matchData.monthlyMatches) {
         const incIds = new Set<number>();
@@ -158,10 +163,38 @@ export default function DashboardPage() {
     .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
     .reduce((s, i) => s + i.amount, 0);
 
-  // Daily budget = (balance - saving goal - unpaid bills) / days left
-  // Debts and investments are YNAB transfers, not spending — excluded from daily budget
-  const unpaidBillsForBudget = bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0);
-  const spendableBalance = Math.max(0, availableBalance - savingRate - unpaidBillsForBudget);
+  // Daily budget: simulate day-by-day cash flow from today to month end.
+  // Start with current balance, subtract saving goal.
+  // Each future day: add income arriving that day, subtract bills/debts due that day.
+  // Whatever is left after all obligations = total discretionary pool / days left.
+  const unpaidBillsList = bills.filter((b) => b.is_active && !b.is_paid);
+  const unreceivedIncomes = incomes
+    .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id));
+
+  let simulatedBalance = availableBalance - savingRate;
+  for (let d = today + 1; d <= daysInMonth; d++) {
+    // Add income arriving on this day
+    for (const inc of unreceivedIncomes) {
+      if (resolveDay(inc.expected_day) === d) simulatedBalance += inc.amount;
+    }
+    // Subtract bills due on this day
+    for (const bill of unpaidBillsList) {
+      if (bill.due_day === d) simulatedBalance -= bill.amount;
+    }
+    // Subtract debts due on this day
+    for (const debt of debtItems) {
+      if (debt.dueDay === d && debt.amount > 0) simulatedBalance -= debt.amount;
+    }
+  }
+  // Also subtract bills/debts with due_day = 0 (unknown) or already overdue but unpaid
+  for (const bill of unpaidBillsList) {
+    if (bill.due_day <= today || bill.due_day === 0) simulatedBalance -= bill.amount;
+  }
+  for (const debt of debtItems) {
+    if ((debt.dueDay <= today || debt.dueDay === 0) && debt.amount > 0) simulatedBalance -= debt.amount;
+  }
+
+  const spendableBalance = Math.max(0, simulatedBalance);
   const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
   // Burn rate = average daily real spending this month
@@ -351,11 +384,7 @@ export default function DashboardPage() {
         daysPassed={daysPassed}
         dailyDiscretionary={dailyDiscretionary}
         targetPerDay={discretionaryTargetPerDay}
-        combinedIncome={combinedIncome}
-        savingRate={savingRate}
-        totalBills={totalBillsFull}
-        debtMonthly={debtMonthly}
-        investmentMonthly={investmentMonthly}
+        dailyBudget={dailyBudget}
       />
 
       <AiSummary />

@@ -18,11 +18,7 @@ interface SpendingFlowProps {
   daysPassed: number;
   dailyDiscretionary: number;
   targetPerDay: number;
-  combinedIncome: number;
-  savingRate: number;
-  totalBills: number;
-  debtMonthly: number;
-  investmentMonthly: number;
+  dailyBudget: number;
 }
 
 function ratioToColor(r: number): string {
@@ -52,15 +48,11 @@ export function SpendingFlow({
   daysPassed,
   dailyDiscretionary,
   targetPerDay,
-  combinedIncome,
-  savingRate,
-  totalBills,
-  debtMonthly,
-  investmentMonthly,
+  dailyBudget,
 }: SpendingFlowProps) {
   const { locale, fmt } = useLocale();
-  // Discretionary target = income minus all fixed costs
-  const target = Math.max(0, combinedIncome - savingRate - totalBills - debtMonthly - investmentMonthly);
+  // Target = daily budget (from cash flow simulation) * days in month
+  const target = dailyBudget * daysInMonth;
 
   const data: { day: number; label: string; actual?: number; projected?: number; target?: number }[] = [];
   let cumulative = 0;

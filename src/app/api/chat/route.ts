@@ -120,22 +120,40 @@ export async function POST(request: Request) {
           const debtPaymentsTotal = debts.reduce((s: number, d: any) => s + (d.minimumPayment || 0), 0);
           const investmentContributions = investmentAccounts.reduce((s: number, i: any) => s + (i.monthlyContribution || 0), 0);
 
-          // Daily budget matches dashboard: balance - saving goal - unpaid bills
-          // Debts and investments are YNAB transfers, not spending
-          const spendableBalance = Math.max(0, checkingSavings - savingRate - unpaidBillsTotal);
-          const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
-
-          // Income arriving before last day of month (before salary), including today
-          // Check which income sources are already matched to avoid double-counting
+          // Load income matches and sources for daily budget simulation
           const chatIncomeMatches = chatDb
             .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'income' AND month = ?")
             .all(chatMonth) as { source_id: number }[];
           const matchedIncomeIds = new Set(chatIncomeMatches.map((m) => m.source_id));
 
-          // Load income source IDs for matching
           const incomeWithIds = chatDb
             .prepare("SELECT id, name, amount, expected_day FROM income_sources WHERE is_active = 1 ORDER BY expected_day ASC")
             .all() as { id: number; name: string; amount: number; expected_day: number }[];
+
+          const resolveDay = (day: number) => day === 0 ? daysInMonth : day;
+
+          // Daily budget: simulate day-by-day cash flow (same as dashboard)
+          const unreceivedIncomes = incomeWithIds.filter((i) => resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id));
+          let simulatedBalance = checkingSavings - savingRate;
+          for (let d = today + 1; d <= daysInMonth; d++) {
+            for (const inc of unreceivedIncomes) {
+              if (resolveDay(inc.expected_day) === d) simulatedBalance += inc.amount;
+            }
+            for (const bill of unpaidBills) {
+              if (bill.dueDay === d) simulatedBalance -= bill.amount;
+            }
+            for (const debt of debts) {
+              if (debt.dueDay === d && debt.minimumPayment > 0) simulatedBalance -= debt.minimumPayment;
+            }
+          }
+          for (const bill of unpaidBills) {
+            if (bill.dueDay <= today || bill.dueDay === 0) simulatedBalance -= bill.amount;
+          }
+          for (const debt of debts) {
+            if ((debt.dueDay <= today || debt.dueDay === 0) && debt.minimumPayment > 0) simulatedBalance -= debt.minimumPayment;
+          }
+          const spendableBalance = Math.max(0, simulatedBalance);
+          const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
           const incomeBeforePayday = incomeWithIds
             .filter((i) => i.expected_day >= today && i.expected_day < daysInMonth && !matchedIncomeIds.has(i.id))

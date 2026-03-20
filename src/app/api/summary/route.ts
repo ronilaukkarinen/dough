@@ -178,9 +178,41 @@ export async function GET(request: Request) {
     const projectedRemainingExpenses = Math.round(unpaidBillsAmount + (dailyDiscretionary * daysLeft));
     const projectedTotalExpenses = Math.round(monthActivity + projectedRemainingExpenses + totalInvestmentContributions + totalDebtPayments);
 
-    // Daily budget matches dashboard: (balance - saving goal - unpaid bills) / days left
-    // Debts and investments are YNAB transfers, not spending
-    const spendableBalance = Math.max(0, checkingSavings - savingGoal - unpaidBillsAmount);
+    // Daily budget: simulate day-by-day cash flow (same as dashboard)
+    const resolveDay = (day: number) => day === 0 ? daysInMonth : day;
+    const unpaidBillsList = recurringBills.filter((b) => !matchedBillIds.has(b.id) && b.due_day >= now.getDate());
+    const overdueBills = recurringBills.filter((b) => !matchedBillIds.has(b.id) && b.due_day < now.getDate());
+    const unreceivedIncomes = incomeSources.filter((i) => resolveDay(i.expected_day) > now.getDate());
+
+    // Get income matches to exclude already received
+    const incomeMatches = db
+      .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'income' AND month = ?")
+      .all(billMonth) as { source_id: number }[];
+    const matchedIncomeIds = new Set(incomeMatches.map((m) => m.source_id));
+    const unreceivedIncomesFiltered = unreceivedIncomes.filter((i) => {
+      const allIncome = db.prepare("SELECT id FROM income_sources WHERE name = ? AND amount = ?").get(i.name, i.amount) as { id: number } | undefined;
+      return allIncome ? !matchedIncomeIds.has(allIncome.id) : true;
+    });
+
+    let simulatedBalance = checkingSavings - savingGoal;
+    for (let d = now.getDate() + 1; d <= daysInMonth; d++) {
+      for (const inc of unreceivedIncomesFiltered) {
+        if (resolveDay(inc.expected_day) === d) simulatedBalance += inc.amount;
+      }
+      for (const bill of unpaidBillsList) {
+        if (bill.due_day === d) simulatedBalance -= bill.amount;
+      }
+      for (const debt of debtAccounts) {
+        if (debt.dueDay === d && debt.payment > 0) simulatedBalance -= debt.payment;
+      }
+    }
+    for (const bill of overdueBills) {
+      simulatedBalance -= bill.amount;
+    }
+    for (const debt of debtAccounts) {
+      if ((debt.dueDay <= now.getDate() || debt.dueDay === 0) && debt.payment > 0) simulatedBalance -= debt.payment;
+    }
+    const spendableBalance = Math.max(0, simulatedBalance);
     const dailyBudget = daysLeft > 0 ? Math.round((spendableBalance / daysLeft) * 100) / 100 : 0;
 
     const prompt = `${lang} You are a personal finance advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} ${summaryInstructions}
