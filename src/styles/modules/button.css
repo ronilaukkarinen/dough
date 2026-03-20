@@ -19,8 +19,9 @@
 }
 
 .button:focus-visible {
-  border-color: var(--ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent);
+  outline: none;
+  border-color: inherit;
+  box-shadow: none;
 }
 
 .button:active {
@@ -133,8 +134,9 @@
 }
 
 .button[data-variant="destructive"]:focus-visible {
-  border-color: color-mix(in srgb, var(--destructive) 40%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 20%, transparent);
+  outline: none;
+  border-color: inherit;
+  box-shadow: none;
 }
 
 .dark .button[data-variant="destructive"] {

@@ -1,5 +1,6 @@
 ### 1.2.0: 2026-03-21
 
+* Remove focus ring styles from buttons to prevent sticky highlights on mobile tap
 * Add privacy mode toggle (eye icon) in topbar and sidebar to mask all sensitive data for screenshots
 * Cache debt AI suggestion to DB for 24 hours, load on page mount
 * Fix debt AI suggestion refresh button margin with ai-summary-actions wrapper
