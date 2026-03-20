@@ -5,7 +5,21 @@
 ![Claude](https://img.shields.io/badge/Claude_AI-cc785c?style=for-the-badge&logo=anthropic&logoColor=white)
 ![YNAB](https://img.shields.io/badge/YNAB-85c3e9?style=for-the-badge&logoColor=white)
 
-A self-hosted personal finance dashboard that connects to YNAB and uses Claude AI for financial advice, spending summaries, and debt strategies. Built for households who want full control over their financial data.
+A self-hosted personal finance dashboard that connects to YNAB and uses Claude AI for financial advice, spending summaries, and debt strategies.
+
+## Why Dough
+
+YNAB is great for detailed per-account envelope budgeting, but it's an individual tool. When you share finances with a partner, you need a shared view that answers simple questions: "how much can we spend today?", "are we on track this month?", "can we afford eating out tonight?"
+
+Dough was built to solve this:
+
+- **Accountless by design** — no separate checking, savings, or credit card views. One household, one balance, one daily budget. Your partner doesn't need to understand account structures or envelope budgeting.
+- **Household-first** — all data is shared. Both users see the same dashboard, same AI advisor, same bills and income. No "my budget" vs "your budget."
+- **AI that knows your situation** — Claude has full context of your balance, bills, debts, income dates, and spending patterns. Ask "can I buy lunch today?" and get a real answer based on cash flow simulation, not a generic rule.
+- **Cash flow simulation** — the daily budget accounts for when income arrives and when bills are due. It knows your tax payment is due the day before salary and doesn't panic about it.
+- **Receipt scanning** — snap a photo of a receipt in the chat, the AI reads it and adds the expense to YNAB automatically.
+- **Works alongside YNAB** — Dough doesn't replace YNAB's envelope budgeting or bank connections. It's an intelligence layer on top. YNAB handles the accounting, Dough handles the "how are we doing?" question.
+- **Self-hosted, private** — your financial data stays on your machine. No cloud services, no third-party access. SQLite database you can back up with a single file copy.
 
 ## Features
 
