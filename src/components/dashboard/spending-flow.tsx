@@ -13,12 +13,16 @@ import {
 
 interface SpendingFlowProps {
   spendingByDay: Record<number, number>;
+  paidBillsAmount: number;
   daysInMonth: number;
   daysPassed: number;
   dailyDiscretionary: number;
   targetPerDay: number;
   combinedIncome: number;
   savingRate: number;
+  totalBills: number;
+  debtMonthly: number;
+  investmentMonthly: number;
 }
 
 function ratioToColor(r: number): string {
@@ -43,15 +47,20 @@ function ratioToColor(r: number): string {
 
 export function SpendingFlow({
   spendingByDay,
+  paidBillsAmount,
   daysInMonth,
   daysPassed,
   dailyDiscretionary,
   targetPerDay,
   combinedIncome,
   savingRate,
+  totalBills,
+  debtMonthly,
+  investmentMonthly,
 }: SpendingFlowProps) {
   const { locale, fmt } = useLocale();
-  const target = combinedIncome - savingRate;
+  // Discretionary target = income minus all fixed costs
+  const target = Math.max(0, combinedIncome - savingRate - totalBills - debtMonthly - investmentMonthly);
 
   const data: { day: number; label: string; actual?: number; projected?: number; target?: number }[] = [];
   let cumulative = 0;
@@ -59,14 +68,18 @@ export function SpendingFlow({
   for (let d = 1; d <= daysInMonth; d++) {
     if (d <= daysPassed) {
       cumulative = spendingByDay[d] || cumulative;
+      // Discretionary = total spending minus paid bills
+      const discretionary = Math.max(0, cumulative - paidBillsAmount);
       data.push({
         day: d,
         label: `${d}.`,
-        actual: cumulative,
+        actual: discretionary,
         target: targetPerDay > 0 ? Math.round(targetPerDay * d) : undefined,
       });
     } else {
-      const projected = cumulative + dailyDiscretionary * (d - daysPassed);
+      // Projection based on discretionary daily rate (already excludes bills)
+      const lastDiscretionary = data.length > 0 ? (data[data.length - 1].actual || 0) : 0;
+      const projected = lastDiscretionary + dailyDiscretionary * (d - daysPassed);
       data.push({
         day: d,
         label: `${d}.`,

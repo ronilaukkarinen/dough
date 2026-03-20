@@ -243,15 +243,21 @@ export default function DashboardPage() {
     .reduce((s, i) => s + i.amount, 0);
   const combinedIncome = Math.max(realIncome, totalExpectedIncome);
 
-  // Savings target line: cumulative max expenses to hit saving goal
-  const savingsTargetPerDay = savingRate > 0 && combinedIncome > 0
-    ? (combinedIncome - savingRate) / daysInMonth
-    : 0;
-  const spendingData = Array.from({ length: now.getDate() }, (_, i) => ({
-    date: `${i + 1}.`,
-    spent: spendingByDay[i + 1] || (i > 0 ? spendingByDay[i] || 0 : 0),
-    ...(savingsTargetPerDay > 0 ? { savingsTarget: Math.round(savingsTargetPerDay * (i + 1)) } : {}),
-  }));
+  // Discretionary budget = income minus ALL fixed costs
+  const totalBillsFull = bills.filter((b) => b.is_active).reduce((s, b) => s + b.amount, 0);
+  const discretionaryBudget = Math.max(0, combinedIncome - savingRate - totalBillsFull - debtMonthly - investmentMonthly);
+  const discretionaryTargetPerDay = discretionaryBudget > 0 ? discretionaryBudget / daysInMonth : 0;
+
+  // Spending chart: discretionary only (cumulative ALL spending minus paid bills)
+  const spendingData = Array.from({ length: now.getDate() }, (_, i) => {
+    const cumulativeAll = spendingByDay[i + 1] || (i > 0 ? spendingByDay[i] || 0 : 0);
+    const discretionary = Math.max(0, cumulativeAll - paidBillsAmount);
+    return {
+      date: `${i + 1}.`,
+      spent: discretionary,
+      ...(discretionaryTargetPerDay > 0 ? { savingsTarget: Math.round(discretionaryTargetPerDay * (i + 1)) } : {}),
+    };
+  });
   // Fill forward missing days
   for (let i = 1; i < spendingData.length; i++) {
     if (spendingData[i].spent === 0 && spendingData[i - 1].spent > 0) {
@@ -341,12 +347,16 @@ export default function DashboardPage() {
 
       <SpendingFlow
         spendingByDay={spendingByDay as unknown as Record<number, number>}
+        paidBillsAmount={paidBillsAmount}
         daysInMonth={daysInMonth}
         daysPassed={daysPassed}
         dailyDiscretionary={dailyDiscretionary}
-        targetPerDay={savingsTargetPerDay}
+        targetPerDay={discretionaryTargetPerDay}
         combinedIncome={combinedIncome}
         savingRate={savingRate}
+        totalBills={totalBillsFull}
+        debtMonthly={debtMonthly}
+        investmentMonthly={investmentMonthly}
       />
 
       <AiSummary />
