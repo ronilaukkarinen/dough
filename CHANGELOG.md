@@ -1,5 +1,6 @@
 ### 1.2.0: 2026-03-21
 
+* Fix privacy mode: digits replaced with bullet chars via fmt(), summary shown as skeleton lines, € symbol preserved
 * Scope all button hover styles behind @media (hover: hover) to prevent sticky states on mobile
 * Remove all focus outlines and rings globally to prevent sticky highlights after tap
 * Add privacy mode toggle (eye icon) in topbar and sidebar to mask all sensitive data for screenshots

@@ -19,6 +19,8 @@ interface LocaleContextValue {
   decimals: number;
   setDecimals: (d: number) => void;
   fmt: (n: number) => string;
+  privacyMode: boolean;
+  setPrivacyMode: (v: boolean) => void;
 }
 
 const LocaleContext = createContext<LocaleContextValue>({
@@ -28,11 +30,14 @@ const LocaleContext = createContext<LocaleContextValue>({
   decimals: 0,
   setDecimals: () => {},
   fmt: (n: number) => n.toFixed(0),
+  privacyMode: false,
+  setPrivacyMode: () => {},
 });
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
   const [decimals, setDecimalsState] = useState(0);
+  const [privacyMode, setPrivacyModeState] = useState(false);
 
   useEffect(() => {
     console.debug("[locale] Fetching user locale and settings");
@@ -64,12 +69,19 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     setDecimalsState(d);
   }, []);
 
-  const fmt = useCallback((n: number) => n.toFixed(decimals), [decimals]);
+  const setPrivacyMode = useCallback((v: boolean) => setPrivacyModeState(v), []);
+
+  const fmt = useCallback((n: number) => {
+    const formatted = n.toFixed(decimals);
+    if (!privacyMode) return formatted;
+    // Replace each digit with a bullet, keep decimal dots
+    return formatted.replace(/\d/g, "\u2022");
+  }, [decimals, privacyMode]);
 
   const t = translations[locale] || translations.en;
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, t, decimals, setDecimals, fmt }}>
+    <LocaleContext.Provider value={{ locale, setLocale, t, decimals, setDecimals, fmt, privacyMode, setPrivacyMode }}>
       {children}
     </LocaleContext.Provider>
   );

@@ -7,8 +7,7 @@ import { useLocale } from "@/lib/locale-context";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [privacyMode, setPrivacyMode] = useState(false);
-  const { t } = useLocale();
+  const { t, privacyMode, setPrivacyMode } = useLocale();
 
   return (
     <div className={`l-app-shell ${privacyMode ? "privacy-mode" : ""}`}>
@@ -24,7 +23,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <span className="l-topbar-title">Dough</span>
         <button
           className="l-topbar-btn"
-          onClick={() => setPrivacyMode((v) => !v)}
+          onClick={() => setPrivacyMode(!privacyMode)}
         >
           {privacyMode ? <EyeOff /> : <Eye />}
         </button>
@@ -40,7 +39,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         privacyMode={privacyMode}
-        onTogglePrivacy={() => setPrivacyMode((v) => !v)}
+        onTogglePrivacy={() => setPrivacyMode(!privacyMode)}
       />
 
       <main className="l-main">

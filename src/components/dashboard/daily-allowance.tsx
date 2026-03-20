@@ -134,7 +134,7 @@ export function DailyAllowance({
                 {monthIncome - monthExpenses >= 0
                   ? (locale === "fi" ? "Plussalla" : "Surplus")
                   : (locale === "fi" ? "Miinuksella" : "Deficit")}
-                {" \u00B7 "}{locale === "fi" ? "tulot " : "income "}<span className="text-positive">{monthIncome.toFixed(0)} {currency}</span>{" \u2013 "}{locale === "fi" ? "menot (arvio) " : "expenses (est.) "}<span className="text-negative">{monthExpenses.toFixed(0)} {currency}</span>
+                {" \u00B7 "}{locale === "fi" ? "tulot " : "income "}<span className="text-positive">{fmt(monthIncome)} {currency}</span>{" \u2013 "}{locale === "fi" ? "menot (arvio) " : "expenses (est.) "}<span className="text-negative">{fmt(monthExpenses)} {currency}</span>
               </p>
             </div>
           </div>
@@ -187,7 +187,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{locale === "fi" ? "Kulutusvauhti" : "Burn rate"}</p>
-            <p className="metric-card-value">{burnRate.toFixed(0)} {currency}/{locale === "fi" ? "pv" : "day"}</p>
+            <p className="metric-card-value">{fmt(burnRate)} {currency}/{locale === "fi" ? "pv" : "day"}</p>
             <p className="metric-card-note">
               {trendPercent !== 0 ? (
                 <>
