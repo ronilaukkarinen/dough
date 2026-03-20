@@ -78,8 +78,9 @@ export function SpendingFlow({
       });
     } else {
       // Projection based on discretionary daily rate (already excludes bills)
-      const lastDiscretionary = data.length > 0 ? (data[data.length - 1].actual || 0) : 0;
-      const projected = lastDiscretionary + dailyDiscretionary * (d - daysPassed);
+      const prev = data.length > 0 ? data[data.length - 1] : null;
+      const lastVal = prev ? (prev.actual ?? prev.projected ?? 0) : 0;
+      const projected = lastVal + dailyDiscretionary;
       data.push({
         day: d,
         label: `${d}.`,
