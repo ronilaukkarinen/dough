@@ -58,7 +58,7 @@ export async function POST(request: Request) {
             .filter((a: any) => a.type === "otherDebt" && a.balance < 0)
             .map((a: any) => {
               const override = debtOverrideMap[a.id];
-              return { name: a.name, remaining: Math.abs(a.balance), rate: override?.interest_rate ?? 0, minimumPayment: override?.minimum_payment ?? 0 };
+              return { name: a.name, remaining: Math.abs(a.balance), rate: override?.interest_rate ?? 0, minimumPayment: override?.minimum_payment ?? 0, dueDay: override?.due_day ?? 0 };
             });
 
           // Get investment accounts with overrides

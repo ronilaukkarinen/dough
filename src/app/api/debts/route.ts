@@ -49,6 +49,7 @@ export async function GET() {
         balance: Math.abs(a.balance),
         interestRate: override?.interest_rate ?? 0,
         minimumPayment: override?.minimum_payment ?? monthlyTarget,
+        dueDay: override?.due_day ?? 0,
         monthlyTarget,
         monthlyPayment,
         notes: override?.notes ?? "",
@@ -94,20 +95,21 @@ export async function PUT(request: Request) {
     if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
     const body = await request.json();
-    const { ynab_account_id, interest_rate, minimum_payment, notes } = body;
+    const { ynab_account_id, interest_rate, minimum_payment, due_day, notes } = body;
 
     if (!ynab_account_id) return NextResponse.json({ error: "Account ID required" }, { status: 400 });
 
     const db = getDb();
     db.prepare(`
-      INSERT INTO debt_overrides (ynab_account_id, interest_rate, minimum_payment, notes)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO debt_overrides (ynab_account_id, interest_rate, minimum_payment, due_day, notes)
+      VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(ynab_account_id) DO UPDATE SET
         interest_rate = excluded.interest_rate,
         minimum_payment = excluded.minimum_payment,
+        due_day = excluded.due_day,
         notes = excluded.notes,
         updated_at = datetime('now')
-    `).run(ynab_account_id, interest_rate ?? 0, minimum_payment ?? 0, notes ?? "");
+    `).run(ynab_account_id, interest_rate ?? 0, minimum_payment ?? 0, due_day ?? 0, notes ?? "");
 
     console.info("[debts] Override saved for", ynab_account_id);
     return NextResponse.json({ success: true });

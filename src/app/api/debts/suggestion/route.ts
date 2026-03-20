@@ -29,7 +29,8 @@ export async function GET() {
       const balance = Math.abs(a.balance);
       const rate = override?.interest_rate ?? 0;
       const payment = override?.minimum_payment ?? 0;
-      return `${a.name}: ${balance.toFixed(0)} euros${rate > 0 ? ` (${rate}% APR)` : ""}${payment > 0 ? `, ${payment} euros/month` : ""}`;
+      const dueDay = override?.due_day ?? 0;
+      return `${a.name}: ${balance.toFixed(0)} euros${rate > 0 ? ` (${rate}% APR)` : ""}${payment > 0 ? `, ${payment} euros/month` : ""}${dueDay > 0 ? ` (due ${dueDay}th)` : ""}`;
     });
 
     const { getHouseholdSetting } = await import("@/lib/household");

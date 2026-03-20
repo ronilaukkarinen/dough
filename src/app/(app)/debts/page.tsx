@@ -37,6 +37,7 @@ interface DebtData {
   balance: number;
   interestRate: number;
   minimumPayment: number;
+  dueDay: number;
   monthlyTarget: number;
   monthlyPayment: number;
   notes: string;
@@ -124,6 +125,7 @@ export default function DebtsPage() {
           ynab_account_id: debt.id,
           interest_rate: debt.interestRate,
           minimum_payment: debt.minimumPayment,
+          due_day: debt.dueDay,
         }),
       });
     } catch (err) {
@@ -254,6 +256,19 @@ export default function DebtsPage() {
                     value={debt.minimumPayment || ""}
                     onChange={(e) => updateDebt(debt.id, "minimumPayment", parseFloat(e.target.value) || 0)}
                     placeholder={debt.monthlyTarget ? String(debt.monthlyTarget) : "0"}
+                    className="debt-edit-input"
+                  />
+                </div>
+                <div className="debt-edit-field">
+                  <Label className="debt-edit-label">{locale === "fi" ? "Eräpv" : "Due day"}</Label>
+                  <Input
+                    type="number"
+                    step="1"
+                    min="0"
+                    max="31"
+                    value={debt.dueDay || ""}
+                    onChange={(e) => updateDebt(debt.id, "dueDay", parseInt(e.target.value) || 0)}
+                    placeholder="0"
                     className="debt-edit-input"
                   />
                 </div>

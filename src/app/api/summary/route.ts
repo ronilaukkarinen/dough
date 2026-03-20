@@ -144,15 +144,15 @@ export async function GET(request: Request) {
       : "No income sources configured";
 
     // Get debts with overrides
-    const debtOverrides = db.prepare("SELECT * FROM debt_overrides").all() as { ynab_account_id: string; interest_rate: number; minimum_payment: number }[];
-    const debtOverrideMap: Record<string, { interest_rate: number; minimum_payment: number }> = {};
+    const debtOverrides = db.prepare("SELECT * FROM debt_overrides").all() as { ynab_account_id: string; interest_rate: number; minimum_payment: number; due_day: number }[];
+    const debtOverrideMap: Record<string, { interest_rate: number; minimum_payment: number; due_day: number }> = {};
     for (const o of debtOverrides) debtOverrideMap[o.ynab_account_id] = o;
 
-    const debtAccounts: { name: string; balance: number; rate: number; payment: number }[] = summary.accounts
+    const debtAccounts: { name: string; balance: number; rate: number; payment: number; dueDay: number }[] = summary.accounts
       .filter((a: any) => a.type === "otherDebt" && a.balance < 0)
       .map((a: any) => {
         const override = debtOverrideMap[a.id];
-        return { name: a.name, balance: Math.abs(a.balance), rate: override?.interest_rate ?? 0, payment: override?.minimum_payment ?? 0 };
+        return { name: a.name, balance: Math.abs(a.balance), rate: override?.interest_rate ?? 0, payment: override?.minimum_payment ?? 0, dueDay: override?.due_day ?? 0 };
       });
 
     // Get investment accounts with overrides
@@ -217,7 +217,7 @@ Pre-calculated analysis:
     }).join(", ") : "none configured"}
 - Total monthly bills: ${recurringBills.reduce((s, b) => s + b.amount, 0)} euros
 - Income sources: ${incomeList}
-- Debts: ${debtAccounts.length > 0 ? debtAccounts.map((d) => `${d.name}: ${d.balance} euros${d.rate > 0 ? ` (${d.rate}% APR)` : ""}${d.payment > 0 ? `, ${d.payment} euros/month` : ""}`).join(", ") : "none"}
+- Debts: ${debtAccounts.length > 0 ? debtAccounts.map((d) => `${d.name}: ${d.balance} euros${d.rate > 0 ? ` (${d.rate}% APR)` : ""}${d.payment > 0 ? `, ${d.payment} euros/month` : ""}${d.dueDay > 0 ? ` (due ${d.dueDay}th)` : ""}`).join(", ") : "none"}
 - Total debt: ${debtAccounts.reduce((s: number, d: { balance: number }) => s + d.balance, 0)} euros
 - Investments: ${investmentAccounts.length > 0 ? investmentAccounts.map((i) => `${i.name}: ${i.balance} euros${i.monthly > 0 ? `, ${i.monthly} euros/month` : ""}${i.returnPct > 0 ? ` (${i.returnPct}% return)` : ""}`).join(", ") : "none"}
 - Total investment value: ${investmentAccounts.reduce((s: number, i: { balance: number }) => s + i.balance, 0)} euros
