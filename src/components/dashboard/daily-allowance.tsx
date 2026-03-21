@@ -78,6 +78,7 @@ export function DailyAllowance({
                     {". "}
                     {locale === "fi" ? "Huomiselle käytössä on " : "Available tomorrow "}
                     <span className="text-positive">{fmt(Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome)))} {currency}</span>
+                    {` \u00B7 ${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`}
                   </>
                 )}
                 {"."}
@@ -89,6 +90,7 @@ export function DailyAllowance({
                 {" \u00B7 "}
                 {locale === "fi" ? "käytetty " : "spent "}
                 <span className="text-negative">{fmt(todaySpentAll)} {currency}</span>
+                {daysUntilIncome > 0 && ` \u00B7 ${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`}
               </>
             ) : (
               `${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`
