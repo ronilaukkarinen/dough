@@ -38,7 +38,7 @@ export const fi = {
   nav: {
     dashboard: "Yhteenveto",
     chat: "AI-neuvoja",
-    transactions: "Tapahtumat",
+    transactions: "Tilitapahtumat",
     bills: "Laskut",
     income: "Tulot",
     debts: "Velat",
@@ -87,7 +87,7 @@ export const fi = {
     errorGeneral: "Jokin meni pieleen. Yritä uudelleen.",
   },
   transactions: {
-    title: "Tapahtumat",
+    title: "Tilitapahtumat",
     subtitle: "Synkronoitu YNABista",
     search: "Hae tapahtumia...",
     markRecurring: "Merkitse toistuvaksi",
