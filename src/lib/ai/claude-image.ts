@@ -17,13 +17,14 @@ export async function queryClaudeWithImage(
 ): Promise<ClaudeImageResult> {
   const claudePath = process.env.CLAUDE_PATH || "claude";
 
+  const isPdf = mediaType === "application/pdf";
   const message = JSON.stringify({
     type: "user",
     message: {
       role: "user",
       content: [
         {
-          type: "image",
+          type: isPdf ? "document" : "image",
           source: { type: "base64", media_type: mediaType, data: imageBase64 },
         },
         { type: "text", text: textPrompt },
