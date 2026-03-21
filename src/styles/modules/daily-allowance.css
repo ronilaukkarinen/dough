@@ -201,6 +201,23 @@
   z-index: 50;
   pointer-events: none;
   white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms, visibility 150ms;
+}
+
+/* Mobile: show on tap via .is-open */
+.metric-info-wrap.is-open .metric-info-popup {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Desktop: show on hover */
+@media (hover: hover) {
+  .metric-info-wrap:hover .metric-info-popup {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 .metric-info-popup::before {

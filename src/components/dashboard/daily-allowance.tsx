@@ -113,17 +113,15 @@ export function DailyAllowance({
             <div>
               <p className="metric-card-label metric-card-label-info">
                 {locale === "fi" ? "Kuukauden tilanne" : "Month status"}
-                <span className="metric-info-wrap">
+                <span className={`metric-info-wrap ${infoOpen ? "is-open" : ""}`}>
                   <button type="button" className="metric-info-trigger" onClick={() => setInfoOpen((v) => !v)}>
                     <Info />
                   </button>
-                  {infoOpen && (
-                    <span className="metric-info-popup">
-                      {locale === "fi"
-                        ? "Tulot (odotetut tai saadut) miinus menot: toteutuneet kulut + maksamattomat laskut + arvioitu loppukuun kulutus + sijoitukset + velkaerät"
-                        : "Income (expected or received) minus expenses: actual spending + unpaid bills + projected remaining spending + investments + debt payments"}
-                    </span>
-                  )}
+                  <span className="metric-info-popup">
+                    {locale === "fi"
+                      ? "Tulot (odotetut tai saadut) miinus menot: toteutuneet kulut + maksamattomat laskut + arvioitu loppukuun kulutus + sijoitukset + velkaerät"
+                      : "Income (expected or received) minus expenses: actual spending + unpaid bills + projected remaining spending + investments + debt payments"}
+                  </span>
                 </span>
               </p>
               <p className="metric-card-value">
