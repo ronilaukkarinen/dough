@@ -233,11 +233,12 @@ export function ChatInterface() {
                 </div>
               )}
               <div className="chat-message-bubble" data-type={bubbleType}>
-                {message.image_thumb && message.image_thumb !== "pdf" && (
-                  <img src={message.image_thumb} alt="" className="chat-bubble-image" />
-                )}
-                {message.image_thumb === "pdf" && (
-                  <span className="chat-pdf-badge">PDF</span>
+                {message.image_thumb && (
+                  message.image_thumb === "pdf"
+                    ? <span className="chat-pdf-badge">PDF</span>
+                    : message.image_thumb.startsWith("data:application/pdf")
+                      ? <object data={message.image_thumb} type="application/pdf" className="chat-pdf-preview">{/* PDF */}</object>
+                      : <img src={message.image_thumb} alt="" className="chat-bubble-image" />
                 )}
                 {isOtherUser && message.sender && (
                   <div className="chat-message-sender">{message.sender}</div>
@@ -300,7 +301,9 @@ export function ChatInterface() {
       <div className="chat-input-area">
         {chatImagePreview && (
           <div className="chat-image-preview">
-            {chatImagePreview === "pdf" ? <span className="chat-pdf-badge">PDF</span> : <img src={chatImagePreview} alt="Attached" />}
+            {chatImagePreview.startsWith("data:application/pdf")
+              ? <object data={chatImagePreview} type="application/pdf" className="chat-pdf-preview">{/* PDF */}</object>
+              : <img src={chatImagePreview} alt="Attached" />}
             <button type="button" className="chat-image-remove" onClick={() => { setChatImage(null); setChatImagePreview(null); setChatImageType(""); }}>
               <X />
             </button>
@@ -334,8 +337,8 @@ export function ChatInterface() {
                     setChatImagePreview(canvas.toDataURL("image/jpeg", 0.7));
                   };
                   img.src = dataUrl;
-                } else {
-                  setChatImagePreview("pdf");
+                } else if (file.type === "application/pdf") {
+                  setChatImagePreview(dataUrl);
                 }
               };
               reader.readAsDataURL(file);

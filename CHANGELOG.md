@@ -1,5 +1,9 @@
 ### 1.3.0: 2026-03-21
 
+* Show PDF preview in both expense modal and AI chat instead of just a badge
+* Always show days until next income in hero card note
+* Increase personal greeting text to 18px
+* Only show transaction indicator for expenses added by other users
 * Move chat attach button next to send button, stack vertically on mobile
 * Add desktop chat margin top and bottom with adjusted viewport height
 * Add account notes in settings for AI context (e.g. "buffer account", "emergency fund")

@@ -43,6 +43,7 @@ export default function TransactionsPage() {
   const [linkedAccountName, setLinkedAccountName] = useState("");
   const [receiptParsing, setReceiptParsing] = useState(false);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [receiptType, setReceiptType] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-detect user's linked account
@@ -92,6 +93,7 @@ export default function TransactionsPage() {
     // Show preview
     const preview = URL.createObjectURL(file);
     setReceiptPreview(preview);
+    setReceiptType(file.type);
 
     // Read as base64
     const reader = new FileReader();
@@ -227,7 +229,9 @@ export default function TransactionsPage() {
                   </div>
                 </div>
                 {receiptPreview && (
-                  <img src={receiptPreview} alt="Receipt" className="receipt-preview" />
+                  receiptType === "application/pdf"
+                    ? <object data={receiptPreview} type="application/pdf" className="receipt-preview-pdf">{/* PDF preview */}</object>
+                    : <img src={receiptPreview} alt="Receipt" className="receipt-preview" />
                 )}
                 <div className="form-field">
                   <Label>{locale === "fi" ? "Summa (€)" : "Amount (€)"}</Label>
