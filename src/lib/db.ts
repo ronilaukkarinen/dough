@@ -197,6 +197,21 @@ function initializeDb(db: Database.Database) {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS savings_goals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      target_amount REAL NOT NULL,
+      saved_amount REAL NOT NULL DEFAULT 0,
+      priority TEXT NOT NULL DEFAULT 'want' CHECK (priority IN ('must', 'want')),
+      ynab_category_id TEXT,
+      ynab_category_name TEXT,
+      target_date TEXT,
+      include_in_calculations INTEGER NOT NULL DEFAULT 1,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS ynab_cache (
       id INTEGER PRIMARY KEY CHECK (id = 1),
       data TEXT NOT NULL,

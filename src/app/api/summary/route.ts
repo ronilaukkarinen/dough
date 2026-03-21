@@ -244,7 +244,8 @@ Pre-calculated analysis:
 - Investments: ${investmentAccounts.length > 0 ? investmentAccounts.map((i) => `${i.name}: ${i.balance} euros${i.monthly > 0 ? `, ${i.monthly} euros/month` : ""}${i.returnPct > 0 ? ` (${i.returnPct}% return)` : ""}`).join(", ") : "none"}
 - Total investment value: ${investmentAccounts.reduce((s: number, i: { balance: number }) => s + i.balance, 0)} euros
 - Monthly investment contributions: ${investmentAccounts.reduce((s: number, i: { monthly: number }) => s + i.monthly, 0)} euros
-- Previous months: ${historySnapshots.length > 0 ? historySnapshots.map((s) => `${s.month}: income ${Math.round(s.income)} euros, expenses ${Math.round(s.expenses)} euros, net ${Math.round(s.income - s.expenses)} euros`).join("; ") : "no historical data yet"}`;
+- Previous months: ${historySnapshots.length > 0 ? historySnapshots.map((s) => `${s.month}: income ${Math.round(s.income)} euros, expenses ${Math.round(s.expenses)} euros, net ${Math.round(s.income - s.expenses)} euros`).join("; ") : "no historical data yet"}
+${(() => { const goals = db.prepare("SELECT name, target_amount, saved_amount, priority, target_date FROM savings_goals WHERE is_active = 1").all() as { name: string; target_amount: number; saved_amount: number; priority: string; target_date: string | null }[]; return goals.length > 0 ? `- Savings goals: ${goals.map((g) => `${g.name}: ${g.saved_amount}/${g.target_amount} euros (${g.priority})${g.target_date ? ` by ${g.target_date}` : ""}`).join(", ")}` : ""; })()}`;
 
     const claudePath = process.env.CLAUDE_PATH || "claude";
     console.info("[summary] Calling claude CLI");

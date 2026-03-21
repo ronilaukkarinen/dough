@@ -17,6 +17,7 @@ interface FinancialContext {
   availableBeforePayday: number;
   dailySpendableBeforePayday: number;
   monthlyHistory: { month: string; income: number; expenses: number; net: number }[];
+  savingsGoals: { name: string; target: number; saved: number; priority: string; targetDate: string | null }[];
   locale: string;
   householdProfile: string;
   currentUser: string;
@@ -68,6 +69,9 @@ Investments:
 ${ctx.investments.length > 0 ? ctx.investments.map(i => `- ${i.name}: ${i.balance} euros${i.monthlyContribution > 0 ? `, ${i.monthlyContribution} euros/month contribution` : ""}${i.expectedReturn > 0 ? `, ${i.expectedReturn}% expected return` : ""}`).join("\n") : "- None"}
 
 ${ctx.savingGoal > 0 ? `Savings goal: ${ctx.savingGoal} euros/month` : ""}
+
+${ctx.savingsGoals.length > 0 ? `Savings goals:
+${ctx.savingsGoals.map(g => `- ${g.name}: ${g.saved}/${g.target} euros (${g.priority})${g.targetDate ? ` by ${g.targetDate}` : ""}`).join("\n")}` : ""}
 
 ${ctx.monthlyHistory.length > 0 ? `Previous months (for trends/comparisons):
 ${ctx.monthlyHistory.map(m => `- ${m.month}: income ${m.income} euros, expenses ${m.expenses} euros, net ${m.net} euros`).join("\n")}` : ""}

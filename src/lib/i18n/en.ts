@@ -44,6 +44,7 @@ export const en = {
     debts: "Debts",
     netWorth: "Net worth",
     investments: "Investments",
+    savingsGoals: "Savings goals",
     settings: "Settings",
   },
   dashboard: {

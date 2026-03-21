@@ -80,6 +80,15 @@
 - Shows monthly transfers already made this month
 - Monthly contributions included in dashboard month status
 
+### Savings goals
+
+- Must-have and want-to-have priorities
+- Target amount, saved amount, and progress bar
+- Optional target date with monthly savings calculation
+- Optional YNAB category linking
+- Toggle to include/exclude from calculations
+- AI advisor and summary are aware of all goals
+
 ### Net worth
 
 - Snapshot history with area chart

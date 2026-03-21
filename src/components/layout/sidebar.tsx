@@ -10,6 +10,7 @@ import {
   Wallet,
   TrendingDown,
   TrendingUp,
+  Crosshair,
   LineChart,
   Settings,
   LogOut,
@@ -33,6 +34,7 @@ const navKeys = [
   { href: "/income", icon: Wallet, key: "income" },
   { href: "/debts", icon: TrendingDown, key: "debts" },
   { href: "/investments", icon: TrendingUp, key: "investments" },
+  { href: "/savings-goals", icon: Crosshair, key: "savingsGoals" },
   { href: "/net-worth", icon: LineChart, key: "netWorth" },
 ] as const;
 

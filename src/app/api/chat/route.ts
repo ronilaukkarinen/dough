@@ -107,6 +107,11 @@ export async function POST(request: Request) {
             .prepare("SELECT name, amount, expected_day FROM income_sources WHERE is_active = 1 ORDER BY expected_day ASC")
             .all() as { name: string; amount: number; expected_day: number }[];
 
+          // Load savings goals
+          const savingsGoals = chatDb
+            .prepare("SELECT name, target_amount, saved_amount, priority, target_date FROM savings_goals WHERE is_active = 1 ORDER BY priority ASC")
+            .all() as { name: string; target_amount: number; saved_amount: number; priority: string; target_date: string | null }[];
+
           // Load monthly history for comparisons
           const chatHistoryMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
           const historySnapshots = chatDb
@@ -171,6 +176,7 @@ export async function POST(request: Request) {
             availableBeforePayday,
             dailySpendableBeforePayday,
             monthlyHistory: historySnapshots.map((s) => ({ month: s.month, income: Math.round(s.income), expenses: Math.round(s.expenses), net: Math.round(s.income - s.expenses) })),
+            savingsGoals: savingsGoals.map((g) => ({ name: g.name, target: g.target_amount, saved: g.saved_amount, priority: g.priority, targetDate: g.target_date })),
             locale,
             householdProfile,
             currentUser: user.display_name || user.email,
@@ -201,6 +207,7 @@ export async function POST(request: Request) {
         availableBeforePayday: 0,
         dailySpendableBeforePayday: 0,
         monthlyHistory: [],
+        savingsGoals: [],
         locale: "en",
         householdProfile: "",
         currentUser: "unknown",
