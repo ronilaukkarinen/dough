@@ -187,7 +187,7 @@
 
 .metric-info-popup {
   position: absolute;
-  top: calc(100% + 0.375rem);
+  top: calc(100% + 0.5rem);
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.6875rem;
@@ -201,6 +201,17 @@
   z-index: 50;
   pointer-events: none;
   white-space: normal;
+}
+
+.metric-info-popup::before {
+  content: "";
+  position: absolute;
+  top: -0.25rem;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 0.5rem;
+  height: 0.5rem;
+  background: #000;
 }
 
 .metric-card-value {
