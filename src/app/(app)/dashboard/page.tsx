@@ -60,13 +60,21 @@ export default function DashboardPage() {
       fetch("/api/investments").then((r) => r.json()),
       fetch("/api/debts").then((r) => r.json()),
       fetch("/api/monthly-history").then((r) => r.json()),
-    ]).then(([incomeData, matchData, billsData, profileData, householdData, investmentData, debtData, historyData]) => {
+      fetch("/api/subscriptions").then((r) => r.json()),
+    ]).then(([incomeData, matchData, billsData, profileData, householdData, investmentData, debtData, historyData, subsData]) => {
       if (profileData.linkedAccountIds) setLinkedAccountIds(profileData.linkedAccountIds);
       if (profileData.profile?.budget_share) setPersonalBudgetShare(profileData.profile.budget_share);
       if (householdData.settings?.last_ynab_sync) setLastYnabSync(householdData.settings.last_ynab_sync);
       if (householdData.settings?.household_size) setHouseholdSize(parseInt(householdData.settings.household_size, 10) || 1);
       if (incomeData.incomes) setIncomes(incomeData.incomes);
-      if (billsData.bills) setBills(billsData.bills);
+      // Merge subscriptions into bills for unified calculations
+      const allBills = [...(billsData.bills || [])];
+      if (subsData.subscriptions) {
+        for (const sub of subsData.subscriptions) {
+          allBills.push({ id: sub.id + 10000, name: sub.name, amount: sub.amount, due_day: sub.due_day, is_active: sub.is_active, is_paid: sub.is_paid });
+        }
+      }
+      setBills(allBills);
       if (investmentData.investments) {
         const totalMonthly = investmentData.investments
           .reduce((s: number, i: { monthlyContribution: number }) => s + i.monthlyContribution, 0);

@@ -4,21 +4,21 @@ import { getDb } from "./db";
 
 interface PayeeMatch {
   id: number;
-  source_type: "income" | "bill" | "investment";
+  source_type: "income" | "bill" | "investment" | "subscription";
   source_id: number;
   payee_pattern: string;
 }
 
 interface MonthlyMatch {
   id: number;
-  source_type: "income" | "bill" | "investment";
+  source_type: "income" | "bill" | "investment" | "subscription";
   source_id: number;
   month: string;
   ynab_transaction_id: string;
   amount: number;
 }
 
-export function getPayeePatterns(sourceType: "income" | "bill" | "investment", sourceId: number): string[] {
+export function getPayeePatterns(sourceType: "income" | "bill" | "investment" | "subscription", sourceId: number): string[] {
   const db = getDb();
   const rows = db
     .prepare("SELECT payee_pattern FROM payee_matches WHERE source_type = ? AND source_id = ?")
@@ -26,7 +26,7 @@ export function getPayeePatterns(sourceType: "income" | "bill" | "investment", s
   return rows.map((r) => r.payee_pattern);
 }
 
-export function addPayeePattern(sourceType: "income" | "bill" | "investment", sourceId: number, pattern: string): void {
+export function addPayeePattern(sourceType: "income" | "bill" | "investment" | "subscription", sourceId: number, pattern: string): void {
   const db = getDb();
   db.prepare("INSERT INTO payee_matches (source_type, source_id, payee_pattern) VALUES (?, ?, ?)")
     .run(sourceType, sourceId, pattern);
@@ -49,7 +49,7 @@ export function getMonthlyMatches(month: string): MonthlyMatch[] {
   return db.prepare("SELECT * FROM monthly_matches WHERE month = ?").all(month) as MonthlyMatch[];
 }
 
-export function isMatchedThisMonth(sourceType: "income" | "bill" | "investment", sourceId: number, month: string): boolean {
+export function isMatchedThisMonth(sourceType: "income" | "bill" | "investment" | "subscription", sourceId: number, month: string): boolean {
   const db = getDb();
   const row = db
     .prepare("SELECT id FROM monthly_matches WHERE source_type = ? AND source_id = ? AND month = ? LIMIT 1")

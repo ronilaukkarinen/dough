@@ -1,0 +1,95 @@
+/* Module: subscriptions — brand-styled cards */
+
+.subscription-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .subscription-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.subscription-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid;
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+
+@media (hover: hover) {
+  .subscription-card:hover {
+    opacity: 0.9;
+  }
+}
+
+.subscription-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.subscription-brand-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+
+.subscription-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.subscription-card-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subscription-card-name.is-inactive {
+  opacity: 0.4;
+}
+
+.subscription-card-meta {
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+}
+
+.subscription-card-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.subscription-card-amount {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.subscription-card-badges {
+  margin-top: 0.125rem;
+}
+
+.subscription-toggle {
+  flex-shrink: 0;
+}

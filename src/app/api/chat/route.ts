@@ -113,6 +113,21 @@ export async function POST(request: Request) {
             status: paidBillIds.has(b.id) ? "paid" : b.due_day < now.getDate() ? "overdue" : "upcoming",
           }));
 
+          // Load subscriptions
+          const subscriptions = chatDb
+            .prepare("SELECT name, amount, due_day FROM subscriptions WHERE is_active = 1 ORDER BY due_day ASC")
+            .all() as { name: string; amount: number; due_day: number }[];
+
+          // Merge subscriptions into bills for calculations
+          for (const sub of subscriptions) {
+            enrichedBills.push({
+              name: sub.name,
+              amount: sub.amount,
+              dueDay: sub.due_day,
+              status: sub.due_day < now.getDate() ? "overdue" : "upcoming",
+            });
+          }
+
           // Load income sources from DB
           const incomeRows = chatDb
             .prepare("SELECT name, amount, expected_day FROM income_sources WHERE is_active = 1 ORDER BY expected_day ASC")

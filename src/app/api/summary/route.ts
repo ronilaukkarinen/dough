@@ -122,6 +122,14 @@ export async function GET(request: Request) {
       .prepare("SELECT id, name, amount, due_day, is_active FROM recurring_bills WHERE is_active = 1 ORDER BY due_day ASC")
       .all() as { id: number; name: string; amount: number; due_day: number; is_active: number }[];
 
+    // Merge subscriptions into bills for unified calculations
+    const subscriptionRows = db
+      .prepare("SELECT id, name, amount, due_day FROM subscriptions WHERE is_active = 1")
+      .all() as { id: number; name: string; amount: number; due_day: number }[];
+    for (const sub of subscriptionRows) {
+      recurringBills.push({ id: sub.id + 10000, name: sub.name, amount: sub.amount, due_day: sub.due_day, is_active: 1 });
+    }
+
     const billMatches = db
       .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'bill' AND month = ?")
       .all(billMonth) as { source_id: number }[];

@@ -44,6 +44,7 @@ export const fi = {
     debts: "Velat",
     netWorth: "Varallisuus",
     investments: "Sijoitukset",
+    subscriptions: "Kausitilaukset",
     savingsGoals: "Säästökohteet",
     settings: "Asetukset",
   },

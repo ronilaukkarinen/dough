@@ -128,7 +128,7 @@ function initializeDb(db: Database.Database) {
 
     CREATE TABLE IF NOT EXISTS payee_matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment')),
+      source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment', 'subscription')),
       source_id INTEGER NOT NULL,
       payee_pattern TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -138,7 +138,7 @@ function initializeDb(db: Database.Database) {
 
     CREATE TABLE IF NOT EXISTS monthly_matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment')),
+      source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment', 'subscription')),
       source_id INTEGER NOT NULL,
       month TEXT NOT NULL,
       ynab_transaction_id TEXT NOT NULL,
@@ -194,6 +194,18 @@ function initializeDb(db: Database.Database) {
       interest_rate REAL NOT NULL DEFAULT 0,
       minimum_payment REAL NOT NULL DEFAULT 0,
       notes TEXT DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS subscriptions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      amount REAL NOT NULL,
+      due_day INTEGER NOT NULL DEFAULT 1 CHECK (due_day BETWEEN 1 AND 31),
+      brand_color TEXT NOT NULL DEFAULT '#6366f1',
+      brand_logo TEXT DEFAULT '',
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -264,14 +276,14 @@ function initializeDb(db: Database.Database) {
     db.exec("ALTER TABLE users ADD COLUMN budget_share INTEGER NOT NULL DEFAULT 0");
   }
 
-  // Migrate payee_matches/monthly_matches to support 'investment' source_type
+  // Migrate payee_matches/monthly_matches to support 'investment' and 'subscription' source_type
   const payeeCheck = db.prepare("SELECT sql FROM sqlite_master WHERE name = 'payee_matches'").get() as { sql: string } | undefined;
-  if (payeeCheck?.sql && !payeeCheck.sql.includes("investment")) {
+  if (payeeCheck?.sql && (!payeeCheck.sql.includes("investment") || !payeeCheck.sql.includes("subscription"))) {
     console.info("[db] Migrating payee_matches and monthly_matches to support investment source_type");
     db.exec(`
       CREATE TABLE payee_matches_new (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment')),
+        source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment', 'subscription')),
         source_id INTEGER NOT NULL,
         payee_pattern TEXT NOT NULL,
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -283,7 +295,7 @@ function initializeDb(db: Database.Database) {
 
       CREATE TABLE monthly_matches_new (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment')),
+        source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment', 'subscription')),
         source_id INTEGER NOT NULL,
         month TEXT NOT NULL,
         ynab_transaction_id TEXT NOT NULL,

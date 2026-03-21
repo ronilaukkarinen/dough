@@ -52,6 +52,13 @@ All endpoints require authentication via `dough-session` cookie (except `/api/au
 - `GET /api/investments` — list investment accounts from YNAB cache with overrides and monthly transfer amounts
 - `PUT /api/investments` — save monthly contribution and expected return overrides
 
+### Subscriptions
+
+- `GET /api/subscriptions` — list all subscriptions with paid/overdue status
+- `POST /api/subscriptions` — create a subscription
+- `PUT /api/subscriptions` — update subscription or toggle active
+- `DELETE /api/subscriptions` — delete a subscription
+
 ### Savings goals
 
 - `GET /api/savings-goals` — list all savings goals

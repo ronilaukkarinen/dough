@@ -80,6 +80,15 @@
 - Shows monthly transfers already made this month
 - Monthly contributions included in dashboard month status
 
+### Subscriptions
+
+- Brand-styled cards with auto-detected colors and logos for known services
+- Monthly and yearly cost summary
+- YNAB payee matching for auto-detection
+- Paid/overdue status badges
+- Active/inactive toggle
+- Included in daily budget, month status, and AI context
+
 ### Savings goals
 
 - Must-have and want-to-have priorities
