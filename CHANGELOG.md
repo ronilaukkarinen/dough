@@ -1,4 +1,4 @@
-### 1.2.0: 2026-03-21
+### 1.3.0: 2026-03-21
 
 * Fix PDF upload: use document content type instead of image for application/pdf
 * Exclude bill payments from today's spending so they don't reduce "tänään jäljellä" (already in daily budget simulation)
