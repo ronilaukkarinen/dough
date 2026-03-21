@@ -98,13 +98,14 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.ai-summary-refresh:hover {
-  color: var(--foreground);
+@media (hover: hover) {
+  .ai-summary-refresh:hover {
+    color: var(--foreground);
+  }
 }
 
 .ai-summary-refresh:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+  outline: none;
 }
 
 .ai-summary-refresh:disabled {
