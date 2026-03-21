@@ -19,9 +19,9 @@ import {
 import { Plus, Loader2, Check, AlertCircle } from "lucide-react";
 
 // Known brand configs
-const BRANDS: Record<string, { color: string; logo: string }> = {
-  netflix: { color: "#E50914", logo: "N" },
-  spotify: { color: "#1DB954", logo: "S" },
+const BRANDS: Record<string, { color: string; logo: string; svg?: string }> = {
+  netflix: { color: "#E50914", logo: "N", svg: "netflix" },
+  spotify: { color: "#1DB954", logo: "S", svg: "spotify" },
   disney: { color: "#113CCF", logo: "D+" },
   "hbo max": { color: "#5822B4", logo: "H" },
   "apple tv": { color: "#000000", logo: "" },
@@ -45,12 +45,30 @@ const BRANDS: Record<string, { color: string; logo: string }> = {
   dna: { color: "#00A651", logo: "D" },
 };
 
-function getBrandConfig(name: string): { color: string; logo: string } {
+function getBrandConfig(name: string): { color: string; logo: string; svg?: string } {
   const lower = name.toLowerCase();
   for (const [key, config] of Object.entries(BRANDS)) {
     if (lower.includes(key)) return config;
   }
   return { color: "#6366f1", logo: name.charAt(0).toUpperCase() };
+}
+
+function BrandIcon({ svg, logo }: { svg?: string; logo: string }) {
+  if (svg === "netflix") {
+    return (
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="#fff">
+        <path d="M5.398 0v.006c3.028 8.556 5.37 15.175 8.348 23.596.223.468.336.044.468-.18 1.164-3.735 2.324-7.47 3.486-11.208l-.006-12.22H14.88V18.18l-5.298-18.18H5.398zm13.2 0v23.794c-1.11.234-2.298.393-3.474.59V12.174l3.474 11.814V0z"/>
+      </svg>
+    );
+  }
+  if (svg === "spotify") {
+    return (
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="#fff">
+        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+      </svg>
+    );
+  }
+  return <span>{logo}</span>;
 }
 
 interface Subscription {
@@ -60,6 +78,7 @@ interface Subscription {
   due_day: number;
   brand_color: string;
   brand_logo: string;
+  brand_svg?: string;
   is_active: number;
   is_paid: boolean;
   is_overdue: boolean;
@@ -237,7 +256,7 @@ export default function SubscriptionsPage() {
             >
               <div className="subscription-card-header">
                 <div className="subscription-brand-icon" style={{ backgroundColor: sub.brand_color }}>
-                  {sub.brand_logo || sub.name.charAt(0)}
+                  <BrandIcon svg={getBrandConfig(sub.name).svg} logo={sub.brand_logo || sub.name.charAt(0)} />
                 </div>
                 <div className="subscription-card-info">
                   <p className={`subscription-card-name ${!sub.is_active ? "is-inactive" : ""}`}>{sub.name}</p>
