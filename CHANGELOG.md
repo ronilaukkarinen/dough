@@ -1,5 +1,7 @@
 ### 1.3.0: 2026-03-21
 
+* Add account notes in settings for AI context (e.g. "buffer account", "emergency fund")
+* Pass account names, balances, and notes to AI chat and summary
 * Fix PDF upload: use document content type instead of image for application/pdf
 * Exclude bill payments from today's spending so they don't reduce "tänään jäljellä" (already in daily budget simulation)
 * Add savings goals page with must-have/want-to-have priorities, progress tracking, YNAB category linking, and include/exclude toggle

@@ -78,6 +78,18 @@ export async function GET(request: Request) {
       .filter((a: any) => a.type === "checking" || a.type === "savings")
       .reduce((s: number, a: any) => s + a.balance, 0);
 
+    // Load account notes for context
+    const accountNotesRows = db
+      .prepare("SELECT ynab_account_id, note FROM account_notes WHERE note != ''")
+      .all() as { ynab_account_id: string; note: string }[];
+    const accountNotesMap: Record<string, string> = {};
+    for (const r of accountNotesRows) accountNotesMap[r.ynab_account_id] = r.note;
+
+    const accountsList = summary.accounts
+      .filter((a: any) => a.type === "checking" || a.type === "savings" || a.type === "otherAsset")
+      .map((a: any) => `${a.name}: ${Math.round(a.balance)} euros (${a.type})${accountNotesMap[a.id] ? ` — ${accountNotesMap[a.id]}` : ""}`)
+      .join(", ");
+
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const daysLeft = daysInMonth - now.getDate();
     // Filter out transfers for accurate income/expense
@@ -213,6 +225,7 @@ CRITICAL RULES:
 - The daily burn rate EXCLUDES fixed bills (rent etc) - it only reflects discretionary spending like groceries, restaurants, transport.
 
 Pre-calculated analysis:
+- Accounts: ${accountsList}
 - Current checking+savings balance: ${Math.round(checkingSavings)} euros
 - Days passed: ${daysPassed}, days left in month: ${daysLeft}
 - Income received so far: ${Math.round(monthIncomeTotal)} euros

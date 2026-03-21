@@ -51,6 +51,8 @@ export default function SettingsPage() {
   const [allAccounts, setAllAccounts] = useState<{ id: string; name: string; balance: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [accountsSaved, setAccountsSaved] = useState(false);
+  const [accountNotes, setAccountNotes] = useState<Record<string, string>>({});
+  const [notesSaved, setNotesSaved] = useState(false);
   const [personalBudgetShare, setPersonalBudgetShare] = useState("");
   const [personalShareSaved, setPersonalShareSaved] = useState(false);
   const [decimalPlaces, setDecimalPlaces] = useState("0");
@@ -64,8 +66,9 @@ export default function SettingsPage() {
       fetch("/api/household").then((r) => r.json()),
       fetch("/api/profile").then((r) => r.json()),
       fetch("/api/ynab/accounts").then((r) => r.json()).catch(() => ({ accounts: [] })),
+      fetch("/api/account-notes").then((r) => r.json()).catch(() => ({ notes: {} })),
     ])
-      .then(([userData, householdData, profileData, accountsData]) => {
+      .then(([userData, householdData, profileData, accountsData, notesData]) => {
         if (userData.user) {
           setProfile({
             ...userData.user,
@@ -107,6 +110,9 @@ export default function SettingsPage() {
           }
           if (accountsData.accounts) {
             setAllAccounts(accountsData.accounts);
+          }
+          if (notesData.notes) {
+            setAccountNotes(notesData.notes);
           }
           if (householdData.settings?.ynab_connected) {
             fetch("/api/ynab/budgets")
@@ -342,19 +348,27 @@ export default function SettingsPage() {
                 </p>
                 <div className="settings-account-list">
                   {allAccounts.map((a) => (
-                    <label key={a.id} className="settings-account-item">
-                      <input
-                        type="checkbox"
-                        checked={linkedAccountIds.includes(a.id)}
-                        onChange={(e) => {
-                          setLinkedAccountIds((prev) =>
-                            e.target.checked ? [...prev, a.id] : prev.filter((id) => id !== a.id)
-                          );
-                        }}
+                    <div key={a.id} className="settings-account-row">
+                      <label className="settings-account-item">
+                        <input
+                          type="checkbox"
+                          checked={linkedAccountIds.includes(a.id)}
+                          onChange={(e) => {
+                            setLinkedAccountIds((prev) =>
+                              e.target.checked ? [...prev, a.id] : prev.filter((id) => id !== a.id)
+                            );
+                          }}
+                        />
+                        <span className="settings-account-name">{a.name}</span>
+                        <span className="settings-account-balance">{fmt(a.balance)} €</span>
+                      </label>
+                      <Input
+                        value={accountNotes[a.id] || ""}
+                        onChange={(e) => setAccountNotes((prev) => ({ ...prev, [a.id]: e.target.value }))}
+                        placeholder={locale === "fi" ? "Kuvaus AI:lle, esim. Puskuritili" : "Note for AI, e.g. Buffer account"}
+                        className="settings-account-note"
                       />
-                      <span className="settings-account-name">{a.name}</span>
-                      <span className="settings-account-balance">{fmt(a.balance)} €</span>
-                    </label>
+                    </div>
                   ))}
                 </div>
                 <div className="settings-row">
@@ -367,6 +381,14 @@ export default function SettingsPage() {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ linked_account_ids: linkedAccountIds }),
                       });
+                      // Save all account notes
+                      for (const account of allAccounts) {
+                        await fetch("/api/account-notes", {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ ynab_account_id: account.id, note: accountNotes[account.id] || "" }),
+                        });
+                      }
                       setAccountsSaved(true);
                       setTimeout(() => setAccountsSaved(false), 2000);
                     }}

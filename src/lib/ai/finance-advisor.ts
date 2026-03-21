@@ -18,6 +18,7 @@ interface FinancialContext {
   dailySpendableBeforePayday: number;
   monthlyHistory: { month: string; income: number; expenses: number; net: number }[];
   savingsGoals: { name: string; target: number; saved: number; priority: string; targetDate: string | null }[];
+  accounts: { name: string; balance: number; type: string; note: string }[];
   locale: string;
   householdProfile: string;
   currentUser: string;
@@ -55,6 +56,9 @@ Current financial snapshot:
 - Total EXPECTED monthly income: ${ctx.incomeSources.reduce((s, i) => s + i.amount, 0)} euros
 - Income sources: ${ctx.incomeSources.map(i => `${i.name}: ${i.amount} euros (day ${i.expectedDay})`).join(", ") || "none configured"}
 - Monthly expenses so far (excluding transfers): ${ctx.monthlyExpenses} euros
+
+${ctx.accounts.length > 0 ? `Accounts:
+${ctx.accounts.map(a => `- ${a.name}: ${a.balance} euros (${a.type})${a.note ? ` — ${a.note}` : ""}`).join("\n")}` : ""}
 
 Upcoming bills this month:
 ${ctx.upcomingBills.length > 0 ? ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th${b.status ? ` - ${b.status.toUpperCase()}` : ""})`).join("\n") : "- None configured"}

@@ -43,6 +43,17 @@ export async function POST(request: Request) {
             .filter((a: any) => a.type === "checking" || a.type === "savings")
             .reduce((s: number, a: any) => s + a.balance, 0);
 
+          // Load account notes for AI context
+          const accountNotesRows = getDb()
+            .prepare("SELECT ynab_account_id, note FROM account_notes WHERE note != ''")
+            .all() as { ynab_account_id: string; note: string }[];
+          const accountNotesMap: Record<string, string> = {};
+          for (const r of accountNotesRows) accountNotesMap[r.ynab_account_id] = r.note;
+
+          const accountsWithNotes = summary.accounts
+            .filter((a: any) => a.type === "checking" || a.type === "savings" || a.type === "otherAsset")
+            .map((a: any) => ({ name: a.name, balance: a.balance, type: a.type, note: accountNotesMap[a.id] || "" }));
+
           const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
           const daysLeft = daysInMonth - now.getDate();
 
@@ -177,6 +188,7 @@ export async function POST(request: Request) {
             dailySpendableBeforePayday,
             monthlyHistory: historySnapshots.map((s) => ({ month: s.month, income: Math.round(s.income), expenses: Math.round(s.expenses), net: Math.round(s.income - s.expenses) })),
             savingsGoals: savingsGoals.map((g) => ({ name: g.name, target: g.target_amount, saved: g.saved_amount, priority: g.priority, targetDate: g.target_date })),
+            accounts: accountsWithNotes,
             locale,
             householdProfile,
             currentUser: user.display_name || user.email,
@@ -208,6 +220,7 @@ export async function POST(request: Request) {
         dailySpendableBeforePayday: 0,
         monthlyHistory: [],
         savingsGoals: [],
+        accounts: [],
         locale: "en",
         householdProfile: "",
         currentUser: "unknown",
