@@ -288,6 +288,7 @@ function initializeDb(db: Database.Database) {
   const payeeCheck = db.prepare("SELECT sql FROM sqlite_master WHERE name = 'payee_matches'").get() as { sql: string } | undefined;
   if (payeeCheck?.sql && (!payeeCheck.sql.includes("investment") || !payeeCheck.sql.includes("subscription"))) {
     console.info("[db] Migrating payee_matches and monthly_matches to support subscription source_type");
+    db.exec(`DROP TABLE IF EXISTS payee_matches_new; DROP TABLE IF EXISTS monthly_matches_new;`);
     db.exec(`
       CREATE TABLE payee_matches_new (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
