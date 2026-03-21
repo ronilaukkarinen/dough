@@ -12,8 +12,8 @@
 
 @media (min-width: 768px) {
   .chat-page {
-    height: calc(100dvh - 2rem);
-    padding: 1rem 0;
+    height: calc(100dvh - 0.5rem);
+    padding: 0.25rem 0;
   }
 }
 
