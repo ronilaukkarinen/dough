@@ -287,16 +287,19 @@ function initializeDb(db: Database.Database) {
   // Migrate payee_matches/monthly_matches to support 'investment' and 'subscription' source_type
   const payeeCheck = db.prepare("SELECT sql FROM sqlite_master WHERE name = 'payee_matches'").get() as { sql: string } | undefined;
   if (payeeCheck?.sql && (!payeeCheck.sql.includes("investment") || !payeeCheck.sql.includes("subscription"))) {
-    console.info("[db] Migrating payee_matches and monthly_matches to support investment source_type");
+    console.info("[db] Migrating payee_matches and monthly_matches to support subscription source_type");
     db.exec(`
       CREATE TABLE payee_matches_new (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         source_type TEXT NOT NULL CHECK (source_type IN ('income', 'bill', 'investment', 'subscription')),
         source_id INTEGER NOT NULL,
         payee_pattern TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        min_amount REAL DEFAULT 0,
+        max_amount REAL DEFAULT 0
       );
-      INSERT INTO payee_matches_new SELECT * FROM payee_matches;
+      INSERT INTO payee_matches_new (id, source_type, source_id, payee_pattern, created_at, min_amount, max_amount)
+        SELECT id, source_type, source_id, payee_pattern, created_at, COALESCE(min_amount, 0), COALESCE(max_amount, 0) FROM payee_matches;
       DROP TABLE payee_matches;
       ALTER TABLE payee_matches_new RENAME TO payee_matches;
       CREATE INDEX IF NOT EXISTS idx_payee_matches_source ON payee_matches(source_type, source_id);
