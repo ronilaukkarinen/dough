@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { ArrowDown, ArrowUp, CalendarClock, Wallet, Info } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 
@@ -112,19 +111,17 @@ export function DailyAllowance({
             <div>
               <p className="metric-card-label">
                 {locale === "fi" ? "Kuukauden tilanne" : "Month status"}
-                <TooltipProvider>
-                  <Tooltip open={infoOpen} onOpenChange={setInfoOpen}>
-                    <TooltipTrigger className="metric-info-trigger" onClick={() => setInfoOpen((v) => !v)}>
-                      <Info />
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      {locale === "fi"
-                        ? "Tulot (odotetut tai saadut) miinus menot: toteutuneet kulut + maksamattomat laskut + arvioitu loppukuun kulutus + sijoitukset + velkaerät"
-                        : "Income (expected or received) minus expenses: actual spending + unpaid bills + projected remaining spending + investments + debt payments"}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <button type="button" className="metric-info-trigger" onClick={() => setInfoOpen((v) => !v)}>
+                  <Info />
+                </button>
               </p>
+              {infoOpen && (
+                <p className="metric-info-popup">
+                  {locale === "fi"
+                    ? "Tulot (odotetut tai saadut) miinus menot: toteutuneet kulut + maksamattomat laskut + arvioitu loppukuun kulutus + sijoitukset + velkaerät"
+                    : "Income (expected or received) minus expenses: actual spending + unpaid bills + projected remaining spending + investments + debt payments"}
+                </p>
+              )}
               <p className="metric-card-value">
                 <span className={monthIncome - monthExpenses >= 0 ? "text-positive" : "text-negative"}>
                   {monthIncome - monthExpenses >= 0 ? "+" : "\u2212"}{fmt(Math.abs(monthIncome - monthExpenses))} {currency}
