@@ -48,6 +48,7 @@ export default function DashboardPage() {
   const [personalBudgetShare, setPersonalBudgetShare] = useState(0);
   const [monthlyHistory, setMonthlyHistory] = useState<{ month: string; income: number; expenses: number }[]>([]);
   const [lastYnabSync, setLastYnabSync] = useState<string | null>(null);
+  const [sideDataLoaded, setSideDataLoaded] = useState(false);
 
   const loadSideData = useCallback(() => {
     Promise.all([
@@ -91,7 +92,8 @@ export default function DashboardPage() {
         setMatchedBillIds(billIds);
       }
       if (historyData.snapshots) setMonthlyHistory(historyData.snapshots);
-    }).catch(() => {});
+      setSideDataLoaded(true);
+    }).catch(() => { setSideDataLoaded(true); });
   }, []);
 
   useEffect(() => { loadSideData(); }, [loadSideData]);
@@ -135,7 +137,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (!data) return null;
+  if (!data || !sideDataLoaded) return null;
 
   // Calculate daily budget from real data
   const now = new Date();
