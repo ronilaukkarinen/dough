@@ -12,7 +12,8 @@
 
 @media (min-width: 768px) {
   .chat-page {
-    height: 100dvh;
+    height: calc(100dvh - 2rem);
+    padding: 1rem 0;
   }
 }
 
@@ -339,6 +340,20 @@
   outline-offset: 2px !important;
 }
 
+/* Action buttons: attach + send */
+.chat-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .chat-action-buttons {
+    flex-direction: row;
+  }
+}
+
 .button.chat-send-button {
   height: 2.75rem;
   width: 2.75rem;
@@ -367,8 +382,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.chat-attach-btn:hover {
-  color: var(--foreground);
+@media (hover: hover) {
+  .chat-attach-btn:hover {
+    color: var(--foreground);
+  }
 }
 
 .chat-attach-btn svg {

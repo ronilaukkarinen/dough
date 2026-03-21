@@ -1,5 +1,7 @@
 ### 1.3.0: 2026-03-21
 
+* Move chat attach button next to send button, stack vertically on mobile
+* Add desktop chat margin top and bottom with adjusted viewport height
 * Add account notes in settings for AI context (e.g. "buffer account", "emergency fund")
 * Pass account names, balances, and notes to AI chat and summary
 * Fix PDF upload: use document content type instead of image for application/pdf

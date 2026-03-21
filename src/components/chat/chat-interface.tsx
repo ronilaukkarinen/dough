@@ -342,9 +342,6 @@ export function ChatInterface() {
               e.target.value = "";
             }}
           />
-          <button type="button" className="chat-attach-btn" onClick={() => chatFileRef.current?.click()} disabled={loading}>
-            <Paperclip />
-          </button>
           <textarea
             ref={inputRef as unknown as React.RefObject<HTMLTextAreaElement>}
             value={input}
@@ -365,9 +362,14 @@ export function ChatInterface() {
             disabled={loading}
             rows={1}
           />
-          <Button type="submit" size="icon" className="chat-send-button" disabled={!input.trim() || loading}>
-            <Send />
-          </Button>
+          <div className="chat-action-buttons">
+            <button type="button" className="chat-attach-btn" onClick={() => chatFileRef.current?.click()} disabled={loading}>
+              <Paperclip />
+            </button>
+            <Button type="submit" size="icon" className="chat-send-button" disabled={!input.trim() || loading}>
+              <Send />
+            </Button>
+          </div>
         </form>
       </div>
     </div>
