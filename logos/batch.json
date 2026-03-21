@@ -1,0 +1,27 @@
+[
+  {
+    "company": "Dough",
+    "prompt": "Minimalist coin stack icon, 3 flat ellipses stacked vertically, indigo color #6366f1 on transparent background, no text, clean geometric, suitable for favicon",
+    "filename": "coin-stack"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Minimalist rising dot icon, single circle with a small upward arrow above it, like a coin going up, indigo color #6366f1 on transparent background, no text, clean geometric, suitable for favicon",
+    "filename": "rising-dot"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Minimalist split circle icon divided into two halves representing shared household money, one half slightly lighter, indigo color #6366f1 on transparent background, no text, clean geometric, suitable for favicon",
+    "filename": "split-circle"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Minimalist abstract money flow icon, two curved arrows forming a circle like money circulation, indigo color #6366f1 on transparent background, no text, clean geometric, suitable for favicon",
+    "filename": "money-flow"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Minimalist piggy bank silhouette icon, extremely simplified geometric shape, indigo color #6366f1 on transparent background, no text, no details, just the essential outline, suitable for favicon",
+    "filename": "piggy-minimal"
+  }
+]

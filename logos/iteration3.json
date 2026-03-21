@@ -1,0 +1,27 @@
+[
+  {
+    "company": "Dough",
+    "prompt": "Ultra minimalist coin stack icon with 3 stacked thin ellipses seen from slight angle, white outline strokes only on pure black background, no fill, no glow, no gradients, no shadows, no text, simple line art, icon style, suitable for 32px favicon",
+    "filename": "coin-stack-outline-3"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Ultra minimalist coin stack icon with 3 solid white filled ellipses stacked with thin gaps between them seen from slight angle, on pure black background #0a0a10, no outline, no glow, no gradients, no shadows, no text, flat solid shapes, suitable for 32px favicon",
+    "filename": "coin-stack-solid-3"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Ultra minimalist coin stack icon, 4 thin white ellipses stacked vertically with small gaps, seen from above at angle, white on pure black background, no glow no gradient no shadow, clean flat vector icon style, suitable for small favicon",
+    "filename": "coin-stack-4-flat"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Minimalist white coin stack icon on black background, 3 coins stacked, each coin is a thin rounded rectangle seen from slight perspective, clean geometric, no effects no glow no gradients, flat icon design, favicon ready",
+    "filename": "coin-stack-rounded"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Simple flat icon of 3 stacked coins seen from slight angle, white shapes on pure black #0a0a10 background, each coin slightly offset, minimalist geometric style like a modern app icon, no glow no shadow no gradient, clean edges",
+    "filename": "coin-stack-offset"
+  }
+]

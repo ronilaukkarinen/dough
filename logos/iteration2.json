@@ -1,0 +1,27 @@
+[
+  {
+    "company": "Dough",
+    "prompt": "Ultra minimalist coin stack icon, 3 thin flat ellipses stacked with small gaps, pure white color on solid black background #0a0a10, no glow, no gradients, no text, flat design, clean vector style, suitable for 32px favicon",
+    "filename": "coin-stack-clean"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Ultra minimalist coin stack icon, 3 thin flat ellipses stacked with small gaps, slightly different sizes getting smaller toward top, pure white color on solid black background #0a0a10, no glow, no gradients, no text, flat design, clean vector style, suitable for 32px favicon",
+    "filename": "coin-stack-tapered"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Ultra minimalist money flow icon, two curved arrows forming a circle like recycling symbol but with only 2 arrows, pure white color on solid black background #0a0a10, no glow, no gradients, no text, flat design, clean vector style, suitable for 32px favicon",
+    "filename": "money-flow-clean"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Ultra minimalist split circle icon, circle divided vertically into two halves with a thin gap between them, left half slightly lighter white right half pure white, on solid black background #0a0a10, no glow, no gradients, no text, flat design, clean vector style, suitable for 32px favicon",
+    "filename": "split-circle-clean"
+  },
+  {
+    "company": "Dough",
+    "prompt": "Ultra minimalist split coin icon, circle divided vertically into two halves with slight offset like two people sharing, pure white and light grey on solid black background #0a0a10, no glow, no gradients, no text, flat design, clean vector style, suitable for 32px favicon",
+    "filename": "split-circle-offset"
+  }
+]
