@@ -1,5 +1,6 @@
 ### 1.2.0: 2026-03-21
 
+* Exclude bill payments from today's spending so they don't reduce "tänään jäljellä" (already in daily budget simulation)
 * Add savings goals page with must-have/want-to-have priorities, progress tracking, YNAB category linking, and include/exclude toggle
 * Pass savings goals to AI chat and summary for context-aware advice
 * Fix privacy mode: digits replaced with bullet chars via fmt(), summary shown as skeleton lines, € symbol preserved

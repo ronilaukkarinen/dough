@@ -39,7 +39,7 @@ export default function DashboardPage() {
   const [incomes, setIncomes] = useState<IncomeSource[]>([]);
   const [matchedIncomeIds, setMatchedIncomeIds] = useState<Set<number>>(new Set());
   const [matchedBillIds, setMatchedBillIds] = useState<Set<number>>(new Set());
-  const [bills, setBills] = useState<{ id: number; amount: number; due_day: number; is_active: number; is_paid: boolean }[]>([]);
+  const [bills, setBills] = useState<{ id: number; name: string; amount: number; due_day: number; is_active: number; is_paid: boolean }[]>([]);
   const [investmentMonthly, setInvestmentMonthly] = useState(0);
   const [debtMonthly, setDebtMonthly] = useState(0);
   const [debtItems, setDebtItems] = useState<{ amount: number; dueDay: number }[]>([]);
@@ -218,13 +218,18 @@ export default function DashboardPage() {
   const lastWeekDaily = lastWeekStart >= 1 ? lastWeekSpend / 7 : 0;
   const trendPercent = lastWeekDaily > 0 ? Math.round(((thisWeekDaily - lastWeekDaily) / lastWeekDaily) * 100) : 0;
 
-  // Today's spending
+  // Today's spending — exclude bill payments (already accounted for in daily budget simulation)
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const billNames = new Set(bills.map((b) => b.name?.toLowerCase()).filter(Boolean));
+  const isBillPayment = (payee: string) => {
+    const p = payee.toLowerCase();
+    return billNames.has(p) || [...billNames].some((bn) => p.includes(bn) || bn.includes(p));
+  };
   const todaySpentAll = data.transactions
-    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category))
+    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category) && !isBillPayment(t.payee))
     .reduce((s, t) => s + Math.abs(t.amount), 0);
   const todaySpentPersonal = data.transactions
-    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category)
+    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category) && !isBillPayment(t.payee)
       && (linkedAccountIds.length === 0 || linkedAccountIds.includes(t.account_id || "")))
     .reduce((s, t) => s + Math.abs(t.amount), 0);
   const todayRemaining = dailyBudget - todaySpentAll;
