@@ -1,5 +1,6 @@
 ### 1.3.0: 2026-03-21
 
+* Add amount range (min/max) to payee matching for distinguishing same-payee different-amount bills/incomes
 * Add subscriptions page with brand-styled cards, payee matching, paid/overdue detection
 * Include subscriptions in dashboard calculations, daily budget, month status, and AI context
 * Add payee matching to income edit dialog (same as bills)

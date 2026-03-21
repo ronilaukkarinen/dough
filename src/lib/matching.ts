@@ -7,6 +7,8 @@ interface PayeeMatch {
   source_type: "income" | "bill" | "investment" | "subscription";
   source_id: number;
   payee_pattern: string;
+  min_amount: number;
+  max_amount: number;
 }
 
 interface MonthlyMatch {
@@ -92,7 +94,14 @@ export function runAutoMatch(transactions: any[], month: string): { matched: num
     const matcher = patternToMatcher(pattern.payee_pattern);
     const matchingTx = transactions.find((tx: any) => {
       const payee = tx.payee || tx.payee_name || "";
-      return matcher(payee);
+      if (!matcher(payee)) return false;
+      // Check amount range if set (min > 0 or max > 0)
+      if (pattern.min_amount > 0 || pattern.max_amount > 0) {
+        const absAmount = Math.abs(tx.amount);
+        if (pattern.min_amount > 0 && absAmount < pattern.min_amount) return false;
+        if (pattern.max_amount > 0 && absAmount > pattern.max_amount) return false;
+      }
+      return true;
     });
 
     if (matchingTx) {

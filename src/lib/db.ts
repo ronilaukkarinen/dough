@@ -255,6 +255,14 @@ function initializeDb(db: Database.Database) {
     );
   `);
 
+  // Add min_amount/max_amount columns to payee_matches if missing
+  const payeeCols = db.prepare("PRAGMA table_info(payee_matches)").all() as { name: string }[];
+  if (!payeeCols.some((c) => c.name === "min_amount")) {
+    console.info("[db] Adding min_amount and max_amount columns to payee_matches");
+    db.exec("ALTER TABLE payee_matches ADD COLUMN min_amount REAL DEFAULT 0");
+    db.exec("ALTER TABLE payee_matches ADD COLUMN max_amount REAL DEFAULT 0");
+  }
+
   // Add image_thumb column to chat_messages if missing
   const chatCols = db.prepare("PRAGMA table_info(chat_messages)").all() as { name: string }[];
   if (!chatCols.some((c) => c.name === "image_thumb")) {

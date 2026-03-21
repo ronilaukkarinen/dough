@@ -45,6 +45,8 @@ export default function BillsPage() {
   const [editTarget, setEditTarget] = useState<Bill | null>(null);
   const [patternOpen, setPatternOpen] = useState<number | null>(null);
   const [newPattern, setNewPattern] = useState("");
+  const [patternMinAmount, setPatternMinAmount] = useState("");
+  const [patternMaxAmount, setPatternMaxAmount] = useState("");
   const addFormRef = useRef<HTMLFormElement>(null);
   const editFormRef = useRef<HTMLFormElement>(null);
 
@@ -151,9 +153,17 @@ export default function BillsPage() {
       await fetch("/api/matches", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source_type: "bill", source_id: billId, payee_pattern: newPattern.trim() }),
+        body: JSON.stringify({
+          source_type: "bill",
+          source_id: billId,
+          payee_pattern: newPattern.trim(),
+          min_amount: parseFloat(patternMinAmount) || 0,
+          max_amount: parseFloat(patternMaxAmount) || 0,
+        }),
       });
       setNewPattern("");
+      setPatternMinAmount("");
+      setPatternMaxAmount("");
       setPatternOpen(null);
       loadBills();
     } catch (err) { console.error("[bills] Add pattern error:", err); }
@@ -319,8 +329,29 @@ export default function BillsPage() {
                     onChange={(e) => setNewPattern(e.target.value)}
                     placeholder={locale === "fi" ? "esim. *Elisa*" : "e.g. *Netflix*"}
                     className="match-pattern-input"
+                    autoComplete="off"
                   />
                   <Button type="button" size="sm" variant="outline" onClick={() => { addPattern(editTarget.id); }}>{locale === "fi" ? "Lisää" : "Add"}</Button>
+                </div>
+                <div className="form-grid-2">
+                  <Input
+                    value={patternMinAmount}
+                    onChange={(e) => setPatternMinAmount(e.target.value)}
+                    placeholder={locale === "fi" ? "Min €" : "Min €"}
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    className="match-pattern-input"
+                  />
+                  <Input
+                    value={patternMaxAmount}
+                    onChange={(e) => setPatternMaxAmount(e.target.value)}
+                    placeholder={locale === "fi" ? "Max €" : "Max €"}
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    className="match-pattern-input"
+                  />
                 </div>
                 {editTarget.patterns.length > 0 && (
                   <div className="match-pattern-list">

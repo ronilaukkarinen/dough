@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
     const body = await request.json();
-    const { source_type, source_id, payee_pattern } = body;
+    const { source_type, source_id, payee_pattern, min_amount, max_amount } = body;
 
     if (!source_type || !source_id || !payee_pattern) {
       return NextResponse.json({ error: "source_type, source_id and payee_pattern required" }, { status: 400 });
@@ -39,8 +39,8 @@ export async function POST(request: Request) {
 
     const db = getDb();
     const result = db
-      .prepare("INSERT INTO payee_matches (source_type, source_id, payee_pattern) VALUES (?, ?, ?)")
-      .run(source_type, source_id, payee_pattern);
+      .prepare("INSERT INTO payee_matches (source_type, source_id, payee_pattern, min_amount, max_amount) VALUES (?, ?, ?, ?, ?)")
+      .run(source_type, source_id, payee_pattern, min_amount || 0, max_amount || 0);
 
     console.info("[matches] Added pattern:", payee_pattern, "for", source_type, source_id);
     return NextResponse.json({ id: result.lastInsertRowid });
