@@ -1,5 +1,6 @@
 ### 1.3.0: 2026-03-21
 
+* Add payee matching to income edit dialog (same as bills)
 * Show PDF preview in both expense modal and AI chat instead of just a badge
 * Always show days until next income in hero card note
 * Increase personal greeting text to 18px

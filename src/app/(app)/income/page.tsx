@@ -37,6 +37,7 @@ export default function IncomePage() {
   const [editTarget, setEditTarget] = useState<Income | null>(null);
   const [monthlyMatches, setMonthlyMatches] = useState<Record<number, boolean>>({});
   const [patterns, setPatterns] = useState<Record<number, { id: number; payee_pattern: string }[]>>({});
+  const [newPattern, setNewPattern] = useState("");
   const addFormRef = useRef<HTMLFormElement>(null);
   const editFormRef = useRef<HTMLFormElement>(null);
 
@@ -118,6 +119,31 @@ export default function IncomePage() {
     try {
       await fetch("/api/income", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, is_active: newActive }) });
     } catch (err) { console.error("[income] Toggle error:", err); }
+  };
+
+  const addPattern = async (incomeId: number) => {
+    if (!newPattern.trim()) return;
+    console.info("[income] Adding pattern:", newPattern, "for income", incomeId);
+    try {
+      await fetch("/api/matches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source_type: "income", source_id: incomeId, payee_pattern: newPattern.trim() }),
+      });
+      setNewPattern("");
+      // Reload patterns
+      const matchData = await fetch("/api/matches").then((r) => r.json());
+      if (matchData.patterns) {
+        const grouped: Record<number, { id: number; payee_pattern: string }[]> = {};
+        for (const p of matchData.patterns) {
+          if (p.source_type === "income") {
+            if (!grouped[p.source_id]) grouped[p.source_id] = [];
+            grouped[p.source_id].push({ id: p.id, payee_pattern: p.payee_pattern });
+          }
+        }
+        setPatterns(grouped);
+      }
+    } catch (err) { console.error("[income] Add pattern error:", err); }
   };
 
   const deleteIncome = async (id: number) => {
@@ -234,6 +260,26 @@ export default function IncomePage() {
                   <Label>{t.income.expectedDay}</Label>
                   <Input name="expected_day" type="number" min="0" max="31" defaultValue={editTarget.expected_day} required />
                 </div>
+              </div>
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Yhdistä maksajaan" : "Match payee"}</Label>
+                <div className="match-pattern-row">
+                  <Input
+                    value={newPattern}
+                    onChange={(e) => setNewPattern(e.target.value)}
+                    placeholder={locale === "fi" ? "esim. *Kela*" : "e.g. *Employer*"}
+                    className="match-pattern-input"
+                    autoComplete="off"
+                  />
+                  <Button type="button" size="sm" variant="outline" onClick={() => addPattern(editTarget.id)}>{locale === "fi" ? "Lisää" : "Add"}</Button>
+                </div>
+                {(patterns[editTarget.id] || []).length > 0 && (
+                  <div className="match-pattern-list">
+                    {patterns[editTarget.id].map((p, i) => (
+                      <span key={i} className="match-pattern-tag">{p.payee_pattern}</span>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="form-grid-2">
                 <Button type="button" variant="destructive" onClick={() => { deleteIncome(editTarget.id); setEditOpen(false); }}>
