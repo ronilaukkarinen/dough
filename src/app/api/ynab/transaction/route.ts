@@ -112,7 +112,7 @@ export async function POST(request: Request) {
     console.info("[ynab/transaction] Transaction created:", data.data?.transaction?.id, "category:", resolvedCategoryId || "uncategorized");
 
     setHouseholdSetting("last_transaction_added", new Date().toISOString());
-    eventBus.emit("data:updated", { source: "transaction-added" });
+    eventBus.emit("data:updated", { source: "transaction-added", userId: user.id });
 
     return NextResponse.json({
       success: true,

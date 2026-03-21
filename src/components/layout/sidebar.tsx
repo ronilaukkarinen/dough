@@ -51,7 +51,15 @@ export function Sidebar({ isOpen, onClose, privacyMode, onTogglePrivacy }: Sideb
   const [collapsed, setCollapsed] = useState(false);
   const [unreadChat, setUnreadChat] = useState(0);
   const [unreadTx, setUnreadTx] = useState(0);
+  const [myUserId, setMyUserId] = useState<number | null>(null);
   const { t, locale } = useLocale();
+
+  // Load current user ID
+  useEffect(() => {
+    fetch("/api/auth/me").then((r) => r.json()).then((d) => {
+      if (d.user?.id) setMyUserId(d.user.id);
+    }).catch(() => {});
+  }, []);
 
   // Initial unread check + reset when navigating to page
   useEffect(() => {
@@ -87,13 +95,13 @@ export function Sidebar({ isOpen, onClose, privacyMode, onTogglePrivacy }: Sideb
     }
   }, [pathname]));
 
-  // SSE: show indicator on transactions only when expense manually added
+  // SSE: show indicator on transactions only when someone else adds an expense
   useEvent("data:updated", useCallback((data: unknown) => {
-    const d = data as { source?: string };
-    if (d.source === "transaction-added" && pathname !== "/transactions") {
+    const d = data as { source?: string; userId?: number };
+    if (d.source === "transaction-added" && pathname !== "/transactions" && d.userId !== myUserId) {
       setUnreadTx(1);
     }
-  }, [pathname]));
+  }, [pathname, myUserId]));
 
   const handleLogout = () => {
     // Use GET redirect — works on all browsers including iOS Orion
