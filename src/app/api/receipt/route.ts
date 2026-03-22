@@ -21,12 +21,13 @@ For each transaction, extract:
 - amount: the amount (number only, no currency symbol)
 - payee: the store, company, or recipient name
 - date: the date in YYYY-MM-DD format (if visible)
+- account: the bank account or card name if visible (e.g. "Lotan tili", "Nordea Visa", "Revolut"). Leave empty if not shown.
 
 If there is only ONE transaction, return a single-element array.
 If there are MULTIPLE transactions (e.g. bank statement, multi-item list), return ALL of them.
 
 Reply with ONLY a valid JSON array, nothing else:
-[{"amount":"...","payee":"...","date":"YYYY-MM-DD"}]
+[{"amount":"...","payee":"...","date":"YYYY-MM-DD","account":"..."}]
 
 If you cannot read clearly, still try your best guess.`;
 
@@ -38,7 +39,7 @@ If you cannot read clearly, still try your best guess.`;
     }
 
     // Extract JSON array or object from response
-    let transactions: { amount: string; payee: string; date?: string }[] = [];
+    let transactions: { amount: string; payee: string; date?: string; account?: string }[] = [];
     try {
       // Try array first
       const arrayMatch = result.text.match(/\[[\s\S]*\]/);
@@ -67,6 +68,7 @@ If you cannot read clearly, still try your best guess.`;
       amount: transactions[0].amount,
       payee: transactions[0].payee,
       date: transactions[0].date,
+      account: transactions[0].account || null,
       transactions,
     });
   } catch (error) {

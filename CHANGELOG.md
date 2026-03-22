@@ -1,5 +1,6 @@
 ### 1.3.0: 2026-03-21
 
+* Extract account name from receipt images for YNAB account routing, fall back to user default
 * Support multiple transactions from single receipt/image in both chat and expense modal
 * Match mobile chat textarea height to stacked button height
 * Add official Netflix and Spotify SVG brand icons to subscriptions

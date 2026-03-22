@@ -249,15 +249,15 @@ export async function POST(request: Request) {
         console.info("[chat] Attempting to auto-add expenses from image");
         const { queryClaudeWithImage } = await import("@/lib/ai/claude-image");
         const parseResult = await queryClaudeWithImage(
-          `Extract ALL transactions/expenses from this image. For each: amount (number only), payee/store name.
+          `Extract ALL transactions/expenses from this image. For each: amount (number only), payee/store name, and account/card name if visible.
 If single receipt, return one item. If bank statement or multiple items, return ALL.
-Reply with ONLY a valid JSON array: [{"amount":"...","payee":"..."}]`,
+Reply with ONLY a valid JSON array: [{"amount":"...","payee":"...","account":"..."}]`,
           image,
           image_media_type,
           30000
         );
 
-        let transactions: { amount: string; payee: string }[] = [];
+        let transactions: { amount: string; payee: string; account?: string }[] = [];
         try {
           const arrayMatch = parseResult.text.match(/\[[\s\S]*\]/);
           if (arrayMatch) {
@@ -271,16 +271,35 @@ Reply with ONLY a valid JSON array: [{"amount":"...","payee":"..."}]`,
         }
 
         if (transactions.length > 0) {
-          const linkedAcc = getDb()
+          // Default account: user's linked account
+          const defaultAcc = getDb()
             .prepare("SELECT ynab_account_id FROM user_linked_accounts WHERE user_id = ? LIMIT 1")
             .get(user.id) as { ynab_account_id: string } | undefined;
 
-          if (linkedAcc) {
+          // Load all YNAB accounts for name-based routing
+          const ynabCache = getDb().prepare("SELECT data FROM ynab_cache WHERE id = 1").get() as { data: string } | undefined;
+          const allYnabAccounts = ynabCache
+            ? JSON.parse(ynabCache.data).summary.accounts.map((a: { id: string; name: string }) => ({ id: a.id, name: a.name }))
+            : [];
+
+          if (defaultAcc) {
             const added: string[] = [];
             const failed: string[] = [];
 
             for (const tx of transactions) {
               if (!tx.amount || !tx.payee) continue;
+
+              // Resolve account: if receipt shows an account name, match it to YNAB accounts
+              let accountId = defaultAcc.ynab_account_id;
+              if (tx.account) {
+                const accLower = tx.account.toLowerCase();
+                const matched = allYnabAccounts.find((a: { id: string; name: string }) => a.name.toLowerCase().includes(accLower) || accLower.includes(a.name.toLowerCase()));
+                if (matched) {
+                  accountId = matched.id;
+                  console.info("[chat] Routed to account:", matched.name, "from receipt:", tx.account);
+                }
+              }
+
               try {
                 const txRes = await fetch(new URL("/api/ynab/transaction", request.url).toString(), {
                   method: "POST",
@@ -289,7 +308,7 @@ Reply with ONLY a valid JSON array: [{"amount":"...","payee":"..."}]`,
                     cookie: request.headers.get("cookie") || "",
                   },
                   body: JSON.stringify({
-                    account_id: linkedAcc.ynab_account_id,
+                    account_id: accountId,
                     amount: String(tx.amount).replace(",", "."),
                     payee_name: tx.payee,
                   }),

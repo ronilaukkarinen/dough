@@ -108,6 +108,10 @@ export default function TransactionsPage() {
         const data = await res.json();
         if (data.payee) setAddPayee(data.payee);
         if (data.amount) setAddAmount(data.amount);
+        // If receipt shows an account name, try to resolve it
+        if (data.account) {
+          resolveAccountFromMemo(data.account);
+        }
         console.info("[transactions] Receipt parsed:", data);
       } catch (err) {
         console.error("[transactions] Receipt parse error:", err);
