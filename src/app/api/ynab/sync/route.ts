@@ -259,14 +259,21 @@ export async function POST() {
       catBatch();
       console.info("[api/ynab/sync] Persisted month budget and", monthBudget.categories.length, "categories for", currentMonth);
 
-      // Also keep legacy ynab_cache for backwards compat
-      pdb.prepare(`
+      console.info("[api/ynab/sync] All relational data persisted to SQLite");
+    } catch (err) {
+      console.error("[api/ynab/sync] Failed to persist relational data:", err);
+    }
+
+    // Always write legacy cache as fallback
+    try {
+      const { getDb: getFallbackDb } = await import("@/lib/db");
+      getFallbackDb().prepare(`
         INSERT INTO ynab_cache (id, data, synced_at) VALUES (1, ?, ?)
         ON CONFLICT(id) DO UPDATE SET data = excluded.data, synced_at = excluded.synced_at
       `).run(JSON.stringify(responseData), syncedAt);
-      console.info("[api/ynab/sync] All data persisted to SQLite");
+      console.debug("[api/ynab/sync] Legacy cache updated");
     } catch (err) {
-      console.error("[api/ynab/sync] Failed to persist:", err);
+      console.error("[api/ynab/sync] Legacy cache write failed:", err);
     }
 
     console.info("[api/ynab/sync] Sync complete. Accounts:", summary.accounts.length, "Transactions:", transactions.length);

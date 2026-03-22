@@ -4,6 +4,7 @@
 * Serve all YNAB data from local database instead of API calls, minimizing rate limit usage
 * Store YNAB category IDs locally for offline AI auto-categorization
 * Only the sync button and budget list hit the YNAB API, everything else reads from cache
+* Fix transaction upsert failing on partial unique index, always write legacy cache as fallback
 
 ### 1.4.1: 2026-03-22
 

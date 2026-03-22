@@ -69,6 +69,11 @@ CRITICAL: Always update CHANGELOG, commit and restart after changes.
 - Always use changelog formatting: ### x.x.x: yyyy-mm-dd with headings, no main "Changelog" heading, no sub headings
 - Always use * as bullets in changelog
 
+## Database
+
+- ALWAYS back up data/dough.db before potentially destructive or large database operations (migrations, schema changes, bulk deletes)
+- Back up to data/backups/ directory with timestamp: `sqlite3 data/dough.db ".backup data/backups/dough-$(date +%Y%m%d-%H%M%S).db"`
+
 ## Logging
 
 - Always add verbose logging to every feature at every step: debug, info, warning, error

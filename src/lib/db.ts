@@ -91,7 +91,6 @@ function initializeDb(db: Database.Database) {
     );
 
     CREATE INDEX IF NOT EXISTS idx_transactions_user_date ON transactions(user_id, date DESC);
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_ynab_id ON transactions(user_id, ynab_id) WHERE ynab_id IS NOT NULL;
 
     CREATE TABLE IF NOT EXISTS chat_messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -288,6 +287,15 @@ function initializeDb(db: Database.Database) {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  // Fix partial unique index on transactions — replace with proper unique index for upsert support
+  try {
+    db.exec("DROP INDEX IF EXISTS idx_transactions_ynab_id");
+    db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_user_ynab ON transactions(user_id, ynab_id)");
+    console.debug("[db] Ensured transactions unique index");
+  } catch (err) {
+    console.warn("[db] Transaction index migration:", err);
+  }
 
   // Add account_id column to transactions if missing
   const txCols = db.prepare("PRAGMA table_info(transactions)").all() as { name: string }[];
