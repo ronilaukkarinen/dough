@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { queryClaudeWithImage } from "@/lib/ai/claude-image";
+import { titleCasePayee } from "@/lib/text-utils";
 
 export async function POST(request: Request) {
   try {
@@ -62,6 +63,11 @@ If you cannot read clearly, still try your best guess.`;
     }
 
     console.info("[receipt] Parsed", transactions.length, "transactions");
+
+    // Normalize payee names to title case
+    for (const tx of transactions) {
+      if (tx.payee) tx.payee = titleCasePayee(tx.payee);
+    }
 
     // Return both single-item backwards-compatible fields and full array
     return NextResponse.json({

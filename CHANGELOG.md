@@ -1,5 +1,6 @@
 ### 1.3.0: 2026-03-21
 
+* Redesign expense modal: multi-transaction batch view from receipts, per-transaction account selection, title case payee normalization
 * Make dialog content scrollable when taller than viewport on small devices
 * Add Claude (Anthropic) and Apple iCloud brand icons and colors to subscriptions
 * Extract account name from receipt images for YNAB account routing, fall back to user default
