@@ -3,7 +3,7 @@
 ### Requirements
 
 - Node.js 22+ (tested with v22.20.0)
-- Claude CLI (`claude` command available in PATH) for AI features
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with an active Claude subscription (`claude` command in PATH) for AI features
 - YNAB account with personal access token
 - SQLite (bundled via better-sqlite3, no separate install)
 

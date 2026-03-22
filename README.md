@@ -39,7 +39,7 @@ Dough was built to solve this:
 ## Requirements
 
 - Node.js 22+
-- [Claude CLI](https://docs.anthropic.com/en/docs/claude-code) (`claude` command in PATH) for AI features
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with an active Claude subscription (`claude` command in PATH) for AI features
 - YNAB account with [personal access token](https://app.ynab.com/settings/developer)
 - Linux or macOS (tested on Arch Linux)
 
