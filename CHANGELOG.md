@@ -1,6 +1,6 @@
 ### 1.4.0: 2026-03-22
 
-* Add styled black popup tooltip pointing up on hover for exact amounts when decimals are 0
+* Add F component for all euro amounts with styled tooltip showing exact value when decimals are 0, across all pages
 * Add search cancel button to transactions search field
 * Add inline edit and delete for payee match patterns with min/max amount fields in bills
 * Show max 5 recent transactions on dashboard

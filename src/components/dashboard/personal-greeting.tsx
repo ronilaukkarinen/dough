@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useLocale } from "@/lib/locale-context";
+import { F } from "@/components/ui/f";
 
 interface PersonalGreetingProps {
   todaySpentPersonal: number;
@@ -20,7 +21,7 @@ function valueStatus(value: number, budget: number): "good" | "tight" | "danger"
 
 export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudget, todayRemaining, suggestedForYou }: PersonalGreetingProps) {
   const [name, setName] = useState("");
-  const { locale, fmt } = useLocale();
+  const { locale } = useLocale();
 
   useEffect(() => {
     fetch("/api/profile").then((r) => r.json()).then((data) => {
@@ -38,13 +39,13 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
         {locale === "fi" ? `Hei ${name}! ` : `Hi ${name}! `}
         {locale === "fi" ? "Sinä olet käyttänyt tänään " : "You spent "}
         <span className="personal-greeting-value" data-status={todaySpentPersonal > dailyBudget * 0.3 ? "danger" : todaySpentPersonal > dailyBudget * 0.15 ? "tight" : "good"}>
-          {fmt(todaySpentPersonal)} €
+          <F v={todaySpentPersonal} />
         </span>
         {todaySpentAll > todaySpentPersonal && (
           <>
             {locale === "fi" ? ", perhe yhteensä " : ", household total "}
             <span className="personal-greeting-value" data-status={todaySpentAll > dailyBudget * 0.8 ? "danger" : todaySpentAll > dailyBudget * 0.5 ? "tight" : "good"}>
-              {fmt(todaySpentAll)} €
+              <F v={todaySpentAll} />
             </span>
           </>
         )}
@@ -52,19 +53,19 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
         {exceeded
           ? <>
               {locale === "fi" ? "Päiväbudjetti ylittynyt " : "Daily budget exceeded by "}
-              <span className="personal-greeting-exceeded">{fmt(Math.abs(todayRemaining))} €</span>
+              <span className="personal-greeting-exceeded"><F v={Math.abs(todayRemaining)} /></span>
               {locale === "fi" ? " verran. Huomenna parempi kulukuri sitten." : "."}
             </>
           : <>
               {locale === "fi" ? "Käytettävissä sinulle " : "Available for you "}
               <span className="personal-greeting-value" data-status={valueStatus(suggestedForYou, dailyBudget)}>
-                {fmt(suggestedForYou)} €
+                <F v={suggestedForYou} />
               </span>
               {Math.abs(todayRemaining - suggestedForYou) > 1 && (
                 <>
                   {locale === "fi" ? ", perheelle jäljellä " : ", household remaining "}
                   <span className="personal-greeting-value" data-status={valueStatus(todayRemaining, dailyBudget)}>
-                    {fmt(todayRemaining)} €
+                    <F v={todayRemaining} />
                   </span>
                 </>
               )}

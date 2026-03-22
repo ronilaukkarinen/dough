@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart-container";
 import { RefreshCw, TrendingUp, TrendingDown, Wallet, Loader2 } from "lucide-react";
+import { F } from "@/components/ui/f";
 
 interface Snapshot {
   date: string;
@@ -109,7 +110,7 @@ export default function NetWorthPage() {
             <div className="net-worth-grid">
               <Card className="net-worth-hero">
                 <p className="net-worth-hero-value" data-positive={latest.net_worth >= 0 || undefined}>
-                  {fmt(latest.net_worth)} €
+                  <F v={latest.net_worth} />
                 </p>
               </Card>
 
@@ -120,7 +121,7 @@ export default function NetWorthPage() {
                   </div>
                   <div>
                     <p className="net-worth-card-label">{t.dashboard.accounts}</p>
-                    <p className="net-worth-card-value">{fmt(latest.checking + latest.savings)} €</p>
+                    <p className="net-worth-card-value"><F v={latest.checking + latest.savings} /></p>
                   </div>
                 </div>
               </Card>
@@ -132,7 +133,7 @@ export default function NetWorthPage() {
                   </div>
                   <div>
                     <p className="net-worth-card-label">{t.dashboard.investments}</p>
-                    <p className="net-worth-card-value text-positive">{fmt(latest.investments)} €</p>
+                    <p className="net-worth-card-value text-positive"><F v={latest.investments} /></p>
                   </div>
                 </div>
               </Card>
@@ -144,7 +145,7 @@ export default function NetWorthPage() {
                   </div>
                   <div>
                     <p className="net-worth-card-label">{t.debts.title}</p>
-                    <p className="net-worth-card-value text-negative">{fmt(latest.debts)} €</p>
+                    <p className="net-worth-card-value text-negative"><F v={latest.debts} /></p>
                   </div>
                 </div>
               </Card>

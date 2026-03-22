@@ -28,11 +28,12 @@ import {
   X,
 } from "lucide-react";
 import { titleCasePayee } from "@/lib/text-utils";
+import { F } from "@/components/ui/f";
 
 type FilterType = "all" | "income" | "expenses" | "transfers";
 
 export default function TransactionsPage() {
-  const { t, locale, fmt, decimals } = useLocale();
+  const { t, locale } = useLocale();
   const { data, loading, connected, sync } = useYnab();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
@@ -415,8 +416,8 @@ export default function TransactionsPage() {
                 <p className="list-item-meta">{tx.category}</p>
               </div>
               <div className="list-item-amount">
-                <p className={`list-item-amount-value ${decimals < 2 ? "amt-tip" : ""}`} data-positive={tx.amount >= 0 || undefined} data-exact={decimals < 2 ? `${tx.amount < 0 ? "-" : "+"}${Math.abs(tx.amount).toFixed(2)} €` : undefined}>
-                  {tx.amount < 0 ? "-" : "+"}{fmt(Math.abs(tx.amount))} €
+                <p className="list-item-amount-value" data-positive={tx.amount >= 0 || undefined}>
+                  {tx.amount < 0 ? <>-<F v={Math.abs(tx.amount)} /></> : <>+<F v={Math.abs(tx.amount)} /></>}
                 </p>
                 <p className="list-item-amount-date">{relativeDate(tx.date, locale)}</p>
               </div>

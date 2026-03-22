@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
+import { F } from "@/components/ui/f";
 import { relativeDate } from "@/lib/date-utils";
 import Link from "next/link";
 
@@ -20,7 +21,7 @@ interface RecentTransactionsProps {
 }
 
 export function RecentTransactions({ transactions, currency = "€" }: RecentTransactionsProps) {
-  const { t, locale, fmt, decimals } = useLocale();
+  const { t, locale } = useLocale();
 
   return (
     <Card className="recent-transactions-card">
@@ -39,8 +40,8 @@ export function RecentTransactions({ transactions, currency = "€" }: RecentTra
               <p className="recent-transactions-category">{tx.category}</p>
             </div>
             <div className="recent-transactions-amount">
-              <p className={`recent-transactions-amount-value ${decimals < 2 ? "amt-tip" : ""}`} data-type={tx.amount < 0 ? "expense" : "income"} data-exact={decimals < 2 ? `${tx.amount < 0 ? "-" : "+"}${Math.abs(tx.amount).toFixed(2)} ${currency}` : undefined}>
-                {tx.amount < 0 ? "-" : "+"}{fmt(Math.abs(tx.amount))} {currency}
+              <p className="recent-transactions-amount-value" data-type={tx.amount < 0 ? "expense" : "income"}>
+                {tx.amount < 0 ? <>-<F v={Math.abs(tx.amount)} s={` ${currency}`} /></> : <>+<F v={Math.abs(tx.amount)} s={` ${currency}`} /></>}
               </p>
               <p className="recent-transactions-date">{relativeDate(tx.date, locale)}</p>
             </div>

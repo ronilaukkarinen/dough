@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, Loader2, Check, AlertCircle } from "lucide-react";
+import { F } from "@/components/ui/f";
 
 // Known brand configs
 const BRANDS: Record<string, { color: string; logo: string; svg?: string }> = {
@@ -119,7 +120,7 @@ interface Subscription {
 }
 
 export default function SubscriptionsPage() {
-  const { locale, fmt } = useLocale();
+  const { locale } = useLocale();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
@@ -280,12 +281,12 @@ export default function SubscriptionsPage() {
       <div className="page-grid-2-sm">
         <Card className="metric-card">
           <p className="metric-card-label">{locale === "fi" ? "Kuukaudessa" : "Monthly"}</p>
-          <p className="metric-card-value-3xl text-negative">{fmt(monthlyTotal)} €</p>
+          <p className="metric-card-value-3xl text-negative"><F v={monthlyTotal} /></p>
           <p className="metric-card-note metric-card-note-mt">{active.length} {locale === "fi" ? "tilausta" : "subscriptions"}</p>
         </Card>
         <Card className="metric-card">
           <p className="metric-card-label">{locale === "fi" ? "Vuodessa" : "Yearly"}</p>
-          <p className="metric-card-value-3xl text-negative">{fmt(yearlyTotal)} €</p>
+          <p className="metric-card-value-3xl text-negative"><F v={yearlyTotal} /></p>
         </Card>
       </div>
 
@@ -314,7 +315,7 @@ export default function SubscriptionsPage() {
                   </p>
                 </div>
                 <div className="subscription-card-right">
-                  <p className="subscription-card-amount">{fmt(sub.amount)} €</p>
+                  <p className="subscription-card-amount"><F v={sub.amount} /></p>
                 </div>
               </div>
               <span className="subscription-toggle" onClick={(e) => e.stopPropagation()}>

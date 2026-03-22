@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ArrowDown, ArrowUp, CalendarClock, Wallet, Info } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
+import { F } from "@/components/ui/f";
 
 interface DailyAllowanceProps {
   dailyBudget: number;
@@ -42,7 +43,7 @@ export function DailyAllowance({
   trendPercent = 0,
   currency = "€",
 }: DailyAllowanceProps) {
-  const { t, locale, fmt, mask, decimals } = useLocale();
+  const { t, locale, fmt, mask } = useLocale();
   const [infoOpen, setInfoOpen] = useState(false);
   const effectiveBudget = todaySpentAll > 0 ? Math.max(0, todayRemaining) : dailyBudget;
   const overspent = todayRemaining < 0;
@@ -59,8 +60,8 @@ export function DailyAllowance({
               : t.dashboard.dailyBudget}
           </p>
           <div className="daily-allowance-hero-amount">
-            <span className={`daily-allowance-hero-value ${decimals < 2 ? "amt-tip" : ""}`} data-status={overspent ? "danger" : status} data-exact={decimals < 2 ? `${(overspent ? 0 : effectiveBudget).toFixed(2)} ${currency}` : undefined}>
-              {overspent ? fmt(0) : fmt(effectiveBudget)} {currency}
+            <span className="daily-allowance-hero-value" data-status={overspent ? "danger" : status}>
+              <F v={overspent ? 0 : effectiveBudget} s={` ${currency}`} />
             </span>
             <span className="daily-allowance-hero-unit">{todaySpentAll > 0 ? "" : t.dashboard.perDay}</span>
           </div>
@@ -68,16 +69,16 @@ export function DailyAllowance({
             {overspent ? (
               <>
                 {locale === "fi" ? "Ylitetty " : "Exceeded by "}
-                <span className="text-negative">{fmt(Math.abs(todayRemaining))} {currency}</span>
+                <span className="text-negative"><F v={Math.abs(todayRemaining)} s={` ${currency}`} /></span>
                 {locale === "fi" ? " verran. Alkuperäinen päiväbudjetti oli " : ". Original daily budget was "}
-                <span className={status === "good" ? "text-positive" : status === "tight" ? "text-chart-3" : "text-negative"}>{fmt(dailyBudget)} {currency}</span>
+                <span className={status === "good" ? "text-positive" : status === "tight" ? "text-chart-3" : "text-negative"}><F v={dailyBudget} s={` ${currency}`} /></span>
                 {locale === "fi" ? ", käytetty " : ", spent "}
-                <span className="text-negative">{fmt(todaySpentAll)} {currency}</span>
+                <span className="text-negative"><F v={todaySpentAll} s={` ${currency}`} /></span>
                 {daysUntilIncome > 0 && (
                   <>
                     {". "}
                     {locale === "fi" ? "Huomiselle käytössä on " : "Available tomorrow "}
-                    <span className="text-positive">{fmt(Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome)))} {currency}</span>
+                    <span className="text-positive"><F v={Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome))} s={` ${currency}`} /></span>
                     {` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}`}
                   </>
                 )}
@@ -86,10 +87,10 @@ export function DailyAllowance({
             ) : todaySpentAll > 0 ? (
               <>
                 {locale === "fi" ? "Päiväbudjetti " : "Budget "}
-                <span className={status === "good" ? "text-positive" : status === "tight" ? "text-chart-3" : "text-negative"}>{fmt(dailyBudget)} {currency}</span>
+                <span className={status === "good" ? "text-positive" : status === "tight" ? "text-chart-3" : "text-negative"}><F v={dailyBudget} s={` ${currency}`} /></span>
                 {" \u00B7 "}
                 {locale === "fi" ? "käytetty " : "spent "}
-                <span className="text-negative">{fmt(todaySpentAll)} {currency}</span>
+                <span className="text-negative"><F v={todaySpentAll} s={` ${currency}`} /></span>
                 {daysUntilIncome > 0 && ` \u00B7 ${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`}
               </>
             ) : (
@@ -126,14 +127,14 @@ export function DailyAllowance({
               </p>
               <p className="metric-card-value">
                 <span className={monthIncome - monthExpenses >= 0 ? "text-positive" : "text-negative"}>
-                  <span className={decimals < 2 ? "amt-tip" : ""} data-exact={decimals < 2 ? `${Math.abs(monthIncome - monthExpenses).toFixed(2)} ${currency}` : undefined}>{monthIncome - monthExpenses >= 0 ? "+" : "\u2212"}{fmt(Math.abs(monthIncome - monthExpenses))} {currency}</span>
+                  {monthIncome - monthExpenses >= 0 ? <>+<F v={Math.abs(monthIncome - monthExpenses)} s={` ${currency}`} /></> : <>{"\u2212"}<F v={Math.abs(monthIncome - monthExpenses)} s={` ${currency}`} /></>}
                 </span>
               </p>
               <p className="metric-card-note">
                 {monthIncome - monthExpenses >= 0
                   ? (locale === "fi" ? "Plussalla" : "Surplus")
                   : (locale === "fi" ? "Miinuksella" : "Deficit")}
-                {" \u00B7 "}{locale === "fi" ? "tulot " : "income "}<span className="text-positive">{fmt(monthIncome)} {currency}</span>{" \u2013 "}{locale === "fi" ? "menot (arvio) " : "expenses (est.) "}<span className="text-negative">{fmt(monthExpenses)} {currency}</span>
+                {" \u00B7 "}{locale === "fi" ? "tulot " : "income "}<span className="text-positive"><F v={monthIncome} s={` ${currency}`} /></span>{" \u2013 "}{locale === "fi" ? "menot (arvio) " : "expenses (est.) "}<span className="text-negative"><F v={monthExpenses} s={` ${currency}`} /></span>
               </p>
             </div>
           </div>
@@ -147,7 +148,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{t.dashboard.available}</p>
-            <p className={`metric-card-value ${decimals < 2 ? "amt-tip" : ""}`} data-exact={decimals < 2 ? `${availableBalance.toFixed(2)} ${currency}` : undefined}>{fmt(availableBalance)} {currency}</p>
+            <p className="metric-card-value"><F v={availableBalance} s={` ${currency}`} /></p>
             {accountCount > 0 && <p className="metric-card-note">{mask(accountCount)} {locale === "fi" ? "tiliä" : "accounts"}</p>}
           </div>
         </div>
@@ -160,7 +161,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{t.dashboard.billsDue}</p>
-            <p className={`metric-card-value ${decimals < 2 ? "amt-tip" : ""}`} data-exact={decimals < 2 ? `${upcomingBills.toFixed(2)} ${currency}` : undefined}>{fmt(upcomingBills)} {currency}</p>
+            <p className="metric-card-value"><F v={upcomingBills} s={` ${currency}`} /></p>
             {billCount > 0 && <p className="metric-card-note">{mask(billCount)} {locale === "fi" ? "laskua" : "bills"}</p>}
           </div>
         </div>
@@ -173,7 +174,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{t.dashboard.nextIncome}</p>
-            <p className={`metric-card-value ${decimals < 2 ? "amt-tip" : ""}`} data-exact={decimals < 2 ? `${nextIncomeAmount.toFixed(2)} ${currency}` : undefined}>{fmt(nextIncomeAmount)} {currency}</p>
+            <p className="metric-card-value"><F v={nextIncomeAmount} s={` ${currency}`} /></p>
             <p className="metric-card-note">{mask(nextIncomeDate)}</p>
           </div>
         </div>
@@ -186,7 +187,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{locale === "fi" ? "Kulutusvauhti" : "Burn rate"}</p>
-            <p className={`metric-card-value ${decimals < 2 ? "amt-tip" : ""}`} data-exact={decimals < 2 ? `${burnRate.toFixed(2)} ${currency}/${locale === "fi" ? "pv" : "day"}` : undefined}>{fmt(burnRate)} {currency}/{locale === "fi" ? "pv" : "day"}</p>
+            <p className="metric-card-value"><F v={burnRate} s={` ${currency}/${locale === "fi" ? "pv" : "day"}`} /></p>
             <p className="metric-card-note">
               {trendPercent !== 0 ? (
                 <>

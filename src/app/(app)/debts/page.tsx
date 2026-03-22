@@ -30,6 +30,7 @@ import {
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart-container";
 import { formatDuration } from "@/lib/date-utils";
+import { F } from "@/components/ui/f";
 
 interface DebtData {
   id: string;
@@ -182,7 +183,7 @@ export default function DebtsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.debts.totalDebt}</p>
-              <p className="metric-card-value">{fmt(totalDebt)} €</p>
+              <p className="metric-card-value"><F v={totalDebt} /></p>
             </div>
           </div>
         </Card>
@@ -193,7 +194,7 @@ export default function DebtsPage() {
             </div>
             <div>
               <p className="metric-card-label">{locale === "fi" ? "Kuukausimaksut" : "Monthly payments"}</p>
-              <p className="metric-card-value">{fmt(totalMonthly)} €</p>
+              <p className="metric-card-value"><F v={totalMonthly} /></p>
             </div>
           </div>
         </Card>
@@ -241,12 +242,12 @@ export default function DebtsPage() {
                   <p className="debt-item-name">{debt.name}</p>
                   {debt.monthlyPayment > 0 && (
                     <p className="debt-item-meta">
-                      {locale === "fi" ? "Maksettu tässä kuussa" : "Paid this month"}: {fmt(debt.monthlyPayment)} €
+                      {locale === "fi" ? "Maksettu tässä kuussa" : "Paid this month"}: <F v={debt.monthlyPayment} />
                     </p>
                   )}
                 </div>
                 <div className="debt-item-right">
-                  <p className="debt-item-amount">{fmt(debt.balance)} €</p>
+                  <p className="debt-item-amount"><F v={debt.balance} /></p>
                 </div>
               </div>
               <div className="debt-edit-row">
@@ -342,7 +343,7 @@ export default function DebtsPage() {
                     </div>
                     <div>
                       <span className="payoff-stats-label">{t.debts.totalInterest} </span>
-                      <span className="payoff-stats-value" data-color="negative">{fmt(data.totalInterest)} €</span>
+                      <span className="payoff-stats-value" data-color="negative"><F v={data.totalInterest} /></span>
                     </div>
                   </div>
                   {data.timeline.length > 1 && (

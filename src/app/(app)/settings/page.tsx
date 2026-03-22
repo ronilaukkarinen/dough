@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2, PiggyBank, Users, Sparkles, User } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import type { Locale } from "@/lib/i18n";
+import { F } from "@/components/ui/f";
 
 interface UserProfile {
   id: number;
@@ -57,7 +58,7 @@ export default function SettingsPage() {
   const [personalShareSaved, setPersonalShareSaved] = useState(false);
   const [decimalPlaces, setDecimalPlaces] = useState("0");
   const [decimalSaved, setDecimalSaved] = useState(false);
-  const { t, locale, setLocale, setDecimals, fmt } = useLocale();
+  const { t, locale, setLocale, setDecimals } = useLocale();
 
   useEffect(() => {
     console.debug("[settings] Loading settings");
@@ -360,7 +361,7 @@ export default function SettingsPage() {
                           }}
                         />
                         <span className="settings-account-name">{a.name}</span>
-                        <span className="settings-account-balance">{fmt(a.balance)} €</span>
+                        <span className="settings-account-balance"><F v={a.balance} /></span>
                       </label>
                       <Input
                         value={accountNotes[a.id] || ""}

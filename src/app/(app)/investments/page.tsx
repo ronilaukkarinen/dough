@@ -24,6 +24,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart-container";
+import { F } from "@/components/ui/f";
 
 interface InvestmentData {
   id: string;
@@ -148,7 +149,7 @@ export default function InvestmentsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.investments.totalValue}</p>
-              <p className="metric-card-value">{fmt(totalValue)} €</p>
+              <p className="metric-card-value"><F v={totalValue} /></p>
             </div>
           </div>
         </Card>
@@ -159,7 +160,7 @@ export default function InvestmentsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.investments.totalMonthly}</p>
-              <p className="metric-card-value">{fmt(totalMonthly)} €</p>
+              <p className="metric-card-value"><F v={totalMonthly} /></p>
             </div>
           </div>
         </Card>
@@ -170,7 +171,7 @@ export default function InvestmentsPage() {
             </div>
             <div>
               <p className="metric-card-label">{t.investments.projectedValue}</p>
-              <p className="metric-card-value">{fmt(projection.finalValue)} €</p>
+              <p className="metric-card-value"><F v={projection.finalValue} /></p>
               <p className="metric-card-note">{projectionYears} {locale === "fi" ? "v" : "y"}</p>
             </div>
           </div>
@@ -187,12 +188,12 @@ export default function InvestmentsPage() {
                   <p className="debt-item-name">{inv.name}</p>
                   {inv.monthlyTransferred > 0 && (
                     <p className="debt-item-meta">
-                      {locale === "fi" ? "Siirretty tässä kuussa" : "Transferred this month"}: {fmt(inv.monthlyTransferred)} €
+                      {locale === "fi" ? "Siirretty tässä kuussa" : "Transferred this month"}: <F v={inv.monthlyTransferred} />
                     </p>
                   )}
                 </div>
                 <div className="debt-item-right">
-                  <p className="debt-item-amount text-positive">{fmt(inv.balance)} €</p>
+                  <p className="debt-item-amount text-positive"><F v={inv.balance} /></p>
                 </div>
               </div>
               <div className="debt-edit-row">
@@ -253,15 +254,15 @@ export default function InvestmentsPage() {
             <div className="payoff-stats">
               <div>
                 <span className="payoff-stats-label">{t.investments.projectedValue} </span>
-                <span className="payoff-stats-value" data-color="positive">{fmt(projection.finalValue)} €</span>
+                <span className="payoff-stats-value" data-color="positive"><F v={projection.finalValue} /></span>
               </div>
               <div>
                 <span className="payoff-stats-label">{t.investments.invested} </span>
-                <span className="payoff-stats-value">{fmt(projection.totalInvested)} €</span>
+                <span className="payoff-stats-value"><F v={projection.totalInvested} /></span>
               </div>
               <div>
                 <span className="payoff-stats-label">{t.investments.returns} </span>
-                <span className="payoff-stats-value" data-color="positive">+{fmt(projection.totalReturns)} €</span>
+                <span className="payoff-stats-value" data-color="positive"><>+<F v={projection.totalReturns} /></></span>
               </div>
             </div>
             {projection.timeline.length > 1 && (

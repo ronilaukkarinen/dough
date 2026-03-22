@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, AlertCircle, Loader2, Check, X } from "lucide-react";
+import { F } from "@/components/ui/f";
 
 interface Bill {
   id: number;
@@ -37,7 +38,7 @@ interface Bill {
 }
 
 export default function BillsPage() {
-  const { t, locale, fmt } = useLocale();
+  const { t, locale } = useLocale();
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
@@ -245,7 +246,7 @@ export default function BillsPage() {
       <div className="page-grid-2-sm">
         <Card className="metric-card">
           <p className="metric-card-label">{t.bills.monthlyTotal}</p>
-          <p className="metric-card-value-3xl">{fmt(monthlyTotal)} €</p>
+          <p className="metric-card-value-3xl"><F v={monthlyTotal} /></p>
           <p className="metric-card-note metric-card-note-mt">
             {paidCount}/{active.length} {locale === "fi" ? "maksettu" : "paid"}
           </p>
@@ -254,7 +255,7 @@ export default function BillsPage() {
           <div className="page-header-row">
             <div>
               <p className="metric-card-label">{locale === "fi" ? "Maksamatta" : "Unpaid"}</p>
-              <p className="metric-card-value-3xl text-negative">{fmt(remainingUnpaid)} €</p>
+              <p className="metric-card-value-3xl text-negative"><F v={remainingUnpaid} /></p>
               <p className="metric-card-note metric-card-note-mt">
                 {overdueCount > 0
                   ? `${overdueCount} ${locale === "fi" ? "myöhässä" : "overdue"}`
@@ -290,15 +291,15 @@ export default function BillsPage() {
                 </div>
                 <div className="list-item-end">
                   <p className="list-item-amount-value">
-                    {bill.is_paid && bill.paid_amount ? fmt(bill.paid_amount) : fmt(bill.amount)} €
+                    <F v={bill.is_paid && bill.paid_amount ? bill.paid_amount : bill.amount} />
                   </p>
                   {bill.amount_diff && (
                     <p className={`list-item-meta ${bill.amount_diff > 0 ? "text-negative" : "text-positive"}`}>
-                      {bill.amount_diff > 0 ? "+" : ""}{fmt(bill.amount_diff)} € {locale === "fi" ? "vs odotettu" : "vs expected"}
+                      {bill.amount_diff > 0 ? <>+<F v={bill.amount_diff} /></> : <F v={bill.amount_diff} />} {locale === "fi" ? "vs odotettu" : "vs expected"}
                     </p>
                   )}
                   {bill.average_amount && bill.history_count >= 2 && !bill.amount_diff && (
-                    <p className="list-item-meta">{locale === "fi" ? "ka" : "avg"} {fmt(bill.average_amount)} €</p>
+                    <p className="list-item-meta">{locale === "fi" ? "ka" : "avg"} <F v={bill.average_amount} /></p>
                   )}
                   <span onClick={(e) => e.stopPropagation()}>
                     <Switch checked={!!bill.is_active} onCheckedChange={() => toggleBill(bill.id, bill.is_active)} />

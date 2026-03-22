@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { useLocale } from "@/lib/locale-context";
+import { F } from "@/components/ui/f";
 import { TrendingDown, Landmark, PiggyBank } from "lucide-react";
 
 interface Account {
@@ -16,7 +17,7 @@ interface NetWorthProps {
 }
 
 export function NetWorth({ accounts }: NetWorthProps) {
-  const { t, fmt } = useLocale();
+  const { t } = useLocale();
 
   const investments = accounts.filter((a) => a.type === "otherAsset");
   const debts = accounts.filter((a) => a.type === "otherDebt");
@@ -33,7 +34,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
         <Card className="net-worth-hero">
           <p className="net-worth-hero-label">{t.dashboard.netWorth}</p>
           <p className="net-worth-hero-value" data-positive={netWorth >= 0 || undefined}>
-            {fmt(netWorth)} €
+            <F v={netWorth} />
           </p>
         </Card>
 
@@ -44,7 +45,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
             </div>
             <div>
               <p className="net-worth-card-label">{t.dashboard.accounts}</p>
-              <p className="net-worth-card-value">{fmt(checkingTotal)} €</p>
+              <p className="net-worth-card-value"><F v={checkingTotal} /></p>
             </div>
           </div>
         </Card>
@@ -56,7 +57,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
             </div>
             <div>
               <p className="net-worth-card-label">{t.dashboard.investments}</p>
-              <p className="net-worth-card-value text-positive">{fmt(investmentTotal)} €</p>
+              <p className="net-worth-card-value text-positive"><F v={investmentTotal} /></p>
             </div>
           </div>
         </Card>
@@ -68,7 +69,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
             </div>
             <div>
               <p className="net-worth-card-label">{t.debts.title}</p>
-              <p className="net-worth-card-value text-negative">{fmt(debtTotal)} €</p>
+              <p className="net-worth-card-value text-negative"><F v={debtTotal} /></p>
             </div>
           </div>
         </Card>
@@ -80,7 +81,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
           {investments.map((a) => (
             <div key={a.id} className="net-worth-list-item">
               <span className="net-worth-list-name">{a.name}</span>
-              <span className="net-worth-list-amount">{fmt(a.balance)} €</span>
+              <span className="net-worth-list-amount"><F v={a.balance} /></span>
             </div>
           ))}
         </Card>
@@ -92,7 +93,7 @@ export function NetWorth({ accounts }: NetWorthProps) {
           {debts.map((a) => (
             <div key={a.id} className="net-worth-list-item">
               <span className="net-worth-list-name">{a.name}</span>
-              <span className="net-worth-list-amount net-worth-list-amount-debt">{fmt(a.balance)} €</span>
+              <span className="net-worth-list-amount net-worth-list-amount-debt"><F v={a.balance} /></span>
             </div>
           ))}
         </Card>

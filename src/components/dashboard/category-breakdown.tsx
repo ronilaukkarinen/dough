@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart-container";
 import { useLocale } from "@/lib/locale-context";
+import { F } from "@/components/ui/f";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 interface Category {
@@ -51,7 +52,7 @@ export function CategoryBreakdown({ categories, total, currency = "€" }: Categ
             </ResponsiveContainer>
           </ChartContainer>
           <div className="category-breakdown-donut-center">
-            <span className="category-breakdown-donut-total">{fmt(total)} {currency}</span>
+            <span className="category-breakdown-donut-total"><F v={total} s={` ${currency}`} /></span>
             <span className="category-breakdown-donut-label">{t.common.total}</span>
           </div>
         </div>
@@ -62,7 +63,7 @@ export function CategoryBreakdown({ categories, total, currency = "€" }: Categ
                 <div className="category-breakdown-legend-dot" style={{ backgroundColor: cat.color }} />
                 <span className="category-breakdown-legend-text">{cat.name}</span>
               </div>
-              <span className="category-breakdown-legend-amount">{fmt(cat.amount)} {currency}</span>
+              <span className="category-breakdown-legend-amount"><F v={cat.amount} s={` ${currency}`} /></span>
             </div>
           ))}
         </div>

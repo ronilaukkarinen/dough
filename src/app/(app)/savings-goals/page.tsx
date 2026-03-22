@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Loader2, Target, Star } from "lucide-react";
+import { F } from "@/components/ui/f";
 
 interface SavingsGoal {
   id: number;
@@ -40,7 +41,7 @@ interface SavingsGoal {
 }
 
 export default function SavingsGoalsPage() {
-  const { t, locale, fmt } = useLocale();
+  const { t, locale } = useLocale();
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
@@ -237,7 +238,7 @@ export default function SavingsGoalsPage() {
             </div>
             <div>
               <p className="metric-card-label">{locale === "fi" ? "Tavoitteet yhteensä" : "Total target"}</p>
-              <p className="metric-card-value">{fmt(totalTarget)} €</p>
+              <p className="metric-card-value"><F v={totalTarget} /></p>
               <p className="metric-card-note">{active.length} {locale === "fi" ? "tavoitetta" : "goals"}</p>
             </div>
           </div>
@@ -249,7 +250,7 @@ export default function SavingsGoalsPage() {
             </div>
             <div>
               <p className="metric-card-label">{locale === "fi" ? "Säästetty" : "Saved"}</p>
-              <p className="metric-card-value">{fmt(totalSaved)} €</p>
+              <p className="metric-card-value"><F v={totalSaved} /></p>
               <p className="metric-card-note">{overallProgress}%</p>
             </div>
           </div>
@@ -274,15 +275,15 @@ export default function SavingsGoalsPage() {
                         {!goal.include_in_calculations && <Badge variant="secondary">{locale === "fi" ? "Ei laskelmissa" : "Excluded"}</Badge>}
                       </div>
                       <p className="list-item-meta">
-                        {fmt(goal.saved_amount)} / {fmt(goal.target_amount)} € · {progress}%
+                        <F v={goal.saved_amount} s="" /> / <F v={goal.target_amount} /> · {progress}%
                         {goal.target_date && ` · ${locale === "fi" ? "tavoite" : "by"} ${new Date(goal.target_date).toLocaleDateString("fi-FI")}`}
-                        {monthly > 0 && goal.target_date && ` · ${fmt(monthly)} €/${locale === "fi" ? "kk" : "mo"}`}
+                        {monthly > 0 && goal.target_date && <> · <F v={monthly} s={` €/${locale === "fi" ? "kk" : "mo"}`} /></>}
                         {goal.ynab_category_name && ` · ${goal.ynab_category_name}`}
                       </p>
                       <Progress value={progress} className="progress-thin" />
                     </div>
                     <div className="list-item-end">
-                      <p className="list-item-amount-value">{fmt(goal.target_amount)} €</p>
+                      <p className="list-item-amount-value"><F v={goal.target_amount} /></p>
                       <span onClick={(e) => e.stopPropagation()}>
                         <Switch
                           checked={!!goal.include_in_calculations}
@@ -315,15 +316,15 @@ export default function SavingsGoalsPage() {
                         {!goal.include_in_calculations && <Badge variant="secondary">{locale === "fi" ? "Ei laskelmissa" : "Excluded"}</Badge>}
                       </div>
                       <p className="list-item-meta">
-                        {fmt(goal.saved_amount)} / {fmt(goal.target_amount)} € · {progress}%
+                        <F v={goal.saved_amount} s="" /> / <F v={goal.target_amount} /> · {progress}%
                         {goal.target_date && ` · ${locale === "fi" ? "tavoite" : "by"} ${new Date(goal.target_date).toLocaleDateString("fi-FI")}`}
-                        {monthly > 0 && goal.target_date && ` · ${fmt(monthly)} €/${locale === "fi" ? "kk" : "mo"}`}
+                        {monthly > 0 && goal.target_date && <> · <F v={monthly} s={` €/${locale === "fi" ? "kk" : "mo"}`} /></>}
                         {goal.ynab_category_name && ` · ${goal.ynab_category_name}`}
                       </p>
                       <Progress value={progress} className="progress-thin" />
                     </div>
                     <div className="list-item-end">
-                      <p className="list-item-amount-value">{fmt(goal.target_amount)} €</p>
+                      <p className="list-item-amount-value"><F v={goal.target_amount} /></p>
                       <span onClick={(e) => e.stopPropagation()}>
                         <Switch
                           checked={!!goal.include_in_calculations}
