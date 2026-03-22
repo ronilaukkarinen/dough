@@ -142,7 +142,7 @@
 * Show average amount on income list when 2+ months of history exist
 * Remove recurring badge from income list items
 * Fix dashboard grid by moving today remaining into hero card
-* Remove hardcoded /home/rolle path from claude CLI fallback
+* Remove hardcoded home directory path from claude CLI fallback
 * Fix Finnish translations: "Varma kuukausitulo", "perhe yhteensä", "Suurimmat kuluerät"
 * Add CLAUDE_PATH to env example
 * Audit and clean sensitive data for open source readiness
@@ -387,7 +387,7 @@
 * Fix manifest.json syntax error by removing missing icon references
 * Remove logo avatar and branding from login and sidebar
 * Redesign login page to match copilot.money style
-* Change usernames to rolle and mustikkasoppa
+* Update default seed usernames
 * Replace Supabase with local SQLite database and cookie-based auth
 * Switch AI chat from Anthropic API to claude CLI for Claude Max usage
 * Add seed script for creating users
