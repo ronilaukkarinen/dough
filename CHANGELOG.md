@@ -1,6 +1,7 @@
 ### 1.5.2: 2026-03-23
 
 * Add over/under diff as first item in spending flow chart tooltip
+* Reorder spending chart tooltip: spent first, savings target second
 
 ### 1.5.1: 2026-03-23
 
