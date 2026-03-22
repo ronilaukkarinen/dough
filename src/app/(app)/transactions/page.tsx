@@ -32,7 +32,7 @@ import { titleCasePayee } from "@/lib/text-utils";
 type FilterType = "all" | "income" | "expenses" | "transfers";
 
 export default function TransactionsPage() {
-  const { t, locale, fmt } = useLocale();
+  const { t, locale, fmt, decimals } = useLocale();
   const { data, loading, connected, sync } = useYnab();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
@@ -373,6 +373,7 @@ export default function TransactionsPage() {
         <div className="filter-bar-search">
           <Search className="filter-bar-search-icon" />
           <Input
+            type="search"
             placeholder={t.transactions.search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -414,7 +415,7 @@ export default function TransactionsPage() {
                 <p className="list-item-meta">{tx.category}</p>
               </div>
               <div className="list-item-amount">
-                <p className="list-item-amount-value" data-positive={tx.amount >= 0 || undefined}>
+                <p className="list-item-amount-value" data-positive={tx.amount >= 0 || undefined} title={decimals < 2 ? `${tx.amount < 0 ? "-" : "+"}${Math.abs(tx.amount).toFixed(2)} €` : undefined}>
                   {tx.amount < 0 ? "-" : "+"}{fmt(Math.abs(tx.amount))} €
                 </p>
                 <p className="list-item-amount-date">{relativeDate(tx.date, locale)}</p>

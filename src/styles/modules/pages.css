@@ -818,6 +818,20 @@
   padding-left: 2.25rem;
 }
 
+.input.input-with-icon[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  background-image: url('/search-cancel.svg');
+  background-size: 18px 18px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.input.input-with-icon[type="search"]::-webkit-search-cancel-button:hover {
+  opacity: 1;
+}
+
 /* Settings input */
 .input.settings-input,
 .select-trigger.settings-input {
