@@ -190,11 +190,16 @@ Create `~/.config/systemd/user/dough.service`:
 ```ini
 [Unit]
 Description=Dough personal finance app
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 WorkingDirectory=/path/to/dough
 ExecStart=/path/to/node node_modules/.bin/next start -p 3001
 Restart=on-failure
+RestartSec=2
+TimeoutStopSec=5
+KillMode=mixed
 Environment=NODE_ENV=production
 
 [Install]
