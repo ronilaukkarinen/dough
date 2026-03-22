@@ -2,6 +2,7 @@
 
 * Add over/under diff as first item in spending flow chart tooltip
 * Reorder spending chart tooltip: spent first, savings target second
+* Reduce savings target dashed line opacity to 50%
 
 ### 1.5.1: 2026-03-23
 
