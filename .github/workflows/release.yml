@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'CHANGELOG.md'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from CHANGELOG
+        id: version
+        run: |
+          VERSION=$(grep -m1 '^### ' CHANGELOG.md | sed 's/### \([0-9.]*\).*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found version: $VERSION"
+
+      - name: Check if release exists
+        id: check
+        run: |
+          if gh release view "v${{ steps.version.outputs.version }}" > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Extract release notes
+        if: steps.check.outputs.exists == 'false'
+        id: notes
+        run: |
+          # Extract notes for this version (between first and second ### headers)
+          NOTES=$(awk '/^### [0-9]/{if(p) exit; p=1; next} p' CHANGELOG.md)
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create release
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          gh release create "v${{ steps.version.outputs.version }}" \
+            --title "v${{ steps.version.outputs.version }}" \
+            --notes "${{ steps.notes.outputs.notes }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
