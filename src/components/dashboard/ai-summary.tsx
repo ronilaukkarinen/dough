@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { RefreshCw, Sparkles, Copy, Check } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { copyToClipboard } from "@/lib/clipboard";
 
 export function AiSummary() {
@@ -97,7 +98,7 @@ export function AiSummary() {
           <div className="skeleton-line skeleton-line-narrow" />
         </div>
       ) : summary ? (
-        <div className="ai-summary-text"><ReactMarkdown>{summary}</ReactMarkdown></div>
+        <div className="ai-summary-text"><ReactMarkdown remarkPlugins={[remarkGfm]}>{summary}</ReactMarkdown></div>
       ) : null}
     </Card>
   );

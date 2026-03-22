@@ -32,7 +32,6 @@ interface SavingsGoal {
   name: string;
   target_amount: number;
   saved_amount: number;
-  priority: "must" | "want";
   ynab_category_id: string | null;
   ynab_category_name: string | null;
   target_date: string | null;
@@ -50,8 +49,6 @@ export default function SavingsGoalsPage() {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const addFormRef = useRef<HTMLFormElement>(null);
   const editFormRef = useRef<HTMLFormElement>(null);
-  const [addPriority, setAddPriority] = useState("want");
-  const [editPriority, setEditPriority] = useState("want");
   const [addCategory, setAddCategory] = useState("");
   const [editCategory, setEditCategory] = useState("");
 
@@ -87,7 +84,6 @@ export default function SavingsGoalsPage() {
     const body = {
       name: fd.get("name") as string,
       target_amount: parseFloat((fd.get("target_amount") as string).replace(",", ".")),
-      priority: addPriority,
       target_date: (fd.get("target_date") as string) || null,
       ynab_category_id: addCategory || null,
       ynab_category_name: cat?.name || null,
@@ -99,7 +95,6 @@ export default function SavingsGoalsPage() {
       if (data.id) {
         setAddOpen(false);
         form.reset();
-        setAddPriority("want");
         setAddCategory("");
         loadGoals();
       }
@@ -116,7 +111,6 @@ export default function SavingsGoalsPage() {
       name: fd.get("name") as string,
       target_amount: parseFloat((fd.get("target_amount") as string).replace(",", ".")),
       saved_amount: parseFloat((fd.get("saved_amount") as string || "0").replace(",", ".")),
-      priority: editPriority,
       target_date: (fd.get("target_date") as string) || null,
       ynab_category_id: editCategory || null,
       ynab_category_name: cat?.name || null,
@@ -146,8 +140,6 @@ export default function SavingsGoalsPage() {
   };
 
   const active = goals.filter((g) => g.is_active);
-  const mustHaves = active.filter((g) => g.priority === "must");
-  const wantToHaves = active.filter((g) => g.priority === "want");
   const totalTarget = active.reduce((s, g) => s + g.target_amount, 0);
   const totalSaved = active.reduce((s, g) => s + g.saved_amount, 0);
   const overallProgress = totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0;
@@ -186,23 +178,9 @@ export default function SavingsGoalsPage() {
                 <Label>{locale === "fi" ? "Nimi" : "Name"}</Label>
                 <Input name="name" placeholder={locale === "fi" ? "esim. Uusi sohva" : "e.g. New couch"} required />
               </div>
-              <div className="form-grid-2">
-                <div className="form-field">
-                  <Label>{locale === "fi" ? "Tavoite (€)" : "Target (€)"}</Label>
-                  <Input name="target_amount" type="text" inputMode="decimal" placeholder="0" required />
-                </div>
-                <div className="form-field">
-                  <Label>{locale === "fi" ? "Prioriteetti" : "Priority"}</Label>
-                  <Select value={addPriority} onValueChange={(v) => v && setAddPriority(v)}>
-                    <SelectTrigger className="settings-input">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="must">{locale === "fi" ? "Pakollinen" : "Must have"}</SelectItem>
-                      <SelectItem value="want">{locale === "fi" ? "Toive" : "Want to have"}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Tavoite (€)" : "Target (€)"}</Label>
+                <Input name="target_amount" type="text" inputMode="decimal" placeholder="0" required />
               </div>
               <div className="form-field">
                 <Label>{locale === "fi" ? "Tavoitepäivä" : "Target date"}</Label>
@@ -257,87 +235,41 @@ export default function SavingsGoalsPage() {
         </Card>
       </div>
 
-      {/* Must haves */}
-      {mustHaves.length > 0 && (
-        <>
-          <h2 className="page-heading" style={{ fontSize: "1rem" }}>{locale === "fi" ? "Pakolliset" : "Must have"}</h2>
-          <Card className="list-card list-card-divider">
-            {mustHaves.map((goal) => {
-              const progress = goal.target_amount > 0 ? Math.round((goal.saved_amount / goal.target_amount) * 100) : 0;
-              const monthly = calcMonthlySavings(goal);
-              return (
-                <div key={goal.id} className="list-item list-item-col">
-                  <div className="list-item-main" onClick={() => { setEditTarget(goal); setEditPriority(goal.priority); setEditCategory(goal.ynab_category_id || ""); setEditOpen(true); }}>
-                    <div className="list-item-body">
-                      <div className="list-item-name-row">
-                        <p className="list-item-name">{goal.name}</p>
-                        <Badge className="badge-matched">{locale === "fi" ? "Pakollinen" : "Must"}</Badge>
-                        {!goal.include_in_calculations && <Badge variant="secondary">{locale === "fi" ? "Ei laskelmissa" : "Excluded"}</Badge>}
-                      </div>
-                      <p className="list-item-meta">
-                        <F v={goal.saved_amount} s="" /> / <F v={goal.target_amount} /> · {progress}%
-                        {goal.target_date && ` · ${locale === "fi" ? "tavoite" : "by"} ${new Date(goal.target_date).toLocaleDateString("fi-FI")}`}
-                        {monthly > 0 && goal.target_date && <> · <F v={monthly} s={` €/${locale === "fi" ? "kk" : "mo"}`} /></>}
-                        {goal.ynab_category_name && ` · ${goal.ynab_category_name}`}
-                      </p>
-                      <Progress value={progress} className="progress-thin" />
+      {active.length > 0 && (
+        <Card className="list-card list-card-divider">
+          {active.map((goal) => {
+            const progress = goal.target_amount > 0 ? Math.round((goal.saved_amount / goal.target_amount) * 100) : 0;
+            const monthly = calcMonthlySavings(goal);
+            return (
+              <div key={goal.id} className="list-item list-item-col">
+                <div className="list-item-main" onClick={() => { setEditTarget(goal); setEditCategory(goal.ynab_category_id || ""); setEditOpen(true); }}>
+                  <div className="list-item-body">
+                    <div className="list-item-name-row">
+                      <p className="list-item-name">{goal.name}</p>
+                      {!goal.include_in_calculations && <Badge variant="secondary">{locale === "fi" ? "Ei laskelmissa" : "Excluded"}</Badge>}
                     </div>
-                    <div className="list-item-end">
-                      <p className="list-item-amount-value"><F v={goal.target_amount} /></p>
-                      <span onClick={(e) => e.stopPropagation()}>
-                        <Switch
-                          checked={!!goal.include_in_calculations}
-                          onCheckedChange={() => toggleCalculations(goal.id, goal.include_in_calculations)}
-                        />
-                      </span>
-                    </div>
+                    <p className="list-item-meta">
+                      <F v={goal.saved_amount} s="" /> / <F v={goal.target_amount} /> · {progress}%
+                      {goal.target_date && ` · ${locale === "fi" ? "tavoite" : "by"} ${new Date(goal.target_date).toLocaleDateString("fi-FI")}`}
+                      {monthly > 0 && goal.target_date && <> · <F v={monthly} s={` €/${locale === "fi" ? "kk" : "mo"}`} /></>}
+                      {goal.ynab_category_name && ` · ${goal.ynab_category_name}`}
+                    </p>
+                    <Progress value={progress} className="progress-thin" />
+                  </div>
+                  <div className="list-item-end">
+                    <p className="list-item-amount-value"><F v={goal.target_amount} /></p>
+                    <span onClick={(e) => e.stopPropagation()}>
+                      <Switch
+                        checked={!!goal.include_in_calculations}
+                        onCheckedChange={() => toggleCalculations(goal.id, goal.include_in_calculations)}
+                      />
+                    </span>
                   </div>
                 </div>
-              );
-            })}
-          </Card>
-        </>
-      )}
-
-      {/* Want to haves */}
-      {wantToHaves.length > 0 && (
-        <>
-          <h2 className="page-heading" style={{ fontSize: "1rem" }}>{locale === "fi" ? "Toiveet" : "Want to have"}</h2>
-          <Card className="list-card list-card-divider">
-            {wantToHaves.map((goal) => {
-              const progress = goal.target_amount > 0 ? Math.round((goal.saved_amount / goal.target_amount) * 100) : 0;
-              const monthly = calcMonthlySavings(goal);
-              return (
-                <div key={goal.id} className="list-item list-item-col">
-                  <div className="list-item-main" onClick={() => { setEditTarget(goal); setEditPriority(goal.priority); setEditCategory(goal.ynab_category_id || ""); setEditOpen(true); }}>
-                    <div className="list-item-body">
-                      <div className="list-item-name-row">
-                        <p className="list-item-name">{goal.name}</p>
-                        {!goal.include_in_calculations && <Badge variant="secondary">{locale === "fi" ? "Ei laskelmissa" : "Excluded"}</Badge>}
-                      </div>
-                      <p className="list-item-meta">
-                        <F v={goal.saved_amount} s="" /> / <F v={goal.target_amount} /> · {progress}%
-                        {goal.target_date && ` · ${locale === "fi" ? "tavoite" : "by"} ${new Date(goal.target_date).toLocaleDateString("fi-FI")}`}
-                        {monthly > 0 && goal.target_date && <> · <F v={monthly} s={` €/${locale === "fi" ? "kk" : "mo"}`} /></>}
-                        {goal.ynab_category_name && ` · ${goal.ynab_category_name}`}
-                      </p>
-                      <Progress value={progress} className="progress-thin" />
-                    </div>
-                    <div className="list-item-end">
-                      <p className="list-item-amount-value"><F v={goal.target_amount} /></p>
-                      <span onClick={(e) => e.stopPropagation()}>
-                        <Switch
-                          checked={!!goal.include_in_calculations}
-                          onCheckedChange={() => toggleCalculations(goal.id, goal.include_in_calculations)}
-                        />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </Card>
-        </>
+              </div>
+            );
+          })}
+        </Card>
       )}
 
       {goals.length === 0 && (
@@ -364,23 +296,9 @@ export default function SavingsGoalsPage() {
                   <Input name="saved_amount" type="text" inputMode="decimal" defaultValue={editTarget.saved_amount} />
                 </div>
               </div>
-              <div className="form-grid-2">
-                <div className="form-field">
-                  <Label>{locale === "fi" ? "Prioriteetti" : "Priority"}</Label>
-                  <Select value={editPriority} onValueChange={(v) => v && setEditPriority(v)}>
-                    <SelectTrigger className="settings-input">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="must">{locale === "fi" ? "Pakollinen" : "Must have"}</SelectItem>
-                      <SelectItem value="want">{locale === "fi" ? "Toive" : "Want to have"}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="form-field">
-                  <Label>{locale === "fi" ? "Tavoitepäivä" : "Target date"}</Label>
-                  <Input name="target_date" type="date" defaultValue={editTarget.target_date || ""} />
-                </div>
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Tavoitepäivä" : "Target date"}</Label>
+                <Input name="target_date" type="date" defaultValue={editTarget.target_date || ""} />
               </div>
               {categories.length > 0 && (
                 <div className="form-field">

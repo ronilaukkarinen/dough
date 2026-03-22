@@ -241,6 +241,35 @@
   font-style: italic;
 }
 
+.chat-message-text table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+  font-size: 0.8125rem;
+}
+
+.chat-message-text th,
+.chat-message-text td {
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.chat-message-text th {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.chat-message-text td {
+  color: var(--foreground);
+}
+
+.chat-message-text hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin: 0.5rem 0;
+}
+
 .chat-message-text ul, .chat-message-text ol {
   margin: 0.25rem 0;
   padding-left: 1.25rem;

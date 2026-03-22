@@ -1,5 +1,7 @@
 ### 1.4.0: 2026-03-22
 
+* Remove must/want priority from savings goals, all goals are now equal
+* Add markdown table rendering in AI chat and summary via remark-gfm
 * Add F component for all euro amounts with styled tooltip showing exact value when decimals are 0, across all pages
 * Add search cancel button to transactions search field
 * Add inline edit and delete for payee match patterns with min/max amount fields in bills

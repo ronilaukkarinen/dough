@@ -10,7 +10,7 @@ export async function GET() {
 
     const db = getDb();
     const goals = db
-      .prepare("SELECT * FROM savings_goals ORDER BY priority ASC, created_at ASC")
+      .prepare("SELECT * FROM savings_goals ORDER BY created_at ASC")
       .all();
 
     console.debug("[savings-goals] Loaded", (goals as unknown[]).length, "savings goals");
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
     const body = await request.json();
-    const { name, target_amount, priority, ynab_category_id, ynab_category_name, target_date } = body;
+    const { name, target_amount, ynab_category_id, ynab_category_name, target_date } = body;
 
     if (!name || !target_amount) {
       return NextResponse.json({ error: "Name and target amount required" }, { status: 400 });
@@ -35,11 +35,10 @@ export async function POST(request: Request) {
 
     const db = getDb();
     const result = db
-      .prepare("INSERT INTO savings_goals (name, target_amount, priority, ynab_category_id, ynab_category_name, target_date) VALUES (?, ?, ?, ?, ?, ?)")
+      .prepare("INSERT INTO savings_goals (name, target_amount, priority, ynab_category_id, ynab_category_name, target_date) VALUES (?, ?, 'want', ?, ?, ?)")
       .run(
         name,
         parseFloat(String(target_amount).replace(",", ".")),
-        priority || "want",
         ynab_category_id || null,
         ynab_category_name || null,
         target_date || null
@@ -90,7 +89,6 @@ export async function PUT(request: Request) {
     if (body.name !== undefined) { updates.push("name = ?"); values.push(body.name); }
     if (body.target_amount !== undefined) { updates.push("target_amount = ?"); values.push(parseFloat(String(body.target_amount).replace(",", "."))); }
     if (body.saved_amount !== undefined) { updates.push("saved_amount = ?"); values.push(parseFloat(String(body.saved_amount).replace(",", "."))); }
-    if (body.priority !== undefined) { updates.push("priority = ?"); values.push(body.priority); }
     if (body.ynab_category_id !== undefined) { updates.push("ynab_category_id = ?"); values.push(body.ynab_category_id || null); }
     if (body.ynab_category_name !== undefined) { updates.push("ynab_category_name = ?"); values.push(body.ynab_category_name || null); }
     if (body.target_date !== undefined) { updates.push("target_date = ?"); values.push(body.target_date || null); }

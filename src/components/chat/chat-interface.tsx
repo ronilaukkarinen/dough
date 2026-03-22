@@ -8,6 +8,7 @@ import { Send, Bot, User, Copy, Check, Paperclip, X } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import { useEvent } from "@/lib/use-events";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { copyToClipboard } from "@/lib/clipboard";
 
 interface Message {
@@ -245,7 +246,7 @@ export function ChatInterface() {
                 )}
                 <div className="chat-message-text">
                   {message.role === "assistant" ? (
-                    <ReactMarkdown components={{
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
                       strong: ({ children }) => {
                         const text = String(children);
                         const hasEuro = text.includes("€");
