@@ -17,6 +17,7 @@ import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2, PiggyBank, User
 import { useLocale } from "@/lib/locale-context";
 import type { Locale } from "@/lib/i18n";
 import { F } from "@/components/ui/f";
+import { DEFAULT_CHAT_GUIDELINES, DEFAULT_SUMMARY_INSTRUCTIONS, DEFAULT_DEBT_INSTRUCTIONS } from "@/lib/ai/default-prompts";
 
 interface UserProfile {
   id: number;
@@ -45,7 +46,7 @@ export default function SettingsPage() {
   const [householdProfile, setHouseholdProfile] = useState("");
   const [householdSize, setHouseholdSize] = useState("1");
   const [householdSaved, setHouseholdSaved] = useState(false);
-  const [prompts, setPrompts] = useState({ chat: "", summary: "", debt: "" });
+  const [prompts, setPrompts] = useState({ chat: DEFAULT_CHAT_GUIDELINES, summary: DEFAULT_SUMMARY_INSTRUCTIONS, debt: DEFAULT_DEBT_INSTRUCTIONS });
   const [promptSaved, setPromptSaved] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [nameSaved, setNameSaved] = useState(false);
@@ -749,7 +750,7 @@ export default function SettingsPage() {
                   className="settings-textarea"
                   value={prompts[key]}
                   onChange={(e) => setPrompts((p) => ({ ...p, [key]: e.target.value }))}
-                  placeholder={locale === "fi" ? "Tyhjä = oletusohje" : "Empty = default prompt"}
+                  placeholder={locale === "fi" ? "Ohjeet tekoälylle" : "Instructions for AI"}
                   rows={4}
                 />
                 <div className="settings-row">
