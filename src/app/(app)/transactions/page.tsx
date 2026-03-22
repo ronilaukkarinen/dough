@@ -308,7 +308,7 @@ export default function TransactionsPage() {
                         <div key={i} className="batch-item">
                           <div className="batch-item-info">
                             <p className="batch-item-payee">{tx.payee}</p>
-                            <p className="batch-item-meta">{tx.amount} € · {tx.date === new Date().toISOString().slice(0, 10) ? (locale === "fi" ? "tänään" : "today") : tx.date} · {tx.account_name}</p>
+                            <p className="batch-item-meta">{tx.amount} € · {tx.date === new Date().toISOString().slice(0, 10) ? (locale === "fi" ? "tänään" : "today") : (() => { const [y, m, d] = tx.date.split("-"); return `${parseInt(d)}.${parseInt(m)}.${y}`; })()} · {tx.account_name}</p>
                           </div>
                           <div className="batch-item-actions">
                             {allAccounts.length > 1 && (
