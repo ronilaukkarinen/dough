@@ -1,5 +1,7 @@
 ### 1.4.0: 2026-03-22
 
+* Add inline edit and delete for payee match patterns with min/max amount fields in bills
+* Show max 5 recent transactions on dashboard
 * Show exact amount tooltip on hover when decimal places is 0 for dashboard metric values
 * Privacy mode: hide chart axis numbers, obfuscate days until income, trend %, dates, counts, and chart tooltips
 * Add Ultra.cc brand icon and subscription entry

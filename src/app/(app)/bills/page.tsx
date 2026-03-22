@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, AlertCircle, Loader2, Check, Link2, X } from "lucide-react";
+import { Plus, AlertCircle, Loader2, Check, X } from "lucide-react";
 
 interface Bill {
   id: number;
@@ -31,7 +31,7 @@ interface Bill {
   amount_diff: number | null;
   is_overdue: boolean;
   is_due_soon: boolean;
-  patterns: string[];
+  patterns: { id: number; payee_pattern: string; min_amount: number; max_amount: number }[];
   average_amount: number | null;
   history_count: number;
 }
@@ -169,6 +169,30 @@ export default function BillsPage() {
     } catch (err) { console.error("[bills] Add pattern error:", err); }
   };
 
+  const deletePattern = async (patternId: number) => {
+    console.info("[bills] Deleting pattern:", patternId);
+    try {
+      await fetch("/api/matches", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: patternId }),
+      });
+      loadBills();
+    } catch (err) { console.error("[bills] Delete pattern error:", err); }
+  };
+
+  const updatePattern = async (patternId: number, min: number, max: number) => {
+    console.info("[bills] Updating pattern:", patternId, "min:", min, "max:", max);
+    try {
+      await fetch("/api/matches", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: patternId, min_amount: min, max_amount: max }),
+      });
+      loadBills();
+    } catch (err) { console.error("[bills] Update pattern error:", err); }
+  };
+
   const active = bills.filter((b) => b.is_active);
   const monthlyTotal = active.reduce((s, b) => s + b.amount, 0);
   const remainingUnpaid = active.filter((b) => !b.is_paid).reduce((s, b) => s + b.amount, 0);
@@ -260,7 +284,7 @@ export default function BillsPage() {
                   <p className="list-item-meta">
                     {bill.category ? `${bill.category} · ` : ""}{locale === "fi" ? "Erääntyy" : t.bills.dueOn} {bill.due_day}. {t.bills.dayOfMonth}
                     {bill.patterns.length > 0 && (
-                      <span className="list-item-patterns"> – {bill.patterns.join(", ")}</span>
+                      <span className="list-item-patterns"> – {bill.patterns.map((p) => p.payee_pattern).join(", ")}</span>
                     )}
                   </p>
                 </div>
@@ -355,8 +379,31 @@ export default function BillsPage() {
                 </div>
                 {editTarget.patterns.length > 0 && (
                   <div className="match-pattern-list">
-                    {editTarget.patterns.map((p, i) => (
-                      <span key={i} className="match-pattern-tag">{p}</span>
+                    {editTarget.patterns.map((p) => (
+                      <div key={p.id} className="match-pattern-item">
+                        <span className="match-pattern-tag">{p.payee_pattern}</span>
+                        <Input
+                          defaultValue={p.min_amount || ""}
+                          placeholder="Min €"
+                          type="text"
+                          inputMode="decimal"
+                          autoComplete="off"
+                          className="match-pattern-input-sm"
+                          onBlur={(e) => updatePattern(p.id, parseFloat(e.target.value) || 0, p.max_amount)}
+                        />
+                        <Input
+                          defaultValue={p.max_amount || ""}
+                          placeholder="Max €"
+                          type="text"
+                          inputMode="decimal"
+                          autoComplete="off"
+                          className="match-pattern-input-sm"
+                          onBlur={(e) => updatePattern(p.id, p.min_amount, parseFloat(e.target.value) || 0)}
+                        />
+                        <button type="button" className="batch-remove-btn" onClick={() => deletePattern(p.id)}>
+                          <X />
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}

@@ -22,14 +22,14 @@ export async function GET() {
       .all(month) as { source_id: number; amount: number }[];
     const matchMap = new Map(matches.map((m) => [m.source_id, m.amount]));
 
-    // Get payee patterns
+    // Get payee patterns with full data
     const patterns = db
-      .prepare("SELECT source_id, payee_pattern FROM payee_matches WHERE source_type = 'bill'")
-      .all() as { source_id: number; payee_pattern: string }[];
-    const patternMap = new Map<number, string[]>();
+      .prepare("SELECT id, source_id, payee_pattern, min_amount, max_amount FROM payee_matches WHERE source_type = 'bill'")
+      .all() as { id: number; source_id: number; payee_pattern: string; min_amount: number; max_amount: number }[];
+    const patternMap = new Map<number, { id: number; payee_pattern: string; min_amount: number; max_amount: number }[]>();
     for (const p of patterns) {
       if (!patternMap.has(p.source_id)) patternMap.set(p.source_id, []);
-      patternMap.get(p.source_id)!.push(p.payee_pattern);
+      patternMap.get(p.source_id)!.push({ id: p.id, payee_pattern: p.payee_pattern, min_amount: p.min_amount || 0, max_amount: p.max_amount || 0 });
     }
 
     // Get average amounts from history

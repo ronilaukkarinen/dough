@@ -50,6 +50,35 @@ export async function POST(request: Request) {
   }
 }
 
+export async function PUT(request: Request) {
+  try {
+    const user = await getSession();
+    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+    const body = await request.json();
+    const { id, payee_pattern, min_amount, max_amount } = body;
+    if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+
+    const db = getDb();
+    const updates: string[] = [];
+    const values: (string | number)[] = [];
+    if (payee_pattern !== undefined) { updates.push("payee_pattern = ?"); values.push(payee_pattern); }
+    if (min_amount !== undefined) { updates.push("min_amount = ?"); values.push(min_amount); }
+    if (max_amount !== undefined) { updates.push("max_amount = ?"); values.push(max_amount); }
+
+    if (updates.length > 0) {
+      values.push(id);
+      db.prepare(`UPDATE payee_matches SET ${updates.join(", ")} WHERE id = ?`).run(...values);
+      console.info("[matches] Updated pattern ID:", id);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[matches] PUT error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     const user = await getSession();
