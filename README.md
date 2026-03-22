@@ -100,65 +100,6 @@ The app runs at `http://localhost:3001`.
 4. Set your display name, household details, and link your spending account
 5. Add income sources and recurring bills with YNAB payee patterns
 
-## Architecture
-
-```
-Next.js 16 (App Router)
-├── SQLite (better-sqlite3) ─── all data stored locally
-├── YNAB REST API ──────────── accounts, transactions, budgets
-├── Claude CLI (stdin pipe) ─── AI chat, summaries, debt advice
-├── Server-Sent Events ─────── real-time updates (in-process)
-└── Custom CSS framework ───── SMACSS-derivative, no Tailwind
-```
-
-### Tech stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16 with App Router and Turbopack |
-| UI | @base-ui/react (headless), lucide-react icons |
-| Styling | Custom SMACSS-derivative CSS framework |
-| Database | SQLite via better-sqlite3 |
-| Auth | JWT sessions with httpOnly cookies |
-| Charts | Recharts |
-| AI | Claude CLI via `spawn` with stdin pipe |
-| Real-time | Server-Sent Events with in-process EventBus |
-| Finance | YNAB REST API with local SQLite caching |
-| i18n | Custom locale system with React context |
-
-### Directory structure
-
-```
-src/
-  app/
-    (app)/          # Authenticated pages (dashboard, bills, income, debts, etc.)
-    api/            # API routes
-    login/          # Public login page
-  components/
-    ui/             # Reusable UI components (button, card, dialog, etc.)
-    layout/         # App shell, sidebar
-    dashboard/      # Dashboard widgets
-    chat/           # Chat interface
-  lib/
-    ai/             # Claude CLI integration and default prompts
-    ynab/           # YNAB REST API client
-    i18n/           # Translation files (en.ts, fi.ts)
-    db.ts           # SQLite schema and connection
-    auth.ts         # JWT session management
-    event-bus.ts    # In-memory pub/sub for SSE
-    matching.ts     # YNAB payee pattern matching engine
-    locale-context.tsx  # React context for i18n and number formatting
-    ynab-context.tsx    # React context for YNAB data
-  styles/
-    theme.css       # CSS custom properties (light/dark themes)
-    modules/        # Per-component CSS modules
-    index.css       # Single entry point
-scripts/
-  seed.ts           # User creation script
-docs/               # Documentation
-data/               # SQLite database (gitignored)
-```
-
 ## YNAB setup
 
 1. Go to [YNAB Developer Settings](https://app.ynab.com/settings/developer)
