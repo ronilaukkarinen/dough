@@ -1,3 +1,7 @@
+### 1.5.2: 2026-03-23
+
+* Add over/under diff as first item in spending flow chart tooltip
+
 ### 1.5.1: 2026-03-23
 
 * Fix mobile Safari chat zoom by setting textarea font-size to 16px

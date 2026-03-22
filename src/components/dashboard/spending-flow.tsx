@@ -160,18 +160,27 @@ export function SpendingFlow({
             />
             <YAxis hide />
             <Tooltip
-              content={({ active, payload, label }) =>
-                active && payload?.length ? (
+              content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null;
+                const actual = payload.find((p) => p.dataKey === "actual" || p.dataKey === "projected");
+                const targetEntry = payload.find((p) => p.dataKey === "target");
+                const spentVal = Number(actual?.value || 0);
+                const targetVal = Number(targetEntry?.value || 0);
+                const diff = targetVal - spentVal;
+                const diffColor = targetVal > 0 ? (diff >= 0 ? "var(--positive)" : "var(--negative)") : "var(--foreground)";
+                const diffLabel = diff >= 0
+                  ? `${fmt(Math.abs(diff))} € ${locale === "fi" ? "alle" : "under"}`
+                  : `${fmt(Math.abs(diff))} € ${locale === "fi" ? "yli" : "over"}`;
+
+                return (
                   <div className="chart-tooltip">
                     <p className="chart-tooltip-label">{label}</p>
-                    {payload.filter((p) => p.value != null).map((p, i) => (
-                      <p key={i} className="chart-tooltip-value" style={{ color: p.dataKey === "target" ? "#4ade80" : p.dataKey === "projected" ? "#71717a" : "var(--foreground)" }}>
-                        {p.dataKey === "actual" ? (locale === "fi" ? "Kulut" : "Spent") : p.dataKey === "projected" ? (locale === "fi" ? "Ennuste" : "Projected") : (locale === "fi" ? "Vakaa talous" : "Target")}: {fmt(Number(p.value))} €
-                      </p>
-                    ))}
+                    {targetVal > 0 && <p className="chart-tooltip-value" style={{ color: diffColor }}>{diffLabel}</p>}
+                    {actual && <p className="chart-tooltip-value" style={{ color: "var(--foreground)" }}>{locale === "fi" ? "Kulut" : "Spent"}: {fmt(spentVal)} €</p>}
+                    {targetEntry && <p className="chart-tooltip-value" style={{ color: "#4ade80" }}>{locale === "fi" ? "Vakaa talous" : "Target"}: {fmt(targetVal)} €</p>}
                   </div>
-                ) : null
-              }
+                );
+              }}
             />
             {targetPerDay > 0 && (
               <Area
