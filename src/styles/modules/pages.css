@@ -806,6 +806,58 @@
 .text-foreground { color: var(--foreground); }
 .text-muted { color: var(--muted-foreground); }
 
+/* Amount tooltip — black popup pointing up, shown on hover/tap */
+.amt-tip {
+  position: relative;
+  display: inline;
+  cursor: default;
+}
+
+.amt-tip::after {
+  content: attr(data-exact);
+  position: absolute;
+  bottom: calc(100% + 0.375rem);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6875rem;
+  line-height: 1;
+  color: #fafafa;
+  background: #000;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms, visibility 150ms;
+  font-variant-numeric: tabular-nums;
+}
+
+.amt-tip::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 0.125rem);
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 0.375rem;
+  height: 0.375rem;
+  background: #000;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms, visibility 150ms;
+}
+
+@media (hover: hover) {
+  .amt-tip:hover::after,
+  .amt-tip:hover::before {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
 /* Capitalize filter buttons */
 .capitalize { text-transform: capitalize; }
 

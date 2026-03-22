@@ -415,7 +415,7 @@ export default function TransactionsPage() {
                 <p className="list-item-meta">{tx.category}</p>
               </div>
               <div className="list-item-amount">
-                <p className="list-item-amount-value" data-positive={tx.amount >= 0 || undefined} title={decimals < 2 ? `${tx.amount < 0 ? "-" : "+"}${Math.abs(tx.amount).toFixed(2)} €` : undefined}>
+                <p className={`list-item-amount-value ${decimals < 2 ? "amt-tip" : ""}`} data-positive={tx.amount >= 0 || undefined} data-exact={decimals < 2 ? `${tx.amount < 0 ? "-" : "+"}${Math.abs(tx.amount).toFixed(2)} €` : undefined}>
                   {tx.amount < 0 ? "-" : "+"}{fmt(Math.abs(tx.amount))} €
                 </p>
                 <p className="list-item-amount-date">{relativeDate(tx.date, locale)}</p>

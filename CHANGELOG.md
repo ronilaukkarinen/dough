@@ -1,7 +1,7 @@
 ### 1.4.0: 2026-03-22
 
+* Replace title tooltips with styled black popups pointing up for all exact amount hovers
 * Add search cancel button to transactions search field
-* Add exact amount tooltip on hover for transaction list items
 * Add inline edit and delete for payee match patterns with min/max amount fields in bills
 * Show max 5 recent transactions on dashboard
 * Show exact amount tooltip on hover when decimal places is 0 for dashboard metric values
