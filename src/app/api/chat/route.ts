@@ -248,16 +248,19 @@ export async function POST(request: Request) {
       try {
         console.info("[chat] Attempting to auto-add expenses from image");
         const { queryClaudeWithImage } = await import("@/lib/ai/claude-image");
+        const chatToday = new Date().toISOString().slice(0, 10);
+        const chatYesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
         const parseResult = await queryClaudeWithImage(
-          `Extract ALL transactions/expenses from this image. For each: amount (number only), payee/store name, and account/card name if visible.
+          `Extract ALL transactions/expenses from this image. For each: amount (number only), payee/store name, date (YYYY-MM-DD), and account/card name if visible.
+Today is ${chatToday}. "Tänään"/"Today" = ${chatToday}. "Eilen"/"Yesterday" = ${chatYesterday}. Convert dates like "19.3." to YYYY-MM-DD. Transactions under date headings inherit that date. If no date visible, use ${chatToday}.
 If single receipt, return one item. If bank statement or multiple items, return ALL.
-Reply with ONLY a valid JSON array: [{"amount":"...","payee":"...","account":"..."}]`,
+Reply with ONLY a valid JSON array: [{"amount":"...","payee":"...","date":"YYYY-MM-DD","account":"..."}]`,
           image,
           image_media_type,
           30000
         );
 
-        let transactions: { amount: string; payee: string; account?: string }[] = [];
+        let transactions: { amount: string; payee: string; date?: string; account?: string }[] = [];
         try {
           const arrayMatch = parseResult.text.match(/\[[\s\S]*\]/);
           if (arrayMatch) {
@@ -311,6 +314,7 @@ Reply with ONLY a valid JSON array: [{"amount":"...","payee":"...","account":"..
                     account_id: accountId,
                     amount: String(tx.amount).replace(",", "."),
                     payee_name: tx.payee,
+                    date: tx.date || chatToday,
                   }),
                 });
                 if (txRes.ok) {

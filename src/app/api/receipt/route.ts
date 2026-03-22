@@ -17,15 +17,24 @@ export async function POST(request: Request) {
 
     console.info("[receipt] Parsing receipt image for user", user.id);
 
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
     const prompt = `Extract ALL transactions/expenses from this receipt, invoice, or bank statement image.
 For each transaction, extract:
 - amount: the amount (number only, no currency symbol)
 - payee: the store, company, or recipient name
-- date: the date in YYYY-MM-DD format (if visible)
+- date: the ACTUAL date of the transaction in YYYY-MM-DD format. IMPORTANT date rules:
+  - Today's date is ${today}
+  - If you see "Tänään" or "Today" as a heading or label, use ${today}
+  - If you see "Eilen" or "Yesterday", use ${yesterday}
+  - If you see a specific date like "19.3." or "19.3.2026", convert to YYYY-MM-DD format (${today.slice(0, 4)} is the current year)
+  - Transactions may be grouped under date headings — apply that heading's date to ALL transactions below it until the next heading
+  - If absolutely no date is visible anywhere, use ${today}
 - account: the bank account or card name if visible (e.g. "Lotan tili", "Nordea Visa", "Revolut"). Leave empty if not shown.
 
 If there is only ONE transaction, return a single-element array.
-If there are MULTIPLE transactions (e.g. bank statement, multi-item list), return ALL of them.
+If there are MULTIPLE transactions (e.g. bank statement, multi-item list), return ALL of them with their correct dates.
 
 Reply with ONLY a valid JSON array, nothing else:
 [{"amount":"...","payee":"...","date":"YYYY-MM-DD","account":"..."}]

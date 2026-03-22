@@ -46,7 +46,7 @@ export default function TransactionsPage() {
   const [receiptParsing, setReceiptParsing] = useState(false);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [receiptType, setReceiptType] = useState("");
-  const [batchTransactions, setBatchTransactions] = useState<{ payee: string; amount: string; account_id: string; account_name: string }[]>([]);
+  const [batchTransactions, setBatchTransactions] = useState<{ payee: string; amount: string; date: string; account_id: string; account_name: string }[]>([]);
   const [batchLoading, setBatchLoading] = useState(false);
   const [allAccounts, setAllAccounts] = useState<{ id: string; name: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -118,7 +118,7 @@ export default function TransactionsPage() {
 
         if (data.transactions && data.transactions.length > 1) {
           // Multiple transactions — show batch review
-          const batch = data.transactions.map((tx: { payee: string; amount: string; account?: string }) => {
+          const batch = data.transactions.map((tx: { payee: string; amount: string; date?: string; account?: string }) => {
             const payee = titleCasePayee(tx.payee || "");
             let accId = linkedAccountId;
             let accName = linkedAccountName;
@@ -126,7 +126,7 @@ export default function TransactionsPage() {
               const matched = allAccounts.find((a) => a.name.toLowerCase().includes(tx.account!.toLowerCase()) || tx.account!.toLowerCase().includes(a.name.toLowerCase()));
               if (matched) { accId = matched.id; accName = matched.name; }
             }
-            return { payee, amount: tx.amount, account_id: accId, account_name: accName };
+            return { payee, amount: tx.amount, date: tx.date || new Date().toISOString().slice(0, 10), account_id: accId, account_name: accName };
           });
           setBatchTransactions(batch);
         } else {
@@ -189,6 +189,7 @@ export default function TransactionsPage() {
             account_id: tx.account_id,
             amount: tx.amount.replace(",", "."),
             payee_name: tx.payee,
+            date: tx.date,
           }),
         });
         if (res.ok) added++;
@@ -307,7 +308,7 @@ export default function TransactionsPage() {
                         <div key={i} className="batch-item">
                           <div className="batch-item-info">
                             <p className="batch-item-payee">{tx.payee}</p>
-                            <p className="batch-item-meta">{tx.amount} € · {tx.account_name}</p>
+                            <p className="batch-item-meta">{tx.amount} € · {tx.date === new Date().toISOString().slice(0, 10) ? (locale === "fi" ? "tänään" : "today") : tx.date} · {tx.account_name}</p>
                           </div>
                           <div className="batch-item-actions">
                             {allAccounts.length > 1 && (

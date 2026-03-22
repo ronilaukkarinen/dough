@@ -1,5 +1,7 @@
 ### 1.3.0: 2026-03-21
 
+* Extract correct dates from receipt images: handle relative dates (Tänään, Eilen), grouped headings, Finnish date formats
+* Pass transaction dates to YNAB in both batch add and chat auto-add
 * Redesign expense modal: multi-transaction batch view from receipts, per-transaction account selection, title case payee normalization
 * Make dialog content scrollable when taller than viewport on small devices
 * Add Claude (Anthropic) and Apple iCloud brand icons and colors to subscriptions
