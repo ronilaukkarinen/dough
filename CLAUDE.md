@@ -68,7 +68,6 @@ CRITICAL: Always update CHANGELOG, commit and restart after changes.
 - Be concise, no repetition, one line per change
 - Always use changelog formatting: ### x.x.x: yyyy-mm-dd with headings, no main "Changelog" heading, no sub headings
 - Always use * as bullets in changelog
-- One version per day: all changes on the same day go under one version number
 
 ## Logging
 

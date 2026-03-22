@@ -174,9 +174,27 @@ export default function DashboardPage() {
     .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
     .reduce((s, i) => s + i.amount, 0);
 
-  // Daily budget via shared cash flow simulation
-  const dailyBudget = calculateDailyBudget({
-    balance: availableBalance,
+  // Today's spending — exclude bill payments (accounted for in daily budget simulation)
+  // Must be calculated BEFORE dailyBudget so we can restore start-of-day balance
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const billNames = new Set(bills.map((b) => b.name?.toLowerCase()).filter(Boolean));
+  const isBillPayment = (payee: string) => {
+    const p = payee.toLowerCase();
+    return billNames.has(p) || [...billNames].some((bn) => p.includes(bn) || bn.includes(p));
+  };
+  const todaySpentAll = data.transactions
+    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category) && !isBillPayment(t.payee))
+    .reduce((s, t) => s + Math.abs(t.amount), 0);
+  const todaySpentPersonal = data.transactions
+    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category) && !isBillPayment(t.payee)
+      && (linkedAccountIds.length === 0 || linkedAccountIds.includes(t.account_id || "")))
+    .reduce((s, t) => s + Math.abs(t.amount), 0);
+
+  // Daily budget via segment-based cash flow simulation
+  // Add todaySpentAll back to balance so simulation sees start-of-day balance
+  // This makes today's budget "stick" — overspend/underspend carries to future days
+  const budgetResult = calculateDailyBudget({
+    balance: availableBalance + todaySpentAll,
     savingGoal: savingRate,
     today,
     daysInMonth,
@@ -187,6 +205,8 @@ export default function DashboardPage() {
       .map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
     resolveDay,
   });
+  const dailyBudget = budgetResult.dailyBudget;
+  const todayRemaining = dailyBudget - todaySpentAll;
 
   // Burn rate = average daily real spending this month
   const daysPassed = now.getDate();
@@ -227,22 +247,6 @@ export default function DashboardPage() {
   const thisWeekDaily = thisWeekDays > 0 ? thisWeekSpend / thisWeekDays : 0;
   const lastWeekDaily = lastWeekStart >= 1 ? lastWeekSpend / 7 : 0;
   const trendPercent = lastWeekDaily > 0 ? Math.round(((thisWeekDaily - lastWeekDaily) / lastWeekDaily) * 100) : 0;
-
-  // Today's spending — exclude bill payments (already accounted for in daily budget simulation)
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  const billNames = new Set(bills.map((b) => b.name?.toLowerCase()).filter(Boolean));
-  const isBillPayment = (payee: string) => {
-    const p = payee.toLowerCase();
-    return billNames.has(p) || [...billNames].some((bn) => p.includes(bn) || bn.includes(p));
-  };
-  const todaySpentAll = data.transactions
-    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category) && !isBillPayment(t.payee))
-    .reduce((s, t) => s + Math.abs(t.amount), 0);
-  const todaySpentPersonal = data.transactions
-    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category) && !isBillPayment(t.payee)
-      && (linkedAccountIds.length === 0 || linkedAccountIds.includes(t.account_id || "")))
-    .reduce((s, t) => s + Math.abs(t.amount), 0);
-  const todayRemaining = dailyBudget - todaySpentAll;
 
   // Personal spending share: configured % or calculated from actual spending ratio
   const personalMonthSpend = data.transactions
@@ -417,6 +421,7 @@ export default function DashboardPage() {
         monthIncome={combinedIncome}
         monthExpenses={Math.round((realSpendingTotal + unpaidBillsAmount + (dailyDiscretionary * daysLeft) + investmentMonthly + debtMonthly) * 100) / 100}
         trendPercent={trendPercent}
+        budgetBreakdown={budgetResult.tightestSegment}
       />
 
       <div className="page-grid-2">

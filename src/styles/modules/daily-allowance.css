@@ -45,6 +45,14 @@
   color: var(--muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.daily-allowance-hero-label .metric-info-popup {
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .daily-allowance-hero-amount {

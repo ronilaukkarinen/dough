@@ -1,3 +1,8 @@
+### 1.4.1: 2026-03-22
+
+* Rewrite daily budget as segment-based cash flow between income events, no salary assumption
+* Fix daily budget using start-of-day balance so overspend carries forward to future days
+
 ### 1.4.0: 2026-03-22
 
 * Show sidebar collapse as inline button when expanded, overlay on logo hover when collapsed

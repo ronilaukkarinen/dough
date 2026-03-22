@@ -165,7 +165,7 @@ export async function POST(request: Request) {
 
           // Daily budget via shared cash flow simulation
           const { calculateDailyBudget } = await import("@/lib/daily-budget");
-          const dailyBudget = calculateDailyBudget({
+          const { dailyBudget } = calculateDailyBudget({
             balance: checkingSavings,
             savingGoal: savingRate,
             today,

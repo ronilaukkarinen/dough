@@ -211,7 +211,7 @@ export async function GET(request: Request) {
       .prepare("SELECT id, amount, expected_day FROM income_sources WHERE is_active = 1")
       .all() as { id: number; amount: number; expected_day: number }[];
 
-    const dailyBudget = calculateDailyBudget({
+    const { dailyBudget } = calculateDailyBudget({
       balance: checkingSavings,
       savingGoal,
       today: daysPassed,
