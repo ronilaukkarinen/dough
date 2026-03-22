@@ -1,5 +1,6 @@
 ### 1.3.0: 2026-03-21
 
+* Add Claude (Anthropic) and Apple iCloud brand icons and colors to subscriptions
 * Extract account name from receipt images for YNAB account routing, fall back to user default
 * Support multiple transactions from single receipt/image in both chat and expense modal
 * Match mobile chat textarea height to stacked button height
