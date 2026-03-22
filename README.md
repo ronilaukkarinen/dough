@@ -5,7 +5,7 @@
 ![Claude](https://img.shields.io/badge/Claude_AI-cc785c?style=for-the-badge&logo=anthropic&logoColor=white)
 <img width="80" height="28" alt="YNAB" src="https://github.com/user-attachments/assets/c7300ced-3496-4604-ad5d-22cd60f73276" /> 
 
-A self-hosted personal finance dashboard that connects to YNAB and uses Claude AI for financial advice, spending summaries, and debt strategies.
+A self-hosted personal finance dashboard that connects to [YNAB](https://www.ynab.com/) and uses [Claude](https://code.claude.com/docs/en/cli-reference) for financial advice, spending summaries, and debt strategies.
 
 <img width="1666" height="1102" alt="image" src="https://github.com/user-attachments/assets/451f341a-9ba4-4658-be3a-361dc3ba06d4" />
 
