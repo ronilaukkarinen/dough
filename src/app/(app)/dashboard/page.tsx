@@ -387,7 +387,7 @@ export default function DashboardPage() {
 
       <DailyAllowance
         dailyBudget={dailyBudget}
-        availableBalance={Math.round(availableBalance)}
+        availableBalance={availableBalance}
         upcomingBills={bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0)}
         accountCount={data.summary.accounts.filter((a) => a.type === "checking" || a.type === "savings").length}
         billCount={bills.filter((b) => b.is_active && !b.is_paid).length}
