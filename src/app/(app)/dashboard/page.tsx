@@ -310,7 +310,7 @@ export default function DashboardPage() {
   const recentTransactions = [...data.transactions]
     .filter((tx) => !isTransfer(tx.payee, tx.category))
     .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 7)
+    .slice(0, 5)
     .map((tx) => ({
       id: tx.id,
       date: tx.date,
