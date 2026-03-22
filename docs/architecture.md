@@ -73,7 +73,7 @@ data/                     # SQLite database (gitignored)
 - `investment_overrides` — monthly contribution and expected return overrides for YNAB investment accounts
 - `subscriptions` — recurring subscriptions with brand styling
 - `account_notes` — per-account notes for AI context
-- `savings_goals` — savings targets with priorities and progress
+- `savings_goals` — savings targets with progress tracking
 - `payee_matches` — YNAB payee patterns for matching with optional amount range
 - `monthly_matches` — matched transactions per source per month
 - `chat_messages` — shared chat history with optional image thumbnails

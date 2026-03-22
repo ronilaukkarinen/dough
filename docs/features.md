@@ -91,7 +91,6 @@
 
 ### Savings goals
 
-- Must-have and want-to-have priorities
 - Target amount, saved amount, and progress bar
 - Optional target date with monthly savings calculation
 - Optional YNAB category linking
