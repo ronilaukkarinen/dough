@@ -113,10 +113,14 @@ export async function POST(request: Request) {
             status: paidBillIds.has(b.id) ? "paid" : b.due_day < now.getDate() ? "overdue" : "upcoming",
           }));
 
-          // Load subscriptions
+          // Load subscriptions with paid status from payee matching
           const subscriptions = chatDb
-            .prepare("SELECT name, amount, due_day FROM subscriptions WHERE is_active = 1 ORDER BY due_day ASC")
-            .all() as { name: string; amount: number; due_day: number }[];
+            .prepare("SELECT id, name, amount, due_day FROM subscriptions WHERE is_active = 1 ORDER BY due_day ASC")
+            .all() as { id: number; name: string; amount: number; due_day: number }[];
+          const subMatches = chatDb
+            .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'subscription' AND month = ?")
+            .all(chatMonth) as { source_id: number }[];
+          const paidSubIds = new Set(subMatches.map((m) => m.source_id));
 
           // Merge subscriptions into bills for calculations
           for (const sub of subscriptions) {
@@ -124,7 +128,7 @@ export async function POST(request: Request) {
               name: sub.name,
               amount: sub.amount,
               dueDay: sub.due_day,
-              status: sub.due_day < now.getDate() ? "overdue" : "upcoming",
+              status: paidSubIds.has(sub.id) ? "paid" : sub.due_day < now.getDate() ? "overdue" : "upcoming",
             });
           }
 

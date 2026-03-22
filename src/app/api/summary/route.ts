@@ -133,7 +133,13 @@ export async function GET(request: Request) {
     const billMatches = db
       .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'bill' AND month = ?")
       .all(billMonth) as { source_id: number }[];
-    const matchedBillIds = new Set(billMatches.map((m) => m.source_id));
+    const subMatchesSummary = db
+      .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'subscription' AND month = ?")
+      .all(billMonth) as { source_id: number }[];
+    const matchedBillIds = new Set([
+      ...billMatches.map((m) => m.source_id),
+      ...subMatchesSummary.map((m) => m.source_id + 10000),
+    ]);
 
     const upcomingIncome = incomeSources
       .filter((i) => i.expected_day > now.getDate())

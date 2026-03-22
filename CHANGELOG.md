@@ -2,6 +2,8 @@
 
 * Rewrite daily budget as segment-based cash flow between income events, no salary assumption
 * Fix daily budget using start-of-day balance so overspend carries forward to future days
+* Fix AI seeing paid subscriptions as overdue by checking subscription payee matches
+* Add budget calculation breakdown tooltip to daily budget hero card
 
 ### 1.4.0: 2026-03-22
 
