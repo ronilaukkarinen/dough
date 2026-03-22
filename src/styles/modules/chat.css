@@ -324,7 +324,7 @@
 
 .chat-textarea {
   flex: 1;
-  min-height: 2.75rem;
+  min-height: 5.875rem;
   max-height: 120px;
   padding: 0.625rem 0.75rem;
   font-size: 0.875rem;
@@ -336,6 +336,12 @@
   background: transparent;
   color: var(--foreground);
   font-family: inherit;
+}
+
+@media (min-width: 768px) {
+  .chat-textarea {
+    min-height: 2.75rem;
+  }
 }
 
 .dark .chat-textarea {
