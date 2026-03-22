@@ -86,9 +86,14 @@ All endpoints require authentication via `dough-session` cookie (except `/api/au
 - `GET /api/chat/unread` — get unread count for current user
 - `POST /api/chat/unread` — mark all as read
 
+### Account notes
+
+- `GET /api/account-notes` — get notes for all YNAB accounts
+- `PUT /api/account-notes` — save or remove a note for an account
+
 ### Receipt
 
-- `POST /api/receipt` — parse receipt image via Claude vision, returns amount, payee, date
+- `POST /api/receipt` — parse receipt/statement image via Claude vision, returns array of transactions with amount, payee, date, account
 - `POST /api/receipt/resolve-account` — resolve YNAB account from memo text (name-based routing)
 
 ### Payee matching

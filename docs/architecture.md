@@ -71,7 +71,10 @@ data/                     # SQLite database (gitignored)
 - `income_amount_history` — income amount tracking per month
 - `debt_overrides` — manual interest rate and payment overrides
 - `investment_overrides` — monthly contribution and expected return overrides for YNAB investment accounts
-- `payee_matches` — YNAB payee patterns for matching
+- `subscriptions` — recurring subscriptions with brand styling
+- `account_notes` — per-account notes for AI context
+- `savings_goals` — savings targets with priorities and progress
+- `payee_matches` — YNAB payee patterns for matching with optional amount range
 - `monthly_matches` — matched transactions per source per month
 - `chat_messages` — shared chat history with optional image thumbnails
 - `chat_last_seen` — per-user read tracking
