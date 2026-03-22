@@ -11,7 +11,7 @@ export function relativeDate(dateStr: string, locale: string = "en"): string {
   const loc = localeMap[locale] || enUS;
 
   if (isToday(date)) {
-    return locale === "fi" ? "tanaan" : "today";
+    return locale === "fi" ? "tänään" : "today";
   }
   if (isYesterday(date)) {
     return locale === "fi" ? "eilen" : "yesterday";
