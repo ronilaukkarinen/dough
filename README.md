@@ -7,6 +7,8 @@
 
 A self-hosted personal finance dashboard that connects to YNAB and uses Claude AI for financial advice, spending summaries, and debt strategies.
 
+<img width="1666" height="1102" alt="image" src="https://github.com/user-attachments/assets/451f341a-9ba4-4658-be3a-361dc3ba06d4" />
+
 ## Why Dough
 
 YNAB is great for detailed per-account envelope budgeting, but it's an individual tool. When you share finances with a partner, you need a shared view that answers simple questions: "how much can we spend today?", "are we on track this month?", "can we afford eating out tonight?"
