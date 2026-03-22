@@ -3,7 +3,7 @@
 ![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=next.js&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
 ![Claude](https://img.shields.io/badge/Claude_AI-cc785c?style=for-the-badge&logo=anthropic&logoColor=white)
-![YNAB](https://img.shields.io/badge/YNAB-85c3e9?style=for-the-badge&logoColor=white)
+<img width="80" height="28" alt="YNAB" src="https://github.com/user-attachments/assets/c7300ced-3496-4604-ad5d-22cd60f73276" /> 
 
 A self-hosted personal finance dashboard that connects to YNAB and uses Claude AI for financial advice, spending summaries, and debt strategies.
 
@@ -13,13 +13,13 @@ YNAB is great for detailed per-account envelope budgeting, but it's an individua
 
 Dough was built to solve this:
 
-- **Accountless by design** — no separate checking, savings, or credit card views. One household, one balance, one daily budget. Your partner doesn't need to understand account structures or envelope budgeting.
-- **Household-first** — all data is shared. Both users see the same dashboard, same AI advisor, same bills and income. No "my budget" vs "your budget."
-- **AI that knows your situation** — Claude has full context of your balance, bills, debts, income dates, and spending patterns. Ask "can I buy lunch today?" and get a real answer based on cash flow simulation, not a generic rule.
-- **Cash flow simulation** — the daily budget accounts for when income arrives and when bills are due. It knows your tax payment is due the day before salary and doesn't panic about it.
-- **Receipt scanning** — snap a photo of a receipt in the chat, the AI reads it and adds the expense to YNAB automatically.
-- **Works alongside YNAB** — Dough doesn't replace YNAB's envelope budgeting or bank connections. It's an intelligence layer on top. YNAB handles the accounting, Dough handles the "how are we doing?" question.
-- **Self-hosted, private** — your financial data stays on your machine. No cloud services, no third-party access. SQLite database you can back up with a single file copy.
+- **Accountless by design** - no separate checking, savings, or credit card views. One household, one balance, one daily budget. Your partner doesn't need to understand account structures or envelope budgeting.
+- **Household-first** - all data is shared. Both users see the same dashboard, same AI advisor, same bills and income. No "my budget" vs "your budget."
+- **AI that knows your situation** - Claude has full context of your balance, bills, debts, income dates, and spending patterns. Ask "can I buy lunch today?" and get a real answer based on cash flow simulation, not a generic rule.
+- **Cash flow simulation** - the daily budget accounts for when income arrives and when bills are due. It knows your tax payment is due the day before salary and doesn't panic about it.
+- **Receipt scanning** - snap a photo of a receipt in the chat, the AI reads it and adds the expense to YNAB automatically.
+- **Works alongside YNAB** - Dough doesn't replace YNAB's envelope budgeting or bank connections. It's an intelligence layer on top. YNAB handles the accounting, Dough handles the "how are we doing?" question.
+- **Self-hosted, private** - your financial data stays on your machine. No cloud services, no third-party access. SQLite database you can back up with a single file copy.
 
 ## Features
 
