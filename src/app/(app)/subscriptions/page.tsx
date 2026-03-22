@@ -56,8 +56,8 @@ function getBrandConfig(name: string): { color: string; logo: string; svg?: stri
 function BrandIcon({ svg, logo }: { svg?: string; logo: string }) {
   if (svg === "netflix") {
     return (
-      <svg viewBox="0 0 111 300" width="20" height="20" fill="#fff">
-        <path d="M44.3 0L74.8 84.3L105 0H111V300H105C104 268 100 235 96.6 203L68.4 126L44.3 197C40.3 230 38 264 36.7 300H30.7V0H44.3Z"/>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff">
+        <path d="m5.398 0 8.348 23.602c2.346.059 4.856.398 4.856.398L10.113 0H5.398zm8.489 0v9.172l4.715 13.33V0h-4.715zM5.398 1.5V24c1.873-.225 2.81-.312 4.715-.398V14.83L5.398 1.5z"/>
       </svg>
     );
   }
