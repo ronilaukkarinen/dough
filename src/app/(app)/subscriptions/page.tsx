@@ -259,7 +259,11 @@ export default function SubscriptionsPage() {
                   <BrandIcon svg={getBrandConfig(sub.name).svg} logo={sub.brand_logo || sub.name.charAt(0)} />
                 </div>
                 <div className="subscription-card-info">
-                  <p className={`subscription-card-name ${!sub.is_active ? "is-inactive" : ""}`}>{sub.name}</p>
+                  <div className="list-item-name-row">
+                    <p className={`subscription-card-name ${!sub.is_active ? "is-inactive" : ""}`}>{sub.name}</p>
+                    {sub.is_paid && <Badge className="badge-matched"><Check className="icon-xs" />{locale === "fi" ? "Maksettu" : "Paid"}</Badge>}
+                    {sub.is_overdue && <Badge variant="destructive">{locale === "fi" ? "Myöhässä" : "Overdue"}</Badge>}
+                  </div>
                   <p className="subscription-card-meta">
                     {locale === "fi" ? "Veloitus" : "Billing"} {sub.due_day}. {locale === "fi" ? "päivä" : ""}
                     {sub.patterns.length > 0 && <span className="list-item-patterns"> – {sub.patterns.join(", ")}</span>}
@@ -267,10 +271,6 @@ export default function SubscriptionsPage() {
                 </div>
                 <div className="subscription-card-right">
                   <p className="subscription-card-amount">{fmt(sub.amount)} €</p>
-                  <div className="subscription-card-badges">
-                    {sub.is_paid && <Badge className="badge-matched"><Check className="icon-xs" />{locale === "fi" ? "Maksettu" : "Paid"}</Badge>}
-                    {sub.is_overdue && <Badge variant="destructive"><AlertCircle className="icon-xs" />{locale === "fi" ? "Myöhässä" : "Overdue"}</Badge>}
-                  </div>
                 </div>
               </div>
               <span className="subscription-toggle" onClick={(e) => e.stopPropagation()}>
