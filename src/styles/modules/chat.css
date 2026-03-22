@@ -46,6 +46,8 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 /* Load older button */
@@ -86,6 +88,8 @@
 .chat-message {
   display: flex;
   gap: 0.75rem;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .chat-message[data-type="self"] {
@@ -136,6 +140,8 @@
   font-size: 0.875rem;
   line-height: 1.625;
   position: relative;
+  overflow: hidden;
+  min-width: 0;
 }
 
 /* My own messages — solid primary */
@@ -233,6 +239,9 @@
 
 .chat-message-text {
   white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
 }
 
 /* Override for assistant messages rendered with ReactMarkdown */
@@ -251,7 +260,6 @@
 .chat-message-text strong {
   font-weight: 700;
   color: var(--foreground);
-  white-space: nowrap;
 }
 
 .chat-message-bubble[data-type="assistant"] .chat-message-text strong {
@@ -260,17 +268,14 @@
 
 .chat-amount-positive {
   color: var(--positive);
-  white-space: nowrap;
 }
 
 .chat-amount-negative {
   color: var(--negative);
-  white-space: nowrap;
 }
 
 .chat-amount-neutral {
   color: var(--chart-3);
-  white-space: nowrap;
 }
 
 .chat-message-text em {
