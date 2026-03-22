@@ -300,7 +300,7 @@ export default function DashboardPage() {
     .slice(0, 6)
     .map((c, i) => ({
       name: c.name,
-      amount: Math.round(Math.abs(c.activity)),
+      amount: Math.round(Math.abs(c.activity) * 100) / 100,
       color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
     }));
 
@@ -331,16 +331,16 @@ export default function DashboardPage() {
       const [y, m] = s.month.split("-");
       return {
         month: new Date(parseInt(y), parseInt(m) - 1, 1).toLocaleDateString(locale === "fi" ? "fi" : "en", { month: "short" }),
-        income: Math.round(s.income),
-        expenses: Math.round(s.expenses),
-        net: Math.round(s.income - s.expenses),
+        income: Math.round(s.income * 100) / 100,
+        expenses: Math.round(s.expenses * 100) / 100,
+        net: Math.round((s.income - s.expenses) * 100) / 100,
       };
     }),
     {
       month: now.toLocaleDateString(locale === "fi" ? "fi" : "en", { month: "short" }),
-      income: Math.round(combinedIncome),
-      expenses: Math.round(monthActivity),
-      net: Math.round(combinedIncome - monthActivity),
+      income: Math.round(combinedIncome * 100) / 100,
+      expenses: Math.round(monthActivity * 100) / 100,
+      net: Math.round((combinedIncome - monthActivity) * 100) / 100,
     },
   ];
 
@@ -415,7 +415,7 @@ export default function DashboardPage() {
         todaySpentAll={todaySpentAll}
         todayRemaining={todayRemaining}
         monthIncome={combinedIncome}
-        monthExpenses={Math.round(realSpendingTotal + unpaidBillsAmount + (dailyDiscretionary * daysLeft) + investmentMonthly + debtMonthly)}
+        monthExpenses={Math.round((realSpendingTotal + unpaidBillsAmount + (dailyDiscretionary * daysLeft) + investmentMonthly + debtMonthly) * 100) / 100}
         trendPercent={trendPercent}
       />
 
