@@ -1,5 +1,7 @@
 ### 1.3.0: 2026-03-21
 
+* Support multiple transactions from single receipt/image in both chat and expense modal
+* Match mobile chat textarea height to stacked button height
 * Add official Netflix and Spotify SVG brand icons to subscriptions
 * Set autoComplete off on all inputs by default to prevent password manager popups
 * Add amount range (min/max) to payee matching for distinguishing same-payee different-amount bills/incomes

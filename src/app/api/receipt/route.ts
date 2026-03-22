@@ -16,13 +16,19 @@ export async function POST(request: Request) {
 
     console.info("[receipt] Parsing receipt image for user", user.id);
 
-    const prompt = `Extract from this receipt or invoice image:
-- amount: the total amount paid (number only, no currency symbol)
-- payee: the store or company name
-- date: the date in YYYY-MM-DD format
+    const prompt = `Extract ALL transactions/expenses from this receipt, invoice, or bank statement image.
+For each transaction, extract:
+- amount: the amount (number only, no currency symbol)
+- payee: the store, company, or recipient name
+- date: the date in YYYY-MM-DD format (if visible)
 
-Reply with ONLY valid JSON, nothing else: {"amount":"...","payee":"...","date":"YYYY-MM-DD"}
-If you cannot read the receipt clearly, still try your best guess.`;
+If there is only ONE transaction, return a single-element array.
+If there are MULTIPLE transactions (e.g. bank statement, multi-item list), return ALL of them.
+
+Reply with ONLY a valid JSON array, nothing else:
+[{"amount":"...","payee":"...","date":"YYYY-MM-DD"}]
+
+If you cannot read clearly, still try your best guess.`;
 
     const result = await queryClaudeWithImage(prompt, image, media_type);
 
@@ -31,27 +37,37 @@ If you cannot read the receipt clearly, still try your best guess.`;
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
 
-    // Extract JSON from response (Claude might wrap it in markdown code block)
-    let parsed;
+    // Extract JSON array or object from response
+    let transactions: { amount: string; payee: string; date?: string }[] = [];
     try {
-      const jsonMatch = result.text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        parsed = JSON.parse(jsonMatch[0]);
+      // Try array first
+      const arrayMatch = result.text.match(/\[[\s\S]*\]/);
+      if (arrayMatch) {
+        transactions = JSON.parse(arrayMatch[0]);
+      } else {
+        // Fallback to single object
+        const objMatch = result.text.match(/\{[\s\S]*\}/);
+        if (objMatch) {
+          transactions = [JSON.parse(objMatch[0])];
+        }
       }
     } catch {
       console.warn("[receipt] Failed to parse JSON from:", result.text);
     }
 
-    if (!parsed) {
+    if (transactions.length === 0) {
       console.warn("[receipt] Could not parse receipt, raw:", result.text);
       return NextResponse.json({ error: "Could not read receipt", raw: result.text }, { status: 422 });
     }
 
-    console.info("[receipt] Parsed:", parsed.payee, parsed.amount, parsed.date);
+    console.info("[receipt] Parsed", transactions.length, "transactions");
+
+    // Return both single-item backwards-compatible fields and full array
     return NextResponse.json({
-      amount: parsed.amount,
-      payee: parsed.payee,
-      date: parsed.date,
+      amount: transactions[0].amount,
+      payee: transactions[0].payee,
+      date: transactions[0].date,
+      transactions,
     });
   } catch (error) {
     console.error("[receipt] Error:", error);

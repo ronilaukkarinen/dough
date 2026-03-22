@@ -242,49 +242,79 @@ export async function POST(request: Request) {
       };
     }
 
-    // Auto-add expense if image attached, BEFORE calling AI so it knows
+    // Auto-add expense(s) if image attached, BEFORE calling AI so it knows
     let expenseContext = "";
     if (image && image_media_type && add_expense && user) {
       try {
-        console.info("[chat] Attempting to auto-add expense from image");
+        console.info("[chat] Attempting to auto-add expenses from image");
         const { queryClaudeWithImage } = await import("@/lib/ai/claude-image");
         const parseResult = await queryClaudeWithImage(
-          'Extract from this receipt: amount (number only), payee/store name. Reply with ONLY JSON: {"amount":"...","payee":"..."}',
+          `Extract ALL transactions/expenses from this image. For each: amount (number only), payee/store name.
+If single receipt, return one item. If bank statement or multiple items, return ALL.
+Reply with ONLY a valid JSON array: [{"amount":"...","payee":"..."}]`,
           image,
           image_media_type,
           30000
         );
-        const jsonMatch = parseResult.text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          if (parsed.amount && parsed.payee) {
-            const linkedAcc = getDb()
-              .prepare("SELECT ynab_account_id FROM user_linked_accounts WHERE user_id = ? LIMIT 1")
-              .get(user.id) as { ynab_account_id: string } | undefined;
-            if (linkedAcc) {
-              const txRes = await fetch(new URL("/api/ynab/transaction", request.url).toString(), {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  cookie: request.headers.get("cookie") || "",
-                },
-                body: JSON.stringify({
-                  account_id: linkedAcc.ynab_account_id,
-                  amount: String(parsed.amount).replace(",", "."),
-                  payee_name: parsed.payee,
-                }),
-              });
-              if (txRes.ok) {
-                expenseContext = `SYSTEM NOTE: You successfully added ${parsed.amount} euros from ${parsed.payee} to YNAB. Confirm this naturally in your response (e.g. "I added X € from Y to your expenses"). Do NOT say you cannot add expenses.`;
-                console.info("[chat] Auto-added expense:", parsed.payee, parsed.amount);
-                // Trigger background sync so the expense shows in the UI
-                fetch(new URL("/api/ynab/sync", request.url).toString(), {
+
+        let transactions: { amount: string; payee: string }[] = [];
+        try {
+          const arrayMatch = parseResult.text.match(/\[[\s\S]*\]/);
+          if (arrayMatch) {
+            transactions = JSON.parse(arrayMatch[0]);
+          } else {
+            const objMatch = parseResult.text.match(/\{[\s\S]*\}/);
+            if (objMatch) transactions = [JSON.parse(objMatch[0])];
+          }
+        } catch {
+          console.warn("[chat] Failed to parse receipt JSON:", parseResult.text);
+        }
+
+        if (transactions.length > 0) {
+          const linkedAcc = getDb()
+            .prepare("SELECT ynab_account_id FROM user_linked_accounts WHERE user_id = ? LIMIT 1")
+            .get(user.id) as { ynab_account_id: string } | undefined;
+
+          if (linkedAcc) {
+            const added: string[] = [];
+            const failed: string[] = [];
+
+            for (const tx of transactions) {
+              if (!tx.amount || !tx.payee) continue;
+              try {
+                const txRes = await fetch(new URL("/api/ynab/transaction", request.url).toString(), {
                   method: "POST",
-                  headers: { cookie: request.headers.get("cookie") || "" },
-                }).catch((err) => console.warn("[chat] Background sync after expense failed:", err));
-              } else {
-                expenseContext = `SYSTEM NOTE: Attempted to add ${parsed.amount} euros from ${parsed.payee} but the YNAB API returned an error. Let the user know it failed.`;
+                  headers: {
+                    "Content-Type": "application/json",
+                    cookie: request.headers.get("cookie") || "",
+                  },
+                  body: JSON.stringify({
+                    account_id: linkedAcc.ynab_account_id,
+                    amount: String(tx.amount).replace(",", "."),
+                    payee_name: tx.payee,
+                  }),
+                });
+                if (txRes.ok) {
+                  added.push(`${tx.amount} euros from ${tx.payee}`);
+                  console.info("[chat] Auto-added expense:", tx.payee, tx.amount);
+                } else {
+                  failed.push(`${tx.payee} (${tx.amount})`);
+                }
+              } catch {
+                failed.push(`${tx.payee} (${tx.amount})`);
               }
+            }
+
+            if (added.length > 0) {
+              expenseContext = `SYSTEM NOTE: You successfully added ${added.length} expense(s) to YNAB: ${added.join("; ")}. Confirm this naturally in your response, listing what was added. Do NOT say you cannot add expenses.`;
+              // Trigger background sync
+              fetch(new URL("/api/ynab/sync", request.url).toString(), {
+                method: "POST",
+                headers: { cookie: request.headers.get("cookie") || "" },
+              }).catch((err) => console.warn("[chat] Background sync after expense failed:", err));
+            }
+            if (failed.length > 0) {
+              expenseContext += ` Failed to add: ${failed.join("; ")}.`;
             }
           }
         }
