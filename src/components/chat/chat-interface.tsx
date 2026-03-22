@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, Copy, Check, Paperclip, X } from "lucide-react";
+import { Send, Bot, User, Copy, Check, Paperclip, X, ChevronUp } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import { useEvent } from "@/lib/use-events";
 import ReactMarkdown from "react-markdown";
@@ -31,6 +31,8 @@ export function ChatInterface() {
   const [chatImage, setChatImage] = useState<string | null>(null);
   const [chatImagePreview, setChatImagePreview] = useState<string | null>(null);
   const [chatImageType, setChatImageType] = useState("");
+  const [hasOlder, setHasOlder] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const chatFileRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,7 +59,7 @@ export function ChatInterface() {
       .then((r) => r.json())
       .then((data) => {
         if (data.messages?.length > 0) {
-          console.info("[chat] Loaded", data.messages.length, "messages");
+          console.info("[chat] Loaded", data.messages.length, "messages, hasOlder:", data.hasOlder);
           const msgs = data.messages.map((m: { id: number; role: string; content: string; sender?: string; image_thumb?: string }) => ({
             id: m.id.toString(),
             role: m.role as "user" | "assistant",
@@ -66,6 +68,7 @@ export function ChatInterface() {
             image_thumb: m.image_thumb || undefined,
           }));
           setMessages(msgs);
+          setHasOlder(!!data.hasOlder);
           messageCountRef.current = msgs.length;
         } else {
           const greeting = t.chat.greeting;
@@ -139,6 +142,36 @@ export function ChatInterface() {
       }).catch(() => {});
     }, 4000);
   }, []);
+
+  const loadOlder = useCallback(async () => {
+    if (loadingOlder || !hasOlder || messages.length === 0) return;
+    const oldestId = messages[0]?.id;
+    if (!oldestId || oldestId === "greeting") return;
+
+    setLoadingOlder(true);
+    try {
+      const res = await fetch(`/api/chat/messages?before=${oldestId}`);
+      const data = await res.json();
+      if (data.messages?.length > 0) {
+        const older = data.messages.map((m: { id: number; role: string; content: string; sender?: string; image_thumb?: string }) => ({
+          id: m.id.toString(),
+          role: m.role as "user" | "assistant",
+          content: m.content,
+          sender: m.sender,
+          image_thumb: m.image_thumb || undefined,
+        }));
+        setMessages((prev) => [...older, ...prev]);
+        setHasOlder(!!data.hasOlder);
+        console.info("[chat] Loaded", older.length, "older messages, hasOlder:", data.hasOlder);
+      } else {
+        setHasOlder(false);
+      }
+    } catch (err) {
+      console.error("[chat] Failed to load older messages:", err);
+    } finally {
+      setLoadingOlder(false);
+    }
+  }, [loadingOlder, hasOlder, messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,6 +254,14 @@ export function ChatInterface() {
     <div className="chat-container">
       <ScrollArea className="chat-messages" ref={scrollRef}>
         <div className="chat-messages-list">
+          {hasOlder && (
+            <div className="chat-load-older">
+              <button type="button" className="chat-load-older-btn" onClick={loadOlder} disabled={loadingOlder}>
+                <ChevronUp />
+                {loadingOlder ? "..." : (t.chat.loadOlder || "Load older")}
+              </button>
+            </div>
+          )}
           {messages.map((message) => {
             const isSelf = message.role === "user" && message.sender === currentUser;
             const isOtherUser = message.role === "user" && message.sender !== currentUser;

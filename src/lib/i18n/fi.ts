@@ -86,6 +86,7 @@ export const fi = {
     thinking: "Mietitään...",
     errorProcess: "En pystynyt käsittelemään pyyntöä. Yritä uudelleen.",
     errorGeneral: "Jokin meni pieleen. Yritä uudelleen.",
+    loadOlder: "Lataa vanhempia",
   },
   transactions: {
     title: "Tilitapahtumat",

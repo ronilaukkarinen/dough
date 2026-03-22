@@ -1,3 +1,10 @@
+### 1.5.1: 2026-03-23
+
+* Fix mobile Safari chat zoom by setting textarea font-size to 16px
+* Fix horizontal scroll in chat by adding overflow-x hidden
+* Add chat pagination with load older button, show only current day by default
+* Show most recent day's messages when no messages exist for today
+
 ### 1.5.0: 2026-03-22
 
 * Persist YNAB transactions, accounts, month budget and categories to local SQLite on sync

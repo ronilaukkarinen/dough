@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { eventBus } from "@/lib/event-bus";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const user = await getSession();
     if (!user) {
@@ -11,14 +11,57 @@ export async function GET() {
     }
 
     const db = getDb();
-    // Shared chat — show all messages from all household members
-    const messages = db
-      .prepare("SELECT cm.id, cm.role, cm.content, cm.created_at, cm.image_thumb, u.display_name as sender FROM chat_messages cm LEFT JOIN users u ON cm.user_id = u.id ORDER BY cm.created_at ASC")
-      .all() as { id: number; role: string; content: string; created_at: string; image_thumb: string | null; sender: string }[];
+    const url = new URL(request.url);
+    const before = url.searchParams.get("before");
 
-    console.debug("[chat/messages] Loaded", messages.length, "messages for user", user.id);
+    if (before) {
+      // Load one day's worth of messages before the given ID
+      const ref = db.prepare("SELECT created_at FROM chat_messages WHERE id = ?").get(parseInt(before, 10)) as { created_at: string } | undefined;
+      if (!ref) return NextResponse.json({ messages: [], hasOlder: false });
 
-    return NextResponse.json({ messages });
+      // Get the date of the reference message, load all messages from that day
+      const refDate = ref.created_at.slice(0, 10);
+      const messages = db
+        .prepare("SELECT cm.id, cm.role, cm.content, cm.created_at, cm.image_thumb, u.display_name as sender FROM chat_messages cm LEFT JOIN users u ON cm.user_id = u.id WHERE cm.created_at < ? ORDER BY cm.created_at ASC")
+        .all(refDate + " 00:00:00") as { id: number; role: string; content: string; created_at: string; image_thumb: string | null; sender: string }[];
+
+      // Find the natural day boundary — get the latest day in this batch
+      const days = [...new Set(messages.map((m) => m.created_at.slice(0, 10)))].sort();
+      const latestDay = days[days.length - 1];
+      const dayMessages = latestDay ? messages.filter((m) => m.created_at.slice(0, 10) === latestDay) : [];
+      const hasOlder = messages.length > dayMessages.length;
+
+      console.debug("[chat/messages] Loaded", dayMessages.length, "older messages for day", latestDay, "hasOlder:", hasOlder);
+      return NextResponse.json({ messages: dayMessages, hasOlder });
+    }
+
+    // Default: load today's messages. If none today, load the most recent day's messages.
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+    let messages = db
+      .prepare("SELECT cm.id, cm.role, cm.content, cm.created_at, cm.image_thumb, u.display_name as sender FROM chat_messages cm LEFT JOIN users u ON cm.user_id = u.id WHERE cm.created_at >= ? ORDER BY cm.created_at ASC")
+      .all(todayStr + " 00:00:00") as { id: number; role: string; content: string; created_at: string; image_thumb: string | null; sender: string }[];
+
+    if (messages.length === 0) {
+      // No messages today — load the most recent day that has messages
+      const lastMsg = db.prepare("SELECT created_at FROM chat_messages ORDER BY created_at DESC LIMIT 1").get() as { created_at: string } | undefined;
+      if (lastMsg) {
+        const lastDay = lastMsg.created_at.slice(0, 10);
+        messages = db
+          .prepare("SELECT cm.id, cm.role, cm.content, cm.created_at, cm.image_thumb, u.display_name as sender FROM chat_messages cm LEFT JOIN users u ON cm.user_id = u.id WHERE cm.created_at >= ? AND cm.created_at < ? ORDER BY cm.created_at ASC")
+          .all(lastDay + " 00:00:00", lastDay + " 23:59:59") as { id: number; role: string; content: string; created_at: string; image_thumb: string | null; sender: string }[];
+      }
+    }
+
+    // Check if there are older messages
+    const oldestLoaded = messages.length > 0 ? messages[0].id : null;
+    const hasOlder = oldestLoaded
+      ? !!(db.prepare("SELECT id FROM chat_messages WHERE id < ? LIMIT 1").get(oldestLoaded))
+      : false;
+
+    console.debug("[chat/messages] Loaded", messages.length, "messages, hasOlder:", hasOlder);
+    return NextResponse.json({ messages, hasOlder });
   } catch (error) {
     console.error("[chat/messages] GET error:", error);
     return NextResponse.json({ messages: [] }, { status: 500 });

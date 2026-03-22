@@ -86,6 +86,7 @@ export const en = {
     thinking: "Thinking...",
     errorProcess: "Sorry, I couldn't process that. Try again.",
     errorGeneral: "Sorry, something went wrong. Please try again.",
+    loadOlder: "Load older",
   },
   transactions: {
     title: "Transactions",
