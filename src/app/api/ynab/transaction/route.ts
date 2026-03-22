@@ -65,16 +65,22 @@ export async function POST(request: Request) {
     let resolvedCategoryId = category_id || null;
     if (!resolvedCategoryId) {
       try {
-        const { getBudgetSummary } = await import("@/lib/ynab/client");
-        const summary = await getBudgetSummary(budgetId, token);
-        const categoryNames = summary.categories
-          .filter((c: any) => c.name !== "Inflow: Ready to Assign")
-          .map((c: any) => c.name);
+        const { getDb } = await import("@/lib/db");
+        const db = getDb();
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+        const cats = db.prepare("SELECT name FROM ynab_categories WHERE month = ? AND name != 'Inflow: Ready to Assign'").all(currentMonth) as { name: string }[];
+        const categoryNames = cats.map((c) => c.name);
 
-        const aiCategory = await aiCategorize(payee_name, categoryNames);
-        if (aiCategory) {
-          const found = summary.categories.find((c: any) => c.name === aiCategory);
-          if (found) resolvedCategoryId = found.id;
+        if (categoryNames.length > 0) {
+          const aiCategory = await aiCategorize(payee_name, categoryNames);
+          if (aiCategory) {
+            const found = db.prepare("SELECT ynab_id FROM ynab_categories WHERE month = ? AND name = ?").get(currentMonth, aiCategory) as { ynab_id: string } | undefined;
+            if (found?.ynab_id) {
+              resolvedCategoryId = found.ynab_id;
+              console.info("[ynab/transaction] Resolved category from SQLite:", aiCategory, found.ynab_id);
+            }
+          }
         }
       } catch (err) {
         console.warn("[ynab/transaction] Category lookup failed:", err);

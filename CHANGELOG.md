@@ -1,3 +1,10 @@
+### 1.5.0: 2026-03-22
+
+* Persist YNAB transactions, accounts, month budget and categories to local SQLite on sync
+* Serve all YNAB data from local database instead of API calls, minimizing rate limit usage
+* Store YNAB category IDs locally for offline AI auto-categorization
+* Only the sync button and budget list hit the YNAB API, everything else reads from cache
+
 ### 1.4.1: 2026-03-22
 
 * Rewrite daily budget as segment-based cash flow between income events, no salary assumption

@@ -1,25 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getYnabToken, getYnabBudgetId } from "@/lib/household";
 
 export async function GET() {
   try {
     const user = await getSession();
     if (!user) return NextResponse.json({ categories: [] }, { status: 401 });
 
-    const token = getYnabToken();
-    const budgetId = getYnabBudgetId();
-    if (!token || !budgetId) return NextResponse.json({ categories: [] });
+    const { getDb } = await import("@/lib/db");
+    const db = getDb();
 
-    const { getBudgetSummary } = await import("@/lib/ynab/client");
-    const summary = await getBudgetSummary(budgetId, token);
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
-    const categories = summary.categories
-      .filter((c: any) => c.name !== "Inflow: Ready to Assign")
-      .map((c: any) => ({ id: c.id, name: c.name, group: c.group }));
+    const categories = db.prepare(
+      "SELECT name, group_name as 'group' FROM ynab_categories WHERE month = ? AND name != 'Inflow: Ready to Assign' ORDER BY name"
+    ).all(currentMonth) as { name: string; group: string }[];
 
-    console.debug("[ynab/categories] Loaded", categories.length, "categories");
+    console.debug("[ynab/categories] Serving", categories.length, "categories from SQLite");
     return NextResponse.json({ categories });
   } catch (error) {
     console.error("[ynab/categories] Error:", error);

@@ -9,16 +9,52 @@ export async function GET() {
     if (!user) return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
 
     const { getDb } = await import("@/lib/db");
+    const { getHouseholdSetting } = await import("@/lib/household");
     const db = getDb();
-    const cached = db.prepare("SELECT data, synced_at FROM ynab_cache WHERE id = 1").get() as { data: string; synced_at: string } | undefined;
 
-    if (!cached) {
-      console.debug("[api/ynab/sync] No cached data");
-      return NextResponse.json({ success: false, error: "No cached data. Sync first." });
+    // Read from relational tables
+    const accounts = db.prepare("SELECT id, name, type, balance, cleared_balance as clearedBalance FROM ynab_accounts WHERE closed = 0").all() as { id: string; name: string; type: string; balance: number; clearedBalance: number }[];
+
+    if (accounts.length === 0) {
+      // Fall back to legacy JSON cache if relational tables empty (first run)
+      const cached = db.prepare("SELECT data, synced_at FROM ynab_cache WHERE id = 1").get() as { data: string; synced_at: string } | undefined;
+      if (!cached) {
+        console.debug("[api/ynab/sync] No cached data");
+        return NextResponse.json({ success: false, error: "No cached data. Sync first." });
+      }
+      console.debug("[api/ynab/sync] Serving legacy cache from", cached.synced_at);
+      return NextResponse.json({ success: true, data: JSON.parse(cached.data), cached: true });
     }
 
-    const data = JSON.parse(cached.data);
-    console.debug("[api/ynab/sync] Serving cached data from", cached.synced_at);
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const sinceDate = `${currentMonth}-01`;
+
+    const transactions = db.prepare(
+      "SELECT ynab_id as id, date, amount, payee, category, memo, approved, cleared, account_id FROM transactions WHERE user_id = ? AND date >= ? ORDER BY date DESC"
+    ).all(user.id, sinceDate) as { id: string; date: string; amount: number; payee: string; category: string; memo: string | null; approved: number; cleared: string; account_id: string }[];
+
+    const monthBudgetRow = db.prepare("SELECT income, budgeted, activity, to_be_budgeted as toBeBudgeted FROM ynab_month_budget WHERE month = ?").get(currentMonth) as { income: number; budgeted: number; activity: number; toBeBudgeted: number } | undefined;
+
+    const categories = db.prepare("SELECT name, group_name as 'group', budgeted, activity, balance FROM ynab_categories WHERE month = ?").all(currentMonth) as { name: string; group: string; budgeted: number; activity: number; balance: number }[];
+
+    const totalBalance = accounts.reduce((s, a) => s + a.balance, 0);
+    const syncedAt = getHouseholdSetting("last_ynab_sync") || now.toISOString();
+
+    const data = {
+      summary: { totalBalance, accounts, categories },
+      transactions: transactions.map((t) => ({ ...t, approved: !!t.approved })),
+      monthBudget: {
+        income: monthBudgetRow?.income || 0,
+        budgeted: monthBudgetRow?.budgeted || 0,
+        activity: monthBudgetRow?.activity || 0,
+        toBeBudgeted: monthBudgetRow?.toBeBudgeted || 0,
+        categories,
+      },
+      syncedAt,
+    };
+
+    console.debug("[api/ynab/sync] Serving from SQLite:", accounts.length, "accounts,", transactions.length, "transactions,", categories.length, "categories");
     return NextResponse.json({ success: true, data, cached: true });
   } catch (error) {
     console.error("[api/ynab/sync] Cache GET error:", error);
@@ -169,17 +205,68 @@ export async function POST() {
     const syncedAt = new Date().toISOString();
     const responseData = { summary, transactions, monthBudget, syncedAt };
 
-    // Cache to SQLite for local-first operation
+    // Persist to relational tables for offline-first access
     try {
-      const { getDb: getCacheDb } = await import("@/lib/db");
-      const cacheDb = getCacheDb();
-      cacheDb.prepare(`
+      const { getDb: getPersistDb } = await import("@/lib/db");
+      const pdb = getPersistDb();
+
+      // Upsert accounts
+      const upsertAccount = pdb.prepare(`
+        INSERT INTO ynab_accounts (id, name, type, balance, cleared_balance, on_budget, closed, updated_at)
+        VALUES (?, ?, ?, ?, ?, 1, 0, datetime('now'))
+        ON CONFLICT(id) DO UPDATE SET name=excluded.name, type=excluded.type, balance=excluded.balance, cleared_balance=excluded.cleared_balance, updated_at=datetime('now')
+      `);
+      const accountTx = pdb.transaction(() => {
+        for (const a of summary.accounts) {
+          upsertAccount.run(a.id, a.name, a.type, a.balance, a.clearedBalance);
+        }
+      });
+      accountTx();
+      console.info("[api/ynab/sync] Persisted", summary.accounts.length, "accounts");
+
+      // Upsert transactions
+      const upsertTx = pdb.prepare(`
+        INSERT INTO transactions (user_id, ynab_id, date, amount, payee, category, memo, account_id, approved, cleared)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(user_id, ynab_id) DO UPDATE SET date=excluded.date, amount=excluded.amount, payee=excluded.payee, category=excluded.category, memo=excluded.memo, account_id=excluded.account_id, approved=excluded.approved, cleared=excluded.cleared
+      `);
+      const txBatch = pdb.transaction(() => {
+        for (const t of transactions) {
+          upsertTx.run(user.id, t.id, t.date, t.amount, t.payee, t.category || "", t.memo || "", t.account_id || "", t.approved ? 1 : 0, t.cleared || "cleared");
+        }
+      });
+      txBatch();
+      console.info("[api/ynab/sync] Persisted", transactions.length, "transactions");
+
+      // Upsert month budget + categories
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      pdb.prepare(`
+        INSERT INTO ynab_month_budget (month, income, budgeted, activity, to_be_budgeted, updated_at)
+        VALUES (?, ?, ?, ?, ?, datetime('now'))
+        ON CONFLICT(month) DO UPDATE SET income=excluded.income, budgeted=excluded.budgeted, activity=excluded.activity, to_be_budgeted=excluded.to_be_budgeted, updated_at=datetime('now')
+      `).run(currentMonth, monthBudget.income, monthBudget.budgeted, monthBudget.activity, monthBudget.toBeBudgeted);
+
+      const upsertCat = pdb.prepare(`
+        INSERT INTO ynab_categories (ynab_id, month, name, group_name, budgeted, activity, balance, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        ON CONFLICT(month, name) DO UPDATE SET ynab_id=excluded.ynab_id, group_name=excluded.group_name, budgeted=excluded.budgeted, activity=excluded.activity, balance=excluded.balance, updated_at=datetime('now')
+      `);
+      const catBatch = pdb.transaction(() => {
+        for (const c of monthBudget.categories) {
+          upsertCat.run(c.id || "", currentMonth, c.name, c.group || "", c.budgeted, c.activity, c.balance);
+        }
+      });
+      catBatch();
+      console.info("[api/ynab/sync] Persisted month budget and", monthBudget.categories.length, "categories for", currentMonth);
+
+      // Also keep legacy ynab_cache for backwards compat
+      pdb.prepare(`
         INSERT INTO ynab_cache (id, data, synced_at) VALUES (1, ?, ?)
         ON CONFLICT(id) DO UPDATE SET data = excluded.data, synced_at = excluded.synced_at
       `).run(JSON.stringify(responseData), syncedAt);
-      console.info("[api/ynab/sync] Cached sync data to SQLite");
+      console.info("[api/ynab/sync] All data persisted to SQLite");
     } catch (err) {
-      console.error("[api/ynab/sync] Failed to cache:", err);
+      console.error("[api/ynab/sync] Failed to persist:", err);
     }
 
     console.info("[api/ynab/sync] Sync complete. Accounts:", summary.accounts.length, "Transactions:", transactions.length);

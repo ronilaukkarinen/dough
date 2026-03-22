@@ -237,6 +237,40 @@ function initializeDb(db: Database.Database) {
       synced_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS ynab_accounts (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      balance REAL NOT NULL DEFAULT 0,
+      cleared_balance REAL NOT NULL DEFAULT 0,
+      on_budget INTEGER NOT NULL DEFAULT 1,
+      closed INTEGER NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS ynab_categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ynab_id TEXT DEFAULT '',
+      month TEXT NOT NULL,
+      name TEXT NOT NULL,
+      group_name TEXT DEFAULT '',
+      budgeted REAL NOT NULL DEFAULT 0,
+      activity REAL NOT NULL DEFAULT 0,
+      balance REAL NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_ynab_categories_month_name ON ynab_categories(month, name);
+
+    CREATE TABLE IF NOT EXISTS ynab_month_budget (
+      month TEXT PRIMARY KEY,
+      income REAL NOT NULL DEFAULT 0,
+      budgeted REAL NOT NULL DEFAULT 0,
+      activity REAL NOT NULL DEFAULT 0,
+      to_be_budgeted REAL NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS monthly_snapshots (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       month TEXT UNIQUE NOT NULL,
@@ -254,6 +288,18 @@ function initializeDb(db: Database.Database) {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  // Add account_id column to transactions if missing
+  const txCols = db.prepare("PRAGMA table_info(transactions)").all() as { name: string }[];
+  if (!txCols.some((c) => c.name === "account_id")) {
+    console.info("[db] Adding account_id column to transactions");
+    db.exec("ALTER TABLE transactions ADD COLUMN account_id TEXT DEFAULT ''");
+  }
+  if (!txCols.some((c) => c.name === "approved")) {
+    console.info("[db] Adding approved and cleared columns to transactions");
+    db.exec("ALTER TABLE transactions ADD COLUMN approved INTEGER NOT NULL DEFAULT 1");
+    db.exec("ALTER TABLE transactions ADD COLUMN cleared TEXT NOT NULL DEFAULT 'cleared'");
+  }
 
   // Add min_amount/max_amount columns to payee_matches if missing
   const payeeCols = db.prepare("PRAGMA table_info(payee_matches)").all() as { name: string }[];
