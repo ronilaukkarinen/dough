@@ -780,11 +780,13 @@
   background: none;
 }
 
-.sync-row .button[data-variant="outline"]:hover {
-  color: var(--foreground);
-  background: none;
-  border-color: transparent;
-  box-shadow: none;
+@media (hover: hover) {
+  .sync-row .button[data-variant="outline"]:hover {
+    color: var(--foreground);
+    background: none;
+    border-color: transparent;
+    box-shadow: none;
+  }
 }
 
 .sync-time {
