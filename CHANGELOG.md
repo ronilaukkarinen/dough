@@ -1,5 +1,6 @@
 ### 1.4.0: 2026-03-22
 
+* Hide chart Y-axis tick labels in privacy mode using mask() on all chart tickFormatters
 * Remove must/want priority from savings goals, all goals are now equal
 * Add markdown table rendering in AI chat and summary via remark-gfm
 * Add F component for all euro amounts with styled tooltip showing exact value when decimals are 0, across all pages

@@ -28,7 +28,7 @@ interface Snapshot {
 }
 
 export default function NetWorthPage() {
-  const { t, fmt } = useLocale();
+  const { t, fmt, mask } = useLocale();
   const { connected } = useYnab();
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -165,7 +165,7 @@ export default function NetWorthPage() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                     <XAxis dataKey="date" tick={{ fill: "#71717a", fontSize: 11 }} tickLine={false} axisLine={false} />
-                    <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k €` : `${Math.round(v)} €`} width={50} domain={["auto", "auto"]} />
+                    <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => mask(v >= 1000 ? `${(v/1000).toFixed(0)}k €` : `${Math.round(v)} €`)} width={50} domain={["auto", "auto"]} />
                     <Tooltip
                       content={({ active, payload, label }) =>
                         active && payload?.length ? (

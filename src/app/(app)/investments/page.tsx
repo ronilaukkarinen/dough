@@ -75,7 +75,7 @@ function calculateProjection(
 }
 
 export default function InvestmentsPage() {
-  const { t, locale, fmt } = useLocale();
+  const { t, locale, fmt, mask } = useLocale();
   const [investments, setInvestments] = useState<InvestmentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -291,7 +291,7 @@ export default function InvestmentsPage() {
                       tick={{ fill: "#71717a", fontSize: 10 }}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M €` : v >= 1000 ? `${(v / 1000).toFixed(0)}k €` : `${Math.round(v)} €`}
+                      tickFormatter={(v) => mask(v >= 1000000 ? `${(v / 1000000).toFixed(1)}M €` : v >= 1000 ? `${(v / 1000).toFixed(0)}k €` : `${Math.round(v)} €`)}
                       width={55}
                     />
                     <Tooltip

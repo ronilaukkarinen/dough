@@ -80,7 +80,7 @@ function calculatePayoff(debts: DebtData[], extraPayment: number, sortFn: (a: De
 }
 
 export default function DebtsPage() {
-  const { t, locale, fmt } = useLocale();
+  const { t, locale, fmt, mask } = useLocale();
   const [debts, setDebts] = useState<DebtData[]>([]);
   const [loading, setLoading] = useState(true);
   const [extraPayment, setExtraPayment] = useState(50);
@@ -358,7 +358,7 @@ export default function DebtsPage() {
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                           <XAxis dataKey="month" tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                          <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k €` : `${Math.round(v)} €`} width={50} />
+                          <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => mask(v >= 1000 ? `${(v/1000).toFixed(0)}k €` : `${Math.round(v)} €`)} width={50} />
                           <Tooltip
                             content={({ active, payload, label }) =>
                               active && payload?.length ? (
