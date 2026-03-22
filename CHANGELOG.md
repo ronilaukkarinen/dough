@@ -1,5 +1,6 @@
 ### 1.3.0: 2026-03-21
 
+* Privacy mode: hide chart axis numbers, obfuscate days until income, trend %, dates, counts, and chart tooltips
 * Add Ultra.cc brand icon and subscription entry
 * Add checking+savings card to net worth page
 * Fix tanaan to tänään in date-utils

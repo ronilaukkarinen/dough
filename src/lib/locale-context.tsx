@@ -19,6 +19,7 @@ interface LocaleContextValue {
   decimals: number;
   setDecimals: (d: number) => void;
   fmt: (n: number) => string;
+  mask: (s: string | number) => string;
   privacyMode: boolean;
   setPrivacyMode: (v: boolean) => void;
 }
@@ -30,6 +31,7 @@ const LocaleContext = createContext<LocaleContextValue>({
   decimals: 0,
   setDecimals: () => {},
   fmt: (n: number) => n.toFixed(0),
+  mask: (s: string | number) => String(s),
   privacyMode: false,
   setPrivacyMode: () => {},
 });
@@ -74,14 +76,20 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const fmt = useCallback((n: number) => {
     const formatted = n.toFixed(decimals);
     if (!privacyMode) return formatted;
-    // Replace each digit with a bullet, keep decimal dots
     return formatted.replace(/\d/g, "\u2022");
   }, [decimals, privacyMode]);
+
+  // Mask any string/number: replace digits with bullets in privacy mode
+  const mask = useCallback((s: string | number) => {
+    const str = String(s);
+    if (!privacyMode) return str;
+    return str.replace(/\d/g, "\u2022");
+  }, [privacyMode]);
 
   const t = translations[locale] || translations.en;
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, t, decimals, setDecimals, fmt, privacyMode, setPrivacyMode }}>
+    <LocaleContext.Provider value={{ locale, setLocale, t, decimals, setDecimals, fmt, mask, privacyMode, setPrivacyMode }}>
       {children}
     </LocaleContext.Provider>
   );

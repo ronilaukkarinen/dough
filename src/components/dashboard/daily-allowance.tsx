@@ -42,7 +42,7 @@ export function DailyAllowance({
   trendPercent = 0,
   currency = "€",
 }: DailyAllowanceProps) {
-  const { t, locale, fmt } = useLocale();
+  const { t, locale, fmt, mask } = useLocale();
   const [infoOpen, setInfoOpen] = useState(false);
   const effectiveBudget = todaySpentAll > 0 ? Math.max(0, todayRemaining) : dailyBudget;
   const overspent = todayRemaining < 0;
@@ -78,7 +78,7 @@ export function DailyAllowance({
                     {". "}
                     {locale === "fi" ? "Huomiselle käytössä on " : "Available tomorrow "}
                     <span className="text-positive">{fmt(Math.max(0, dailyBudget + todayRemaining / Math.max(1, daysUntilIncome)))} {currency}</span>
-                    {` \u00B7 ${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`}
+                    {` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}`}
                   </>
                 )}
                 {"."}
@@ -93,7 +93,7 @@ export function DailyAllowance({
                 {daysUntilIncome > 0 && ` \u00B7 ${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`}
               </>
             ) : (
-              `${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`
+              `${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}`
             )}
             {!overspent && status === "danger" && ` \u2014 ${t.dashboard.cutNonEssentials}`}
             {!overspent && status === "tight" && ` \u2014 ${t.dashboard.beCareful}`}
@@ -148,7 +148,7 @@ export function DailyAllowance({
           <div>
             <p className="metric-card-label">{t.dashboard.available}</p>
             <p className="metric-card-value">{fmt(availableBalance)} {currency}</p>
-            {accountCount > 0 && <p className="metric-card-note">{accountCount} {locale === "fi" ? "tiliä" : "accounts"}</p>}
+            {accountCount > 0 && <p className="metric-card-note">{mask(accountCount)} {locale === "fi" ? "tiliä" : "accounts"}</p>}
           </div>
         </div>
       </Card>
@@ -161,7 +161,7 @@ export function DailyAllowance({
           <div>
             <p className="metric-card-label">{t.dashboard.billsDue}</p>
             <p className="metric-card-value">{fmt(upcomingBills)} {currency}</p>
-            {billCount > 0 && <p className="metric-card-note">{billCount} {locale === "fi" ? "laskua" : "bills"}</p>}
+            {billCount > 0 && <p className="metric-card-note">{mask(billCount)} {locale === "fi" ? "laskua" : "bills"}</p>}
           </div>
         </div>
       </Card>
@@ -174,7 +174,7 @@ export function DailyAllowance({
           <div>
             <p className="metric-card-label">{t.dashboard.nextIncome}</p>
             <p className="metric-card-value">{fmt(nextIncomeAmount)} {currency}</p>
-            <p className="metric-card-note">{nextIncomeDate}</p>
+            <p className="metric-card-note">{mask(nextIncomeDate)}</p>
           </div>
         </div>
       </Card>
@@ -191,7 +191,7 @@ export function DailyAllowance({
               {trendPercent !== 0 ? (
                 <>
                   <span className={trendPercent > 0 ? "text-negative" : "text-positive"}>
-                    {trendPercent > 0 ? "+" : ""}{trendPercent}%
+                    {trendPercent > 0 ? "+" : ""}{mask(trendPercent)}%
                   </span>
                   {" "}{locale === "fi" ? "vs ed. viikko" : "vs last week"}
                 </>

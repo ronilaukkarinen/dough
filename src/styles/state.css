@@ -17,6 +17,16 @@
   display: none;
 }
 
+/* Privacy mode: hide chart axis numbers and tooltip values */
+.privacy-mode .recharts-yAxis .recharts-cartesian-axis-tick-value,
+.privacy-mode .recharts-xAxis .recharts-cartesian-axis-tick-value {
+  fill: transparent !important;
+}
+
+.privacy-mode .chart-tooltip {
+  visibility: hidden;
+}
+
 /* Privacy mode: summary uses skeleton placeholder lines */
 .privacy-mode .ai-summary-text > * {
   visibility: hidden;
