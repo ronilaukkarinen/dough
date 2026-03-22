@@ -44,6 +44,8 @@ const BRANDS: Record<string, { color: string; logo: string; svg?: string }> = {
   anthropic: { color: "#cc785c", logo: "A", svg: "anthropic" },
   icloud: { color: "#3693F3", logo: "", svg: "icloud" },
   "apple icloud": { color: "#3693F3", logo: "", svg: "icloud" },
+  "ultra.cc": { color: "#14b89f", logo: "U", svg: "ultracc" },
+  ultra: { color: "#14b89f", logo: "U", svg: "ultracc" },
   elisa: { color: "#009bdb", logo: "E" },
   telia: { color: "#990AE3", logo: "T" },
   dna: { color: "#00A651", logo: "D" },
@@ -76,6 +78,19 @@ function BrandIcon({ svg, logo }: { svg?: string; logo: string }) {
     return (
       <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff">
         <path d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z"/>
+      </svg>
+    );
+  }
+  if (svg === "ultracc") {
+    return (
+      <svg viewBox="0 0 52 60" width="20" height="20" fill="#fff">
+        <path d="m0 15 26-15 9.14 5.26-26 15z" opacity=".5"/>
+        <path d="m0 45v-30l9.14 5.26v19.46l16.86 9.74v10.54z"/>
+        <path d="m26 60v-10.54l26-15v10.54z" opacity=".75"/>
+        <path d="m42.86 20.26-16.86 9.74v14l16.86-9.7z" opacity=".5"/>
+        <path d="m42.86 20.26v14l9.14-5.26v-14z" opacity=".75"/>
+        <path d="m30.7 13.24-16.86 9.76 12.16 7 16.86-9.74z" opacity=".35"/>
+        <path d="m39.82 8-9.14 5.26 12.18 7 9.14-5.26z" opacity=".5"/>
       </svg>
     );
   }

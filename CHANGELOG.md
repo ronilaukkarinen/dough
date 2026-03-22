@@ -1,5 +1,8 @@
 ### 1.3.0: 2026-03-21
 
+* Add Ultra.cc brand icon and subscription entry
+* Add checking+savings card to net worth page
+* Fix tanaan to tänään in date-utils
 * Extract correct dates from receipt images: handle relative dates (Tänään, Eilen), grouped headings, Finnish date formats
 * Pass transaction dates to YNAB in both batch add and chat auto-add
 * Redesign expense modal: multi-transaction batch view from receipts, per-transaction account selection, title case payee normalization

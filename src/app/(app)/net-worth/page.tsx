@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ChartContainer } from "@/components/ui/chart-container";
-import { RefreshCw, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
+import { RefreshCw, TrendingUp, TrendingDown, Wallet, Loader2 } from "lucide-react";
 
 interface Snapshot {
   date: string;
@@ -111,6 +111,18 @@ export default function NetWorthPage() {
                 <p className="net-worth-hero-value" data-positive={latest.net_worth >= 0 || undefined}>
                   {fmt(latest.net_worth)} €
                 </p>
+              </Card>
+
+              <Card className="net-worth-card">
+                <div className="net-worth-card-row">
+                  <div className="net-worth-card-icon" data-color="primary">
+                    <Wallet />
+                  </div>
+                  <div>
+                    <p className="net-worth-card-label">{t.dashboard.accounts}</p>
+                    <p className="net-worth-card-value">{fmt(latest.checking + latest.savings)} €</p>
+                  </div>
+                </div>
               </Card>
 
               <Card className="net-worth-card">
