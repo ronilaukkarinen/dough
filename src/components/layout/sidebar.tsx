@@ -126,6 +126,12 @@ export function Sidebar({ isOpen, onClose, privacyMode, onTogglePrivacy }: Sideb
         ) : (
           <span className="l-sidebar-logo-text">Dough</span>
         )}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="l-sidebar-collapse-btn"
+        >
+          {collapsed ? <ChevronRight className="l-sidebar-collapse-icon" /> : <ChevronLeft className="l-sidebar-collapse-icon" />}
+        </button>
       </div>
 
       {/* Navigation */}
@@ -185,12 +191,6 @@ export function Sidebar({ isOpen, onClose, privacyMode, onTogglePrivacy }: Sideb
         >
           <LogOut className="l-sidebar-link-icon" />
           {!collapsed && <span>{t.common.logout}</span>}
-        </button>
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="l-sidebar-collapse-btn"
-        >
-          {collapsed ? <ChevronRight className="l-sidebar-collapse-icon" /> : <ChevronLeft className="l-sidebar-collapse-icon" />}
         </button>
       </div>
     </aside>

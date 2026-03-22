@@ -1,5 +1,6 @@
 ### 1.4.0: 2026-03-22
 
+* Move sidebar collapse button to logo header area on desktop
 * Hide chart Y-axis tick labels in privacy mode using mask() on all chart tickFormatters
 * Remove must/want priority from savings goals, all goals are now equal
 * Add markdown table rendering in AI chat and summary via remark-gfm
