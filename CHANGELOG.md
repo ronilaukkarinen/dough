@@ -5,6 +5,8 @@
 * Store YNAB category IDs locally for offline AI auto-categorization
 * Only the sync button and budget list hit the YNAB API, everything else reads from cache
 * Fix transaction upsert failing on partial unique index, always write legacy cache as fallback
+* Fix sync button requiring double tap on mobile by clearing throttle on explicit press
+* Fix sync relative time not updating after sync by reading syncedAt from data
 
 ### 1.4.1: 2026-03-22
 

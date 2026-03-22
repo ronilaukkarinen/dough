@@ -109,6 +109,11 @@ export default function DashboardPage() {
   // SSE: re-fetch income/bills when data changes
   useEvent("data:updated", useCallback(() => { loadSideData(); }, [loadSideData]));
 
+  // Update sync timestamp when YNAB data changes
+  useEffect(() => {
+    if (data?.syncedAt) setLastYnabSync(data.syncedAt);
+  }, [data?.syncedAt]);
+
   if (loading && !data) {
     return (
       <div className="page-loading">
@@ -124,7 +129,7 @@ export default function DashboardPage() {
           <h1 className="page-heading">{t.dashboard.title}</h1>
           <div className="error-banner">
             <p className="error-banner-text">{ynabError}</p>
-            <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
+            <Button variant="outline" size="sm" onClick={() => { if (typeof window !== "undefined") localStorage.removeItem("dough-last-sync"); sync(); }} disabled={loading}>
               <RefreshCw className={loading ? "icon-sm animate-spin" : "icon-sm"} />
               {locale === "fi" ? "Yritä uudelleen" : "Retry"}
             </Button>
@@ -358,7 +363,7 @@ export default function DashboardPage() {
               {formatDistanceToNow(new Date(lastYnabSync), { addSuffix: true, locale: locale === "fi" ? fiFns : enUS })}
             </span>
           )}
-          <Button variant="outline" size="sm" onClick={() => sync()} disabled={loading}>
+          <Button variant="outline" size="sm" onClick={() => { if (typeof window !== "undefined") localStorage.removeItem("dough-last-sync"); sync(); }} disabled={loading}>
             <RefreshCw className={loading ? "icon-sm animate-spin" : "icon-sm"} />
           </Button>
         </div>
