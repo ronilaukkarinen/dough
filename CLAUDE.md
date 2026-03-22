@@ -1,3 +1,17 @@
+## Public repository
+
+This is a public open source repository. NEVER commit, hardcode, or reference any of the following:
+
+- Real names, emails, usernames, or personal details of any person
+- Real financial data: account balances, transaction amounts, salary figures, budget IDs
+- API keys, tokens, passwords, secrets, or credentials (always use env vars)
+- Real server URLs, IP addresses, domain names, or private infrastructure details
+- Real YNAB budget IDs, account IDs, or category IDs
+- File paths containing usernames (e.g. `/home/username/`)
+- Any data that could identify a specific person or their financial situation
+
+All examples in code, docs, and comments must use generic placeholders. When in doubt, do not include it.
+
 ## Commits and code style
 
 - Never use commas or dots as thousand separators, use full numbers like 10000 and 20000
