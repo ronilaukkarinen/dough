@@ -1,5 +1,6 @@
 ### 1.3.0: 2026-03-21
 
+* Show exact amount tooltip on hover when decimal places is 0 for dashboard metric values
 * Privacy mode: hide chart axis numbers, obfuscate days until income, trend %, dates, counts, and chart tooltips
 * Add Ultra.cc brand icon and subscription entry
 * Add checking+savings card to net worth page

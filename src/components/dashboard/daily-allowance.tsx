@@ -42,7 +42,7 @@ export function DailyAllowance({
   trendPercent = 0,
   currency = "€",
 }: DailyAllowanceProps) {
-  const { t, locale, fmt, mask } = useLocale();
+  const { t, locale, fmt, mask, decimals } = useLocale();
   const [infoOpen, setInfoOpen] = useState(false);
   const effectiveBudget = todaySpentAll > 0 ? Math.max(0, todayRemaining) : dailyBudget;
   const overspent = todayRemaining < 0;
@@ -59,7 +59,7 @@ export function DailyAllowance({
               : t.dashboard.dailyBudget}
           </p>
           <div className="daily-allowance-hero-amount">
-            <span className="daily-allowance-hero-value" data-status={overspent ? "danger" : status}>
+            <span className="daily-allowance-hero-value" data-status={overspent ? "danger" : status} title={decimals < 2 ? `${(overspent ? 0 : effectiveBudget).toFixed(2)} ${currency}` : undefined}>
               {overspent ? fmt(0) : fmt(effectiveBudget)} {currency}
             </span>
             <span className="daily-allowance-hero-unit">{todaySpentAll > 0 ? "" : t.dashboard.perDay}</span>
@@ -126,7 +126,7 @@ export function DailyAllowance({
               </p>
               <p className="metric-card-value">
                 <span className={monthIncome - monthExpenses >= 0 ? "text-positive" : "text-negative"}>
-                  {monthIncome - monthExpenses >= 0 ? "+" : "\u2212"}{fmt(Math.abs(monthIncome - monthExpenses))} {currency}
+                  <span title={decimals < 2 ? `${Math.abs(monthIncome - monthExpenses).toFixed(2)} ${currency}` : undefined}>{monthIncome - monthExpenses >= 0 ? "+" : "\u2212"}{fmt(Math.abs(monthIncome - monthExpenses))} {currency}</span>
                 </span>
               </p>
               <p className="metric-card-note">
@@ -147,7 +147,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{t.dashboard.available}</p>
-            <p className="metric-card-value">{fmt(availableBalance)} {currency}</p>
+            <p className="metric-card-value" title={decimals < 2 ? `${availableBalance.toFixed(2)} ${currency}` : undefined}>{fmt(availableBalance)} {currency}</p>
             {accountCount > 0 && <p className="metric-card-note">{mask(accountCount)} {locale === "fi" ? "tiliä" : "accounts"}</p>}
           </div>
         </div>
@@ -160,7 +160,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{t.dashboard.billsDue}</p>
-            <p className="metric-card-value">{fmt(upcomingBills)} {currency}</p>
+            <p className="metric-card-value" title={decimals < 2 ? `${upcomingBills.toFixed(2)} ${currency}` : undefined}>{fmt(upcomingBills)} {currency}</p>
             {billCount > 0 && <p className="metric-card-note">{mask(billCount)} {locale === "fi" ? "laskua" : "bills"}</p>}
           </div>
         </div>
@@ -173,7 +173,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{t.dashboard.nextIncome}</p>
-            <p className="metric-card-value">{fmt(nextIncomeAmount)} {currency}</p>
+            <p className="metric-card-value" title={decimals < 2 ? `${nextIncomeAmount.toFixed(2)} ${currency}` : undefined}>{fmt(nextIncomeAmount)} {currency}</p>
             <p className="metric-card-note">{mask(nextIncomeDate)}</p>
           </div>
         </div>
@@ -186,7 +186,7 @@ export function DailyAllowance({
           </div>
           <div>
             <p className="metric-card-label">{locale === "fi" ? "Kulutusvauhti" : "Burn rate"}</p>
-            <p className="metric-card-value">{fmt(burnRate)} {currency}/{locale === "fi" ? "pv" : "day"}</p>
+            <p className="metric-card-value" title={decimals < 2 ? `${burnRate.toFixed(2)} ${currency}/${locale === "fi" ? "pv" : "day"}` : undefined}>{fmt(burnRate)} {currency}/{locale === "fi" ? "pv" : "day"}</p>
             <p className="metric-card-note">
               {trendPercent !== 0 ? (
                 <>
