@@ -177,6 +177,17 @@ export default function SubscriptionsPage() {
     } catch (err) { console.error("[subscriptions] Delete error:", err); }
   };
 
+  const togglePaid = async (subId: number, currentPaid: boolean) => {
+    try {
+      await fetch("/api/subscriptions", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: subId, mark_paid: !currentPaid }),
+      });
+      loadSubscriptions();
+    } catch (err) { console.error("[subscriptions] Toggle paid error:", err); }
+  };
+
   const addPattern = async (subId: number) => {
     if (!newPattern.trim()) return;
     try {
@@ -325,6 +336,16 @@ export default function SubscriptionsPage() {
                   </div>
                 )}
               </div>
+              <Button
+                type="button"
+                variant={editTarget.is_paid ? "outline" : "secondary"}
+                size="sm"
+                onClick={() => { togglePaid(editTarget.id, editTarget.is_paid); setEditOpen(false); }}
+              >
+                {editTarget.is_paid
+                  ? (locale === "fi" ? "Merkitse maksamattomaksi" : "Mark unpaid")
+                  : (locale === "fi" ? "Merkitse maksetuksi" : "Mark paid")}
+              </Button>
               <div className="form-grid-2">
                 <Button type="button" variant="destructive" onClick={() => { deleteSub(editTarget.id); setEditOpen(false); }}>
                   {locale === "fi" ? "Poista" : "Delete"}

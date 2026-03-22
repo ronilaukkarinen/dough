@@ -31,11 +31,11 @@ export async function GET() {
       patternMap.get(p.source_id)!.push(p.payee_pattern);
     }
 
-    // Manual paid status
+    // Manual paid status (subscription IDs offset by 10000 to avoid collision with bills)
     const manualStatuses = db
-      .prepare("SELECT bill_id, is_paid FROM bill_manual_status WHERE month = ?")
+      .prepare("SELECT bill_id, is_paid FROM bill_manual_status WHERE month = ? AND bill_id >= 10000")
       .all(month) as { bill_id: number; is_paid: number }[];
-    const manualMap = new Map(manualStatuses.map((m) => [m.bill_id, m]));
+    const manualMap = new Map(manualStatuses.map((m) => [m.bill_id - 10000, m]));
 
     const today = now.getDate();
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -96,6 +96,27 @@ export async function PUT(request: Request) {
     if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
 
     const db = getDb();
+
+    // Manual paid/unpaid toggle
+    if (body.mark_paid !== undefined) {
+      const month = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+      const offsetId = id + 10000;
+      if (body.mark_paid) {
+        db.prepare(`
+          INSERT INTO bill_manual_status (bill_id, month, is_paid) VALUES (?, ?, 1)
+          ON CONFLICT(bill_id, month) DO UPDATE SET is_paid = 1
+        `).run(offsetId, month);
+        console.info("[subscriptions] Manually marked", id, "as paid");
+      } else {
+        db.prepare(`
+          INSERT INTO bill_manual_status (bill_id, month, is_paid) VALUES (?, ?, 0)
+          ON CONFLICT(bill_id, month) DO UPDATE SET is_paid = 0
+        `).run(offsetId, month);
+        console.info("[subscriptions] Manually marked", id, "as unpaid");
+      }
+      eventBus.emit("data:updated", { source: "subscription-status-changed" });
+      return NextResponse.json({ success: true });
+    }
 
     if (body.is_active !== undefined && Object.keys(body).length === 2) {
       db.prepare("UPDATE subscriptions SET is_active = ?, updated_at = datetime('now') WHERE id = ?")
