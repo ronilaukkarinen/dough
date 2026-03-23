@@ -18,6 +18,11 @@
 * Add drag-and-drop reordering to debts list
 * Enforce no em-dash rule in AI system prompt, not just guidelines
 * Add weekday, day of month, and days remaining to AI chat and summary context
+* Show AI thinking animation when returning to chat with pending response
+* Auto-refresh transactions page on SSE events from other users
+* Fix doubled transaction data caused by multi-user sync deduplication
+* Fix CSS class collision between bill list-item and investment edit-item
+* Move drag handle to right side after amount
 * Always show savings amount in green in greeting
 
 ### 1.5.4: 2026-03-23
