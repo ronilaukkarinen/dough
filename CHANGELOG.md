@@ -3,6 +3,8 @@
 * Cap personal budget suggestion at family remaining so it never exceeds available
 * Persist new transactions to local SQLite immediately so all users see them without sync
 * Refresh YNAB cache from SQLite on data changes so dashboard updates for all household members
+* Hide zero spending from greeting, show savings message when something is spent
+* Improve Finnish greeting wording
 
 ### 1.5.3: 2026-03-23
 
