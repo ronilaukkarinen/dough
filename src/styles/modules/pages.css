@@ -420,9 +420,14 @@
 
 .edit-item-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
+}
+
+.edit-item-header > div:first-of-type {
+  flex: 1;
+  min-width: 0;
 }
 
 .edit-item-name {
@@ -446,6 +451,7 @@
   opacity: 0.3;
   cursor: grab;
   touch-action: none;
+  margin-top: 0.125rem;
 }
 
 .drag-handle:active {
