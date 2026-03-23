@@ -136,10 +136,23 @@ export async function GET(request: Request) {
     const subMatchesSummary = db
       .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'subscription' AND month = ?")
       .all(billMonth) as { source_id: number }[];
-    const matchedBillIds = new Set([
+    // Manual overrides take priority over auto-match
+    const manualStatuses = db
+      .prepare("SELECT bill_id, is_paid FROM bill_manual_status WHERE month = ?")
+      .all(billMonth) as { bill_id: number; is_paid: number }[];
+    const manualPaidMap = new Map(manualStatuses.map((m) => [m.bill_id, !!m.is_paid]));
+
+    const autoMatchedIds = new Set([
       ...billMatches.map((m) => m.source_id),
       ...subMatchesSummary.map((m) => m.source_id + 10000),
     ]);
+    // Build effective paid set: manual override wins, then auto-match
+    const matchedBillIds = new Set(
+      recurringBills.filter((b) => {
+        if (manualPaidMap.has(b.id)) return manualPaidMap.get(b.id);
+        return autoMatchedIds.has(b.id);
+      }).map((b) => b.id)
+    );
 
     const upcomingIncome = incomeSources
       .filter((i) => i.expected_day > now.getDate())

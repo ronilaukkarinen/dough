@@ -116,13 +116,21 @@ export async function POST(request: Request) {
             .all(chatMonth) as { source_id: number }[];
           const paidBillIds = new Set(chatBillMatches.map((m) => m.source_id));
 
-          const enrichedBills: { name: string; amount: number; dueDay: number; status: string; type: string }[] = bills.map((b) => ({
+          // Manual overrides take priority over auto-match
+          const manualStatuses = chatDb
+            .prepare("SELECT bill_id, is_paid FROM bill_manual_status WHERE month = ?")
+            .all(chatMonth) as { bill_id: number; is_paid: number }[];
+          const manualMap = new Map(manualStatuses.map((m) => [m.bill_id, !!m.is_paid]));
+
+          const enrichedBills: { name: string; amount: number; dueDay: number; status: string; type: string }[] = bills.map((b) => {
+            const isPaid = manualMap.has(b.id) ? manualMap.get(b.id)! : paidBillIds.has(b.id);
+            return {
             name: b.name,
             amount: b.amount,
             dueDay: b.due_day,
-            status: paidBillIds.has(b.id) ? "paid" : b.due_day < now.getDate() ? "overdue" : "upcoming",
+            status: isPaid ? "paid" : b.due_day < now.getDate() ? "overdue" : "upcoming",
             type: "bill",
-          }));
+          }; });
 
           // Load subscriptions with paid status from payee matching
           const subscriptions = chatDb
