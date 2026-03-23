@@ -54,8 +54,11 @@ export async function GET() {
         monthlyTarget,
         monthlyPayment,
         notes: override?.notes ?? "",
+        sortOrder: override?.sort_order ?? 999,
       };
     });
+
+    debts.sort((a: any, b: any) => a.sortOrder - b.sortOrder);
 
     // Snowball suggestion: pay smallest balance first
     const sorted = [...debts].sort((a, b) => a.balance - b.balance);
@@ -118,6 +121,35 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[debts] PUT error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const user = await getSession();
+    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+    const body = await request.json();
+    const { order } = body;
+    if (!Array.isArray(order)) return NextResponse.json({ error: "order array required" }, { status: 400 });
+
+    const db = getDb();
+    const stmt = db.prepare(`
+      INSERT INTO debt_overrides (ynab_account_id, sort_order) VALUES (?, ?)
+      ON CONFLICT(ynab_account_id) DO UPDATE SET sort_order = excluded.sort_order, updated_at = datetime('now')
+    `);
+    const batch = db.transaction(() => {
+      for (let i = 0; i < order.length; i++) {
+        stmt.run(order[i], i);
+      }
+    });
+    batch();
+
+    console.info("[debts] Saved order for", order.length, "debts");
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[debts] PATCH error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -364,11 +364,15 @@ function initializeDb(db: Database.Database) {
     db.exec("ALTER TABLE chat_messages ADD COLUMN image_thumb TEXT");
   }
 
-  // Add due_day column to debt_overrides if missing
+  // Add columns to debt_overrides if missing
   const debtCols = db.prepare("PRAGMA table_info(debt_overrides)").all() as { name: string }[];
   if (!debtCols.some((c) => c.name === "due_day")) {
     console.info("[db] Adding due_day column to debt_overrides");
     db.exec("ALTER TABLE debt_overrides ADD COLUMN due_day INTEGER DEFAULT 0");
+  }
+  if (!debtCols.some((c) => c.name === "sort_order")) {
+    console.info("[db] Adding sort_order column to debt_overrides");
+    db.exec("ALTER TABLE debt_overrides ADD COLUMN sort_order INTEGER DEFAULT 0");
   }
 
   // Add budget_share column to users if missing
