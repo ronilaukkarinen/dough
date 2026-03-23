@@ -69,7 +69,7 @@ function TickerChart({ data, positive, currency, fmt: fmtFn }: { data: number[];
             const val = Number(payload[0].value);
             return (
               <div className="chart-tooltip">
-                <p className="chart-tooltip-value" style={{ color }}>{fmtFn(val)} {currency}</p>
+                <p className="chart-tooltip-value" style={{ color, fontSize: "0.6875rem" }}>{fmtFn(val)} {currency}</p>
               </div>
             );
           }}
@@ -256,27 +256,27 @@ export default function InvestmentsPage() {
                       {locale === "fi" ? "Siirretty tässä kuussa" : "Transferred this month"}: <F v={inv.monthlyTransferred} />
                     </p>
                   )}
-                  {inv.ticker && tickerData[inv.ticker.toUpperCase()] && (() => {
-                    const td = tickerData[inv.ticker.toUpperCase()];
-                    const isIndex = inv.ticker.startsWith("^");
-                    return (
-                      <div className="investment-ticker-info">
-                        <p className="debt-item-meta">
-                          {isIndex ? `${locale === "fi" ? "Indeksi" : "Index"}: ` : ""}{td.name}: {td.price.toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {td.currency}
-                          {" "}
-                          <span className={td.dayChangePct >= 0 ? "text-positive" : "text-negative"}>
-                            {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}%
-                          </span>
-                        </p>
-                        {td.sparkline?.length > 1 && <TickerChart data={td.sparkline} positive={td.dayChangePct >= 0} currency={td.currency} fmt={fmt} />}
-                      </div>
-                    );
-                  })()}
                 </div>
                 <div className="debt-item-right">
                   <p className="debt-item-amount text-positive"><F v={inv.balance} /></p>
                 </div>
               </div>
+              {inv.ticker && tickerData[inv.ticker.toUpperCase()] && (() => {
+                const td = tickerData[inv.ticker.toUpperCase()];
+                const isIndex = inv.ticker.startsWith("^") || inv.ticker.toUpperCase().startsWith("SELIGSON:");
+                return (
+                  <div className="investment-ticker-info">
+                    <p className="debt-item-meta">
+                      {isIndex ? `${locale === "fi" ? "Indeksi" : "Index"}: ` : ""}{td.name}: {td.price.toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {td.currency}
+                      {" "}
+                      <span className={td.dayChangePct >= 0 ? "text-positive" : "text-negative"}>
+                        {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}%
+                      </span>
+                    </p>
+                    {td.sparkline?.length > 1 && <TickerChart data={td.sparkline} positive={td.dayChangePct >= 0} currency={td.currency} fmt={fmt} />}
+                  </div>
+                );
+              })()}
               <div className="debt-edit-row">
                 <div className="debt-edit-field">
                   <Label className="debt-edit-label">{locale === "fi" ? "Kk-sijoitus €" : "Monthly €"}</Label>
