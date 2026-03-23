@@ -317,8 +317,12 @@ function initializeDb(db: Database.Database) {
     console.warn("[db] ticker_cache migration:", err);
   }
 
-  // Add ticker column to investment_overrides if missing
+  // Add columns to investment_overrides if missing
   const investCols = db.prepare("PRAGMA table_info(investment_overrides)").all() as { name: string }[];
+  if (!investCols.some((c) => c.name === "sort_order")) {
+    console.info("[db] Adding sort_order column to investment_overrides");
+    db.exec("ALTER TABLE investment_overrides ADD COLUMN sort_order INTEGER DEFAULT 0");
+  }
   if (!investCols.some((c) => c.name === "ticker")) {
     console.info("[db] Adding ticker column to investment_overrides");
     db.exec("ALTER TABLE investment_overrides ADD COLUMN ticker TEXT DEFAULT ''");

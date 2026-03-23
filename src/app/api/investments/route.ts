@@ -49,9 +49,11 @@ export async function GET() {
         monthlyTransferred: Math.round(monthlyTransferred * 100) / 100,
         notes: override?.notes ?? "",
         ticker: override?.ticker ?? "",
+        sortOrder: override?.sort_order ?? 999,
       };
     });
 
+    investments.sort((a: any, b: any) => a.sortOrder - b.sortOrder);
     console.info("[investments] Loaded", investments.length, "investment accounts from YNAB cache");
     return NextResponse.json({
       investments,
@@ -90,6 +92,35 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[investments] PUT error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const user = await getSession();
+    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+    const body = await request.json();
+    const { order } = body;
+    if (!Array.isArray(order)) return NextResponse.json({ error: "order array required" }, { status: 400 });
+
+    const db = getDb();
+    const stmt = db.prepare(`
+      INSERT INTO investment_overrides (ynab_account_id, sort_order) VALUES (?, ?)
+      ON CONFLICT(ynab_account_id) DO UPDATE SET sort_order = excluded.sort_order, updated_at = datetime('now')
+    `);
+    const batch = db.transaction(() => {
+      for (let i = 0; i < order.length; i++) {
+        stmt.run(order[i], i);
+      }
+    });
+    batch();
+
+    console.info("[investments] Saved order for", order.length, "investments");
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[investments] PATCH error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
