@@ -101,16 +101,17 @@ export function SpendingFlow({
     return { pos, color: ratioToColor(r) };
   });
 
-  const bubbleLabel = todayDiff >= 0
-    ? `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "alle" : "under"}`
-    : `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "yli" : "over"}`;
+  const bubbleLabel = monthEndTarget > 0
+    ? (todayDiff >= 0
+      ? `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "alle" : "under"}`
+      : `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "yli" : "over"}`)
+    : `${fmt(lastActual)} € ${locale === "fi" ? "käytetty" : "spent"}`;
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const renderDotLabel = (props: any) => {
     const { viewBox } = props;
     if (!viewBox) return null;
     const { x, y } = viewBox;
-    if (!monthEndTarget) return null;
 
     const bw = bubbleLabel.length * 5.8 + 6;
     const bh = 20;
