@@ -257,7 +257,6 @@ export default function DebtsPage() {
           {debts.map((debt, idx) => (
             <div key={debt.id} className="edit-item" draggable onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={handleDragEnd}>
               <div className="edit-item-header">
-                <GripVertical className="drag-handle" />
                 <div>
                   <p className="edit-item-name">{debt.name}</p>
                   {debt.monthlyPayment > 0 && (
@@ -269,6 +268,7 @@ export default function DebtsPage() {
                 <div className="edit-item-right">
                   <p className="edit-item-amount"><F v={debt.balance} /></p>
                 </div>
+                <GripVertical className="drag-handle" />
               </div>
               <div className="list-edit-row">
                 <div className="list-edit-field">

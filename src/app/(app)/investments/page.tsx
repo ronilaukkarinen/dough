@@ -363,7 +363,6 @@ export default function InvestmentsPage() {
             {investments.map((inv, idx) => (
             <div key={inv.id} className="edit-item" draggable onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={handleDragEnd}>
               <div className="edit-item-header">
-                <GripVertical className="drag-handle" />
                 <div>
                   <p className="edit-item-name">{inv.name}</p>
                   {inv.monthlyTransferred > 0 && (
@@ -375,6 +374,7 @@ export default function InvestmentsPage() {
                 <div className="edit-item-right">
                   <p className="edit-item-amount text-positive"><F v={inv.balance} /></p>
                 </div>
+                <GripVertical className="drag-handle" />
               </div>
               {inv.ticker && tickerData[inv.ticker.toUpperCase()] && (() => {
                 const td = tickerData[inv.ticker.toUpperCase()];
