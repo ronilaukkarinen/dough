@@ -187,9 +187,10 @@ export async function POST(request: Request) {
 
           const resolveDay = (day: number) => day === 0 ? daysInMonth : day;
 
-          // Daily budget via shared cash flow simulation
+          // Daily budget via shared cash flow simulation — respect bills setting
           const { calculateDailyBudget } = await import("@/lib/daily-budget");
-          const { dailyBudget } = calculateDailyBudget({
+          const billsSetting = getHouseholdSetting("budget_include_bills") || "auto";
+          const budgetParams = {
             balance: checkingSavings,
             savingGoal: savingRate,
             today,
@@ -201,6 +202,21 @@ export async function POST(request: Request) {
               .map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
             resolveDay,
           });
+
+          // Apply bills setting: auto, always, or never
+          const budgetWithBills = calculateDailyBudget(budgetParams);
+          const budgetWithoutBills = calculateDailyBudget({ ...budgetParams, unpaidBills: [], debts: [] });
+          let dailyBudget: number;
+          if (billsSetting === "auto") {
+            const totalUnpaid = budgetParams.unpaidBills.reduce((s, b) => s + b.amount, 0) + budgetParams.debts.reduce((s, d) => s + d.amount, 0);
+            const thresholdNormal = parseInt(getHouseholdSetting("budget_threshold_normal") || "30", 10);
+            const canAfford = checkingSavings > totalUnpaid && budgetWithBills.dailyBudget >= thresholdNormal;
+            dailyBudget = canAfford ? budgetWithBills.dailyBudget : budgetWithoutBills.dailyBudget;
+          } else if (billsSetting === "1") {
+            dailyBudget = budgetWithBills.dailyBudget;
+          } else {
+            dailyBudget = budgetWithoutBills.dailyBudget;
+          }
 
           const incomeBeforePayday = incomeWithIds
             .filter((i) => i.expected_day >= today && i.expected_day < daysInMonth && !matchedIncomeIds.has(i.id))
