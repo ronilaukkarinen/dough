@@ -116,11 +116,12 @@ export async function POST(request: Request) {
             .all(chatMonth) as { source_id: number }[];
           const paidBillIds = new Set(chatBillMatches.map((m) => m.source_id));
 
-          const enrichedBills = bills.map((b) => ({
+          const enrichedBills: { name: string; amount: number; dueDay: number; status: string; type: string }[] = bills.map((b) => ({
             name: b.name,
             amount: b.amount,
             dueDay: b.due_day,
             status: paidBillIds.has(b.id) ? "paid" : b.due_day < now.getDate() ? "overdue" : "upcoming",
+            type: "bill",
           }));
 
           // Load subscriptions with paid status from payee matching
@@ -139,6 +140,7 @@ export async function POST(request: Request) {
               amount: sub.amount,
               dueDay: sub.due_day,
               status: paidSubIds.has(sub.id) ? "paid" : sub.due_day < now.getDate() ? "overdue" : "upcoming",
+              type: "subscription",
             });
           }
 

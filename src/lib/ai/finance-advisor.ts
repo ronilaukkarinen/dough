@@ -65,8 +65,9 @@ Current financial snapshot:
 ${ctx.accounts.length > 0 ? `Accounts (ALWAYS consider ALL accounts when giving advice, even excluded ones have real money):
 ${ctx.accounts.map(a => `- ${a.name}: ${a.balance} euros (${a.type})${a.note ? `, ${a.note}` : ""}${(a as Record<string, unknown>).excludedFromBudget ? " [excluded from daily budget]" : ""}`).join("\n")}` : ""}
 
-Upcoming bills this month:
-${ctx.upcomingBills.length > 0 ? ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th${b.status ? ` - ${b.status.toUpperCase()}` : ""})`).join("\n") : "- None configured"}
+Upcoming bills and subscriptions this month:
+${ctx.upcomingBills.length > 0 ? ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th${b.status ? ` - ${b.status.toUpperCase()}` : ""}${(b as Record<string, unknown>).type === "subscription" ? " [subscription, auto-charged]" : " [bill, needs payment]"})`).join("\n") : "- None configured"}
+Note: Subscriptions are auto-charged from card, no action needed. Bills need manual payment or bank transfer.
 
 Recent transactions (last 10, with dates):
 ${ctx.recentTransactions.slice(0, 10).map(t => `- ${t.date}: ${t.payee} - ${Math.abs(t.amount)} euros (${t.category})`).join("\n")}
