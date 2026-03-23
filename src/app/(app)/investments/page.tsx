@@ -226,9 +226,10 @@ export default function InvestmentsPage() {
                   )}
                   {inv.ticker && tickerData[inv.ticker.toUpperCase()] && (() => {
                     const td = tickerData[inv.ticker.toUpperCase()];
+                    const isIndex = inv.ticker.startsWith("^");
                     return (
                       <p className="debt-item-meta">
-                        {td.name}: {td.price.toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {td.currency}
+                        {isIndex ? `${locale === "fi" ? "Indeksi" : "Index"}: ` : ""}{td.name}: {td.price.toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {td.currency}
                         {" "}
                         <span className={td.dayChangePct >= 0 ? "text-positive" : "text-negative"}>
                           {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}%
@@ -272,7 +273,15 @@ export default function InvestmentsPage() {
                     onChange={(e) => setInvestments((prev) => prev.map((i) => i.id === inv.id ? { ...i, ticker: e.target.value } : i))}
                     placeholder="NVDA"
                     className="debt-edit-input"
+                    list={`ticker-suggest-${inv.id}`}
                   />
+                  <datalist id={`ticker-suggest-${inv.id}`}>
+                    <option value="^OMXH25" label="OMX Helsinki 25" />
+                    <option value="^GSPC" label="S&P 500" />
+                    <option value="^STOXX50E" label="Euro Stoxx 50" />
+                    <option value="BTC-USD" label="Bitcoin" />
+                    <option value="ETH-USD" label="Ethereum" />
+                  </datalist>
                 </div>
                 <Button
                   type="button"
