@@ -414,24 +414,24 @@
 }
 
 /* Debt page extras */
-.debt-item {
+.list-item {
   padding: 1rem 1.25rem;
 }
 
-.debt-item-header {
+.list-item-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.debt-item-name {
+.list-item-name {
   font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 500;
   color: var(--foreground);
 }
 
-.debt-item-meta {
+.list-item-meta {
   font-size: 0.75rem;
   line-height: 1rem;
   color: var(--muted-foreground);
@@ -489,11 +489,11 @@
   }
 }
 
-.debt-item-right {
+.list-item-right {
   text-align: right;
 }
 
-.debt-item-amount {
+.list-item-amount {
   font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 600;
@@ -502,12 +502,12 @@
   color: var(--foreground);
 }
 
-.debt-item-total {
+.list-item-total {
   font-size: 10px;
   color: var(--muted-foreground);
 }
 
-.debt-edit-row {
+.list-edit-row {
   display: flex;
   align-items: flex-end;
   gap: 0.5rem;
@@ -516,19 +516,20 @@
   border-top: 1px solid var(--glass-border, rgba(255, 255, 255, 0.04));
 }
 
-.debt-edit-field {
+.list-edit-field {
   flex: 1;
   min-width: 0;
 }
 
-.debt-edit-label {
+.list-edit-label {
   font-size: 0.6875rem;
   color: var(--muted-foreground);
   margin-bottom: 0.25rem;
   display: block;
+  text-align: left;
 }
 
-.debt-edit-input {
+.list-edit-input {
   height: 1.75rem;
   font-size: 0.8125rem;
   padding: 0 0.5rem;
