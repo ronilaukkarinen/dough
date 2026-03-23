@@ -230,7 +230,7 @@ export async function GET(request: Request) {
       .prepare("SELECT id, amount, expected_day FROM income_sources WHERE is_active = 1")
       .all() as { id: number; amount: number; expected_day: number }[];
 
-    const { dailyBudget } = calculateDailyBudget({
+    const budgetParams = {
       balance: checkingSavings,
       savingGoal,
       today: daysPassed,
@@ -241,7 +241,21 @@ export async function GET(request: Request) {
         .filter((i) => resolveDay(i.expected_day) > daysPassed && !matchedIncomeIds.has(i.id))
         .map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
       resolveDay,
-    });
+    };
+    const billsSetting = getExcludedSetting("budget_include_bills") || "auto";
+    const budgetWithBills = calculateDailyBudget(budgetParams);
+    const budgetWithoutBills = calculateDailyBudget({ ...budgetParams, unpaidBills: [], debts: [] });
+    let dailyBudget: number;
+    if (billsSetting === "auto") {
+      const totalUnpaid = budgetParams.unpaidBills.reduce((s: number, b: { amount: number }) => s + b.amount, 0) + budgetParams.debts.reduce((s: number, d: { amount: number }) => s + d.amount, 0);
+      const thresholdNormal = parseInt(getExcludedSetting("budget_threshold_normal") || "30", 10);
+      const canAfford = checkingSavings > totalUnpaid && budgetWithBills.dailyBudget >= thresholdNormal;
+      dailyBudget = canAfford ? budgetWithBills.dailyBudget : budgetWithoutBills.dailyBudget;
+    } else if (billsSetting === "1") {
+      dailyBudget = budgetWithBills.dailyBudget;
+    } else {
+      dailyBudget = budgetWithoutBills.dailyBudget;
+    }
 
     const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const weekday = weekdays[now.getDay()];
