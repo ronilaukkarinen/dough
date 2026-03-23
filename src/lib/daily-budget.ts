@@ -55,15 +55,9 @@ export function calculateDailyBudget(params: {
   const daysLeft = daysInMonth - today;
   if (daysLeft <= 0) return { dailyBudget: 0, tightestSegment: null, segmentCount: 0 };
 
-  // Start with current balance, subtract overdue obligations (due but unpaid)
-  // Debts/bills with dueDay=0 (not set) are excluded
-  let startBalance = balance;
-  for (const bill of unpaidBills) {
-    if (bill.dueDay > 0 && bill.dueDay <= today) startBalance -= bill.amount;
-  }
-  for (const debt of debts) {
-    if (debt.dueDay > 0 && debt.dueDay <= today && debt.amount > 0) startBalance -= debt.amount;
-  }
+  // Start with current balance — overdue obligations are already reflected in the balance
+  // Only future obligations (due after today) are handled in the segment walk below
+  const startBalance = balance;
 
   // Build sorted list of income event days as segment boundaries
   const incomeDays = unreceivedIncomes
