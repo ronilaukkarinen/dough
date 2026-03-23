@@ -88,8 +88,8 @@ export function DailyAllowance({
               </button>
               <span className="metric-info-popup">
                 {budgetBreakdown ? (locale === "fi"
-                  ? `Tiukin jakso: pv ${budgetBreakdown.startDay + 1}\u2013${budgetBreakdown.endDay} (${budgetBreakdown.days} pv). Saldo ${fmt(budgetBreakdown.balanceAtStart)} €${budgetBreakdown.incomeAtStart > 0 ? ` + tulot ${fmt(budgetBreakdown.incomeAtStart)} €` : ""}${budgetBreakdown.obligations > 0 ? ` \u2212 laskut/velat ${fmt(budgetBreakdown.obligations)} €` : ""}${budgetBreakdown.savingGoalDeducted > 0 ? ` \u2212 säästötavoite ${fmt(budgetBreakdown.savingGoalDeducted)} €` : ""} = ${fmt(budgetBreakdown.pool)} € \u00F7 ${budgetBreakdown.days} pv = ${fmt(dailyBudget)} €/pv`
-                  : `Tightest segment: day ${budgetBreakdown.startDay + 1}\u2013${budgetBreakdown.endDay} (${budgetBreakdown.days}d). Balance ${fmt(budgetBreakdown.balanceAtStart)} €${budgetBreakdown.incomeAtStart > 0 ? ` + income ${fmt(budgetBreakdown.incomeAtStart)} €` : ""}${budgetBreakdown.obligations > 0 ? ` \u2212 bills/debts ${fmt(budgetBreakdown.obligations)} €` : ""}${budgetBreakdown.savingGoalDeducted > 0 ? ` \u2212 saving goal ${fmt(budgetBreakdown.savingGoalDeducted)} €` : ""} = ${fmt(budgetBreakdown.pool)} € \u00F7 ${budgetBreakdown.days}d = ${fmt(dailyBudget)} €/day`
+                  ? `Nyt: ${fmt(availableBalance)} € / ${daysUntilIncome > 0 ? daysUntilIncome : "?"} pv. Tiukin jakso: pv ${budgetBreakdown.startDay + 1}\u2013${budgetBreakdown.endDay} (${budgetBreakdown.days} pv, ${fmt(budgetBreakdown.pool)} €). Budjetti = ${fmt(dailyBudget)} €/pv`
+                  : `Now: ${fmt(availableBalance)} € / ${daysUntilIncome > 0 ? daysUntilIncome : "?"} days. Tightest: day ${budgetBreakdown.startDay + 1}\u2013${budgetBreakdown.endDay} (${budgetBreakdown.days}d, ${fmt(budgetBreakdown.pool)} €). Budget = ${fmt(dailyBudget)} €/day`
                 ) : (locale === "fi" ? "Päiväbudjetti lasketaan jakamalla käytettävissä oleva raha tulojen välisiin jaksoihin" : "Daily budget calculated by splitting available money between income segments")}
               </span>
             </span>
