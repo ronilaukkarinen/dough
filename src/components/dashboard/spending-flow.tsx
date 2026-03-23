@@ -101,7 +101,7 @@ export function SpendingFlow({
     return { pos, color: ratioToColor(r) };
   });
 
-  const bubbleLabel = monthEndTarget > 0
+  const bubbleLabel = targetPerDay > 0
     ? (todayDiff >= 0
       ? `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "alle" : "under"}`
       : `${fmt(Math.abs(todayDiff))} € ${locale === "fi" ? "yli" : "over"}`)

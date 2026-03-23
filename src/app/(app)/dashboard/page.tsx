@@ -288,6 +288,7 @@ export default function DashboardPage() {
   const totalBillsFull = bills.filter((b) => b.is_active).reduce((s, b) => s + b.amount, 0);
   const discretionaryBudget = Math.max(0, combinedIncome - savingRate - totalBillsFull - debtMonthly - investmentMonthly);
   const discretionaryTargetPerDay = discretionaryBudget > 0 ? discretionaryBudget / daysInMonth : 0;
+  console.debug("[dashboard] discretionary:", Math.round(discretionaryBudget), "daily:", Math.round(discretionaryTargetPerDay), "budget:", dailyBudget);
 
   // Spending chart: ALL spending with Vakaa talous target (income - savings) / days
   const totalTargetPerDay = combinedIncome > 0 && savingRate > 0
