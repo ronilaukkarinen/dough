@@ -23,7 +23,7 @@ interface DailyAllowanceProps {
   monthExpenses?: number;
   trendPercent?: number;
   billsDelayNeeded?: boolean;
-  budgetIfDelayed?: number;
+  budgetWithBills?: number;
   budgetBreakdown?: {
     startDay: number;
     endDay: number;
@@ -54,7 +54,7 @@ export function DailyAllowance({
   monthExpenses = 0,
   trendPercent = 0,
   billsDelayNeeded = false,
-  budgetIfDelayed = 0,
+  budgetWithBills = 0,
   budgetBreakdown,
   currency = "€",
 }: DailyAllowanceProps) {
@@ -63,7 +63,6 @@ export function DailyAllowance({
   const [budgetInfoOpen, setBudgetInfoOpen] = useState(false);
   const effectiveBudget = todaySpentAll > 0 ? Math.max(0, todayRemaining) : dailyBudget;
   const overspent = todayRemaining < 0;
-  const budgetZero = dailyBudget === 0;
   const status =
     effectiveBudget > 50 ? "good" : effectiveBudget > 20 ? "tight" : "danger";
 
@@ -94,15 +93,14 @@ export function DailyAllowance({
             <span className="daily-allowance-hero-unit">{todaySpentAll > 0 ? "" : t.dashboard.perDay}</span>
           </div>
           <p className="daily-allowance-hero-note">
-            {budgetZero && billsDelayNeeded ? (
+            {billsDelayNeeded ? (
               <>
                 {locale === "fi"
                   ? "Jos maksaisit kaikki laskut, päiväbudjettisi olisi "
                   : "If you paid all bills, your daily budget would be "}
                 {(() => {
-                  const afterBills = Math.round((availableBalance - upcomingBills) / Math.max(1, daysUntilIncome));
-                  const cls = afterBills >= 0 ? "text-positive" : "text-negative";
-                  return <span className={cls}><F v={afterBills} s={` ${currency}`} /></span>;
+                  const cls = budgetWithBills > 0 ? "text-positive" : "text-negative";
+                  return <span className={cls}><F v={budgetWithBills} s={` ${currency}`} /></span>;
                 })()}
                 {". "}
                 {locale === "fi" ? "Laskuja " : "Bills "}

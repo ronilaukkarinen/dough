@@ -45,7 +45,7 @@ export default function DashboardPage() {
   const [debtItems, setDebtItems] = useState<{ amount: number; dueDay: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [excludedAccountIds, setExcludedAccountIds] = useState<string[]>([]);
-  const [minDailyBudget, setMinDailyBudget] = useState(0);
+  const [budgetIncludeBills, setBudgetIncludeBills] = useState(true);
   const [householdSize, setHouseholdSize] = useState(1);
   const [personalBudgetShare, setPersonalBudgetShare] = useState(0);
   const [monthlyHistory, setMonthlyHistory] = useState<{ month: string; income: number; expenses: number }[]>([]);
@@ -71,8 +71,8 @@ export default function DashboardPage() {
       if (householdData.settings?.budget_excluded_accounts) {
         try { setExcludedAccountIds(JSON.parse(householdData.settings.budget_excluded_accounts)); } catch {}
       }
-      if (householdData.settings?.min_daily_budget) {
-        setMinDailyBudget(parseFloat(householdData.settings.min_daily_budget) || 0);
+      if (householdData.settings?.budget_include_bills !== undefined) {
+        setBudgetIncludeBills(householdData.settings.budget_include_bills === "1");
       }
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       // Merge subscriptions into bills for unified calculations
@@ -216,9 +216,12 @@ export default function DashboardPage() {
       .map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
     resolveDay,
   };
-  const budgetResult = calculateDailyBudget(budgetParams);
-  let dailyBudget = Math.max(budgetResult.dailyBudget, minDailyBudget);
-  const billsDelayNeeded = budgetResult.dailyBudget === 0 && budgetParams.unpaidBills.length > 0;
+  // Calculate with and without bills
+  const budgetWithBills = calculateDailyBudget(budgetParams);
+  const budgetWithoutBills = calculateDailyBudget({ ...budgetParams, unpaidBills: [], debts: [] });
+  const budgetResult = budgetIncludeBills ? budgetWithBills : budgetWithoutBills;
+  const dailyBudget = budgetResult.dailyBudget;
+  const billsDelayNeeded = !budgetIncludeBills && budgetWithBills.dailyBudget < budgetWithoutBills.dailyBudget;
 
   const todayRemaining = dailyBudget - todaySpentAll;
 
@@ -409,6 +412,7 @@ export default function DashboardPage() {
         dailyBudget={dailyBudget}
         availableBalance={availableBalance}
         billsDelayNeeded={billsDelayNeeded}
+        budgetWithBills={budgetWithBills.dailyBudget}
         upcomingBills={bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0)}
         accountCount={data.summary.accounts.filter((a) => (a.type === "checking" || a.type === "savings") && !excludedAccountIds.includes(a.id)).length}
         billCount={bills.filter((b) => b.is_active && !b.is_paid).length}
