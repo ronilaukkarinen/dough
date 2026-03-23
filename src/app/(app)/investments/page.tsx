@@ -13,6 +13,7 @@ import {
   Loader2,
   Save,
   Check,
+  GripVertical,
 } from "lucide-react";
 import {
   AreaChart,
@@ -142,6 +143,7 @@ export default function InvestmentsPage() {
   const [projectionYears, setProjectionYears] = useState(20);
   const [tickerData, setTickerData] = useState<Record<string, TickerData>>({});
   const [chartRange, setChartRange] = useState<"1W" | "6M" | "MAX">("6M");
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
 
   useEffect(() => {
     console.debug("[investments] Loading investment accounts");
@@ -193,6 +195,23 @@ export default function InvestmentsPage() {
     } finally {
       setTimeout(() => setSaving(null), 1000);
     }
+  };
+
+  const handleDragStart = (idx: number) => { setDragIdx(idx); };
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (dragIdx === null || dragIdx === idx) return;
+    const reordered = [...investments];
+    const [moved] = reordered.splice(dragIdx, 1);
+    reordered.splice(idx, 0, moved);
+    setInvestments(reordered);
+    setDragIdx(idx);
+  };
+  const handleDragEnd = () => {
+    setDragIdx(null);
+    const order = investments.map((i) => i.id);
+    fetch("/api/investments", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ order }) }).catch(() => {});
+    console.info("[investments] Saved new order");
   };
 
   const updateInvestment = (id: string, field: keyof InvestmentData, value: number) => {
@@ -341,9 +360,10 @@ export default function InvestmentsPage() {
             ))}
           </div>
           <Card className="list-card">
-            {investments.map((inv) => (
-            <div key={inv.id} className="debt-item">
+            {investments.map((inv, idx) => (
+            <div key={inv.id} className="debt-item" draggable onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={handleDragEnd}>
               <div className="debt-item-header">
+                <GripVertical className="drag-handle" />
                 <div>
                   <p className="debt-item-name">{inv.name}</p>
                   {inv.monthlyTransferred > 0 && (
