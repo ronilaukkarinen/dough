@@ -87,10 +87,27 @@ export default function NetWorthPage() {
 
       const tl: { year: string; netWorth: number; baseline: number }[] = [{ year: "0", netWorth: Math.round(currentNw), baseline: Math.round(currentNw) }];
 
-      // Model: debt payments end when debts are paid off, freeing up cash flow
-      // avgMonthlySavings includes debt payments as expenses, so after debts clear
-      // the monthly savings increases by monthlyDebtPayment
-      const monthsToPayoff = monthlyDebtPayment > 0 ? Math.ceil(debtRemaining / monthlyDebtPayment) : 0;
+      // Calculate actual months to payoff WITH interest
+      const debts = debtData.debts || [];
+      let monthsToPayoff = 0;
+      if (debts.length > 0 && monthlyDebtPayment > 0) {
+        // Simulate payoff with interest rates
+        let simDebts = debts.map((d: { balance: number; interestRate: number; minimumPayment: number }) => ({
+          balance: d.balance,
+          rate: (d.interestRate || 0) / 100 / 12,
+          payment: d.minimumPayment || 0,
+        }));
+        for (let m = 0; m < 600; m++) {
+          let totalRemaining = 0;
+          for (const d of simDebts) {
+            if (d.balance <= 0) continue;
+            d.balance = d.balance * (1 + d.rate) - d.payment;
+            if (d.balance < 0) d.balance = 0;
+            totalRemaining += d.balance;
+          }
+          if (totalRemaining <= 0) { monthsToPayoff = m + 1; break; }
+        }
+      }
 
       let nw1 = currentNw; // with compound returns
       let nw2 = currentNw; // without compound returns (baseline)
