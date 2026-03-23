@@ -348,9 +348,9 @@ export default function DashboardPage() {
     }),
     {
       month: now.toLocaleDateString(locale === "fi" ? "fi" : "en", { month: "short" }),
-      income: Math.round(combinedIncome * 100) / 100,
+      income: Math.round(realIncome * 100) / 100,
       expenses: Math.round(monthActivity * 100) / 100,
-      net: Math.round((combinedIncome - monthActivity) * 100) / 100,
+      net: Math.round((realIncome - monthActivity) * 100) / 100,
     },
   ];
 
