@@ -4,7 +4,7 @@
 * Use snowball debt payoff matching Velat tab logic for net worth forecast
 * Show actual years on net worth projection X axis, default to 10 year view
 * Add breathing room and money timeline rules to AI advisor
-* Apply bills inclusion setting to AI chat daily budget
+* Apply bills inclusion setting to AI chat, summary, and daily budget consistently
 * Fix tooltip font-weight inheritance from parent elements
 
 ### 1.7.4: 2026-03-23
