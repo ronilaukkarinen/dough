@@ -49,10 +49,16 @@ interface TickerData {
   sparkline: number[];
 }
 
-function TickerChart({ data, positive, currency, fmt: fmtFn }: { data: number[]; positive: boolean; currency: string; fmt: (v: number) => string }) {
+function TickerChart({ data, positive, currency, fmt: fmtFn, range }: { data: number[]; positive: boolean; currency: string; fmt: (v: number) => string; range: "1W" | "6M" | "YTD" }) {
   if (data.length < 2) return null;
-  const color = positive ? "#4ade80" : "#f87171";
-  const chartData = data.map((v, i) => ({ i, price: v }));
+  // Slice data based on range (approximate trading days: 1W=5, 6M=130, YTD=varies)
+  const now = new Date();
+  const ytdDays = Math.ceil((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000) * 5 / 7;
+  const sliceCount = range === "1W" ? 5 : range === "6M" ? 130 : Math.round(ytdDays);
+  const sliced = data.length > sliceCount ? data.slice(-sliceCount) : data;
+  const rangePositive = sliced.length >= 2 ? sliced[sliced.length - 1] >= sliced[0] : positive;
+  const color = rangePositive ? "#4ade80" : "#f87171";
+  const chartData = sliced.map((v, i) => ({ i, price: v }));
   return (
     <ResponsiveContainer width="100%" height={100}>
       <AreaChart data={chartData} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
@@ -125,6 +131,7 @@ export default function InvestmentsPage() {
   const [saving, setSaving] = useState<string | null>(null);
   const [projectionYears, setProjectionYears] = useState(20);
   const [tickerData, setTickerData] = useState<Record<string, TickerData>>({});
+  const [chartRange, setChartRange] = useState<"1W" | "6M" | "YTD">("6M");
 
   useEffect(() => {
     console.debug("[investments] Loading investment accounts");
@@ -243,10 +250,88 @@ export default function InvestmentsPage() {
         </Card>
       </div>
 
-      {/* Investment accounts list with editable fields */}
+      {/* Projection chart */}
       {investments.length > 0 && (
-        <Card className="list-card">
-          {investments.map((inv) => (
+        <div className="form-stack">
+          <div className="payoff-header">
+            <h2 className="payoff-title">{t.investments.projectedGrowth}</h2>
+            <div className="form-row">
+              <Label className="payoff-extra-label">{locale === "fi" ? "Ajanjakso:" : "Time horizon:"}</Label>
+              <Input
+                type="number"
+                value={projectionYears}
+                onChange={(e) => setProjectionYears(Math.max(1, Math.min(50, Number(e.target.value))))}
+                className="payoff-extra-input"
+              />
+              <span className="payoff-extra-label">{locale === "fi" ? "vuotta" : "years"}</span>
+            </div>
+          </div>
+
+          <Card className="metric-card">
+            <div className="payoff-stats">
+              <div>
+                <span className="payoff-stats-label">{t.investments.projectedValue} </span>
+                <span className="payoff-stats-value" data-color="positive"><F v={projection.finalValue} /></span>
+              </div>
+              <div>
+                <span className="payoff-stats-label">{t.investments.invested} </span>
+                <span className="payoff-stats-value"><F v={projection.totalInvested} /></span>
+              </div>
+              <div>
+                <span className="payoff-stats-label">{t.investments.returns} </span>
+                <span className="payoff-stats-value" data-color="positive"><>+<F v={projection.totalReturns} /></></span>
+              </div>
+            </div>
+            {projection.timeline.length > 1 && (
+              <ChartContainer height={250}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={projection.timeline} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="investGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#4ade80" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#4ade80" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="investedGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#818cf8" stopOpacity={0.2} />
+                        <stop offset="100%" stopColor="#818cf8" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                    <XAxis dataKey="year" tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}${locale === "fi" ? "v" : "y"}`} />
+                    <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => mask(v >= 1000000 ? `${(v / 1000000).toFixed(1)}M €` : v >= 1000 ? `${(v / 1000).toFixed(0)}k €` : `${Math.round(v)} €`)} width={55} />
+                    <Tooltip
+                      content={({ active, payload, label }) =>
+                        active && payload?.length ? (
+                          <div className="chart-tooltip">
+                            <p className="chart-tooltip-label">{label} {locale === "fi" ? "vuotta" : "years"}</p>
+                            <p className="chart-tooltip-value text-positive">{fmt(Number(payload[0].value))} €</p>
+                            <p className="chart-tooltip-value text-foreground">{locale === "fi" ? "Sijoitettu" : "Invested"}: {fmt(Number(payload[1].value))} €</p>
+                          </div>
+                        ) : null
+                      }
+                    />
+                    <Area type="monotone" dataKey="value" stroke="#4ade80" strokeWidth={2} fill="url(#investGrad)" />
+                    <Area type="monotone" dataKey="invested" stroke="#818cf8" strokeWidth={1.5} fill="url(#investedGrad)" strokeDasharray="4 4" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {/* Range filter + Investment accounts list */}
+      {investments.length > 0 && (
+        <>
+          <div className="chart-range-filter">
+            {(["1W", "6M", "YTD"] as const).map((r) => (
+              <button key={r} type="button" className={`chart-range-btn ${chartRange === r ? "is-active" : ""}`} onClick={() => setChartRange(r)}>
+                {r}
+              </button>
+            ))}
+          </div>
+          <Card className="list-card">
+            {investments.map((inv) => (
             <div key={inv.id} className="debt-item">
               <div className="debt-item-header">
                 <div>
@@ -273,7 +358,7 @@ export default function InvestmentsPage() {
                         {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}%
                       </span>
                     </p>
-                    {td.sparkline?.length > 1 && <TickerChart data={td.sparkline} positive={td.dayChangePct >= 0} currency={td.currency} fmt={fmt} />}
+                    {td.sparkline?.length > 1 && <TickerChart data={td.sparkline} positive={td.dayChangePct >= 0} currency={td.currency} fmt={fmt} range={chartRange} />}
                   </div>
                 );
               })()}
@@ -339,88 +424,7 @@ export default function InvestmentsPage() {
             </div>
           ))}
         </Card>
-      )}
-
-      {/* Projection chart */}
-      {investments.length > 0 && (
-        <div className="form-stack">
-          <div className="payoff-header">
-            <h2 className="payoff-title">{t.investments.projectedGrowth}</h2>
-            <div className="form-row">
-              <Label className="payoff-extra-label">{locale === "fi" ? "Ajanjakso:" : "Time horizon:"}</Label>
-              <Input
-                type="number"
-                value={projectionYears}
-                onChange={(e) => setProjectionYears(Math.max(1, Math.min(50, Number(e.target.value))))}
-                className="payoff-extra-input"
-              />
-              <span className="payoff-extra-label">{locale === "fi" ? "vuotta" : "years"}</span>
-            </div>
-          </div>
-
-          <Card className="metric-card">
-            <div className="payoff-stats">
-              <div>
-                <span className="payoff-stats-label">{t.investments.projectedValue} </span>
-                <span className="payoff-stats-value" data-color="positive"><F v={projection.finalValue} /></span>
-              </div>
-              <div>
-                <span className="payoff-stats-label">{t.investments.invested} </span>
-                <span className="payoff-stats-value"><F v={projection.totalInvested} /></span>
-              </div>
-              <div>
-                <span className="payoff-stats-label">{t.investments.returns} </span>
-                <span className="payoff-stats-value" data-color="positive"><>+<F v={projection.totalReturns} /></></span>
-              </div>
-            </div>
-            {projection.timeline.length > 1 && (
-              <ChartContainer height={250}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={projection.timeline} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="investGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#4ade80" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="#4ade80" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="investedGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#818cf8" stopOpacity={0.2} />
-                        <stop offset="100%" stopColor="#818cf8" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                    <XAxis
-                      dataKey="year"
-                      tick={{ fill: "#71717a", fontSize: 10 }}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(v) => `${v}${locale === "fi" ? "v" : "y"}`}
-                    />
-                    <YAxis
-                      tick={{ fill: "#71717a", fontSize: 10 }}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(v) => mask(v >= 1000000 ? `${(v / 1000000).toFixed(1)}M €` : v >= 1000 ? `${(v / 1000).toFixed(0)}k €` : `${Math.round(v)} €`)}
-                      width={55}
-                    />
-                    <Tooltip
-                      content={({ active, payload, label }) =>
-                        active && payload?.length ? (
-                          <div className="chart-tooltip">
-                            <p className="chart-tooltip-label">{label} {locale === "fi" ? "vuotta" : "years"}</p>
-                            <p className="chart-tooltip-value text-positive">{fmt(Number(payload[0].value))} €</p>
-                            <p className="chart-tooltip-value text-foreground">{locale === "fi" ? "Sijoitettu" : "Invested"}: {fmt(Number(payload[1].value))} €</p>
-                          </div>
-                        ) : null
-                      }
-                    />
-                    <Area type="monotone" dataKey="value" stroke="#4ade80" strokeWidth={2} fill="url(#investGrad)" />
-                    <Area type="monotone" dataKey="invested" stroke="#818cf8" strokeWidth={1.5} fill="url(#investedGrad)" strokeDasharray="4 4" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            )}
-          </Card>
-        </div>
+        </>
       )}
     </div>
   );

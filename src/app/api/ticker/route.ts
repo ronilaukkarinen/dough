@@ -83,7 +83,7 @@ interface TickerData {
 async function fetchTicker(symbol: string): Promise<TickerData | null> {
   console.info("[ticker] Fetching", symbol, "from Yahoo Finance");
   try {
-    const res = await fetch(`${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?range=3mo&interval=1d`, {
+    const res = await fetch(`${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?range=1y&interval=1d`, {
       headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" },
       signal: AbortSignal.timeout(10000),
     });
@@ -107,8 +107,8 @@ async function fetchTicker(symbol: string): Promise<TickerData | null> {
 
     // Extract historical close prices for sparkline
     const closes: number[] = (result0?.indicators?.quote?.[0]?.close ?? []).filter((v: number | null) => v != null);
-    // Keep last 60 data points max
-    const sparkline = closes.length > 60 ? closes.slice(-60) : closes;
+    // Keep all data points (up to ~260 trading days for 1 year)
+    const sparkline = closes;
 
     const tickerResult: TickerData = {
       symbol: meta.symbol || symbol,
