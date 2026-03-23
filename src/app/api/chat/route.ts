@@ -56,7 +56,13 @@ export async function POST(request: Request) {
 
           const accountsWithNotes = summary.accounts
             .filter((a: any) => a.type === "checking" || a.type === "savings" || a.type === "otherAsset")
-            .map((a: any) => ({ name: a.name, balance: a.balance, type: a.type, note: accountNotesMap[a.id] || "" }));
+            .map((a: any) => ({
+              name: a.name,
+              balance: a.balance,
+              type: a.type,
+              note: accountNotesMap[a.id] || "",
+              excludedFromBudget: excludedIds.includes(a.id),
+            }));
 
           const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
           const daysLeft = daysInMonth - now.getDate();

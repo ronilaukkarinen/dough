@@ -62,8 +62,8 @@ Current financial snapshot:
 - Income sources: ${ctx.incomeSources.map(i => `${i.name}: ${i.amount} euros (day ${i.expectedDay})`).join(", ") || "none configured"}
 - Monthly expenses so far (excluding transfers): ${ctx.monthlyExpenses} euros
 
-${ctx.accounts.length > 0 ? `Accounts:
-${ctx.accounts.map(a => `- ${a.name}: ${a.balance} euros (${a.type})${a.note ? ` — ${a.note}` : ""}`).join("\n")}` : ""}
+${ctx.accounts.length > 0 ? `Accounts (ALWAYS consider ALL accounts when giving advice, even excluded ones have real money):
+${ctx.accounts.map(a => `- ${a.name}: ${a.balance} euros (${a.type})${a.note ? `, ${a.note}` : ""}${(a as Record<string, unknown>).excludedFromBudget ? " [excluded from daily budget]" : ""}`).join("\n")}` : ""}
 
 Upcoming bills this month:
 ${ctx.upcomingBills.length > 0 ? ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th${b.status ? ` - ${b.status.toUpperCase()}` : ""})`).join("\n") : "- None configured"}
