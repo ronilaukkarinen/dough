@@ -301,6 +301,17 @@ function initializeDb(db: Database.Database) {
     );
   `);
 
+  // Add sparkline_json column to ticker_cache if missing
+  try {
+    const tickerCols = db.prepare("PRAGMA table_info(ticker_cache)").all() as { name: string }[];
+    if (tickerCols.length > 0 && !tickerCols.some((c) => c.name === "sparkline_json")) {
+      console.info("[db] Adding sparkline_json column to ticker_cache");
+      db.exec("ALTER TABLE ticker_cache ADD COLUMN sparkline_json TEXT DEFAULT '[]'");
+    }
+  } catch (err) {
+    console.warn("[db] ticker_cache migration:", err);
+  }
+
   // Add ticker column to investment_overrides if missing
   const investCols = db.prepare("PRAGMA table_info(investment_overrides)").all() as { name: string }[];
   if (!investCols.some((c) => c.name === "ticker")) {

@@ -127,8 +127,12 @@ export async function GET(request: Request) {
       for (let i = 0; i < toFetch.length; i++) {
         const data = fetched[i];
         if (data) {
-          upsert.run(data.symbol, data.name, data.price, data.previousClose, data.currency, data.dayChangePct, data.week52High, data.week52Low, JSON.stringify(data.sparkline));
           result[toFetch[i]] = data;
+          try {
+            upsert.run(data.symbol, data.name, data.price, data.previousClose, data.currency, data.dayChangePct, data.week52High, data.week52Low, JSON.stringify(data.sparkline));
+          } catch (cacheErr) {
+            console.warn("[ticker] Cache write failed for", toFetch[i], cacheErr);
+          }
         }
       }
     }

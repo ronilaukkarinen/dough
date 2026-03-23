@@ -49,18 +49,26 @@ interface TickerData {
   sparkline: number[];
 }
 
-function Sparkline({ data, positive }: { data: number[]; positive: boolean }) {
+function TickerChart({ data, positive }: { data: number[]; positive: boolean }) {
   if (data.length < 2) return null;
   const min = Math.min(...data);
   const max = Math.max(...data);
   const range = max - min || 1;
-  const w = 120;
-  const h = 32;
-  const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(" ");
+  const w = 400;
+  const h = 60;
   const color = positive ? "#4ade80" : "#f87171";
+  const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * (h - 4) - 2}`).join(" ");
+  const fillPoints = `0,${h} ${points} ${w},${h}`;
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="investment-sparkline">
-      <polyline points={points} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox={`0 0 ${w} ${h}`} className="investment-chart" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`tcFill-${positive}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.15} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <polygon points={fillPoints} fill={`url(#tcFill-${positive})`} />
+      <polyline points={points} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -253,7 +261,7 @@ export default function InvestmentsPage() {
                             {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}%
                           </span>
                         </p>
-                        {td.sparkline?.length > 1 && <Sparkline data={td.sparkline} positive={td.dayChangePct >= 0} />}
+                        {td.sparkline?.length > 1 && <TickerChart data={td.sparkline} positive={td.dayChangePct >= 0} />}
                       </div>
                     );
                   })()}
