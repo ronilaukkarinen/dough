@@ -115,7 +115,23 @@ export async function POST(request: Request) {
     }
 
     const data = await res.json();
-    console.info("[ynab/transaction] Transaction created:", data.data?.transaction?.id, "category:", resolvedCategoryId || "uncategorized");
+    const createdTx = data.data?.transaction;
+    console.info("[ynab/transaction] Transaction created:", createdTx?.id, "category:", resolvedCategoryId || "uncategorized");
+
+    // Persist to local SQLite immediately so all users see it without waiting for sync
+    if (createdTx) {
+      try {
+        const { getDb: getTxDb } = await import("@/lib/db");
+        getTxDb().prepare(`
+          INSERT INTO transactions (user_id, ynab_id, date, amount, payee, category, memo, account_id, approved, cleared)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 'cleared')
+          ON CONFLICT(user_id, ynab_id) DO UPDATE SET date=excluded.date, amount=excluded.amount, payee=excluded.payee, category=excluded.category, memo=excluded.memo, account_id=excluded.account_id
+        `).run(user.id, createdTx.id, date || new Date().toISOString().slice(0, 10), parseFloat(amount) * -1, payee_name, createdTx.category_name || "", memo || "", account_id);
+        console.info("[ynab/transaction] Persisted to local SQLite");
+      } catch (err) {
+        console.warn("[ynab/transaction] Failed to persist locally:", err);
+      }
+    }
 
     setHouseholdSetting("last_transaction_added", new Date().toISOString());
     eventBus.emit("data:updated", { source: "transaction-added", userId: user.id });
