@@ -1,3 +1,11 @@
+### 1.7.4: 2026-03-23
+
+* Fix bill auto-matching to not match previous month late payments as current month
+* Respect manual paid/unpaid overrides in AI chat and summary context
+* Distinguish bills from auto-charged subscriptions in AI context
+* Add reasoning requirement to AI default guidelines
+* Make investment chart color always reflect daily change
+
 ### 1.7.3: 2026-03-23
 
 * Show excluded flag on accounts in AI context so advisor considers all accounts
