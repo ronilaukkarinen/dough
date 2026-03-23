@@ -1,3 +1,14 @@
+### 1.6.1: 2026-03-23
+
+* Add transaction edit modal with click-to-edit payee, amount, date, account, memo
+* Save transaction edits to both local SQLite and YNAB API
+* Fix cash flow chart using expected income instead of actual for current month
+* Fix doubled transaction data caused by multi-user sync deduplication
+* Fix CSS class collision between bill list-item and investment edit-item
+* Auto-refresh transactions page on SSE events from other users
+* Show AI thinking animation when returning to chat with pending response
+* Move drag handle to right side after amount
+
 ### 1.6.0: 2026-03-23
 
 * Add ticker field to investment overrides for linking accounts to stock/index symbols
@@ -23,6 +34,9 @@
 * Fix doubled transaction data caused by multi-user sync deduplication
 * Fix CSS class collision between bill list-item and investment edit-item
 * Move drag handle to right side after amount
+* Add transaction edit modal with click-to-edit payee, amount, date, account, memo
+* Save transaction edits to both local SQLite and YNAB API
+* Fix cash flow chart using expected income instead of actual for current month
 * Always show savings amount in green in greeting
 
 ### 1.5.4: 2026-03-23
