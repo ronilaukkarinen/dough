@@ -321,6 +321,7 @@ export default function InvestmentsPage() {
                     <option value="MSFT" label="Microsoft" />
                     <option value="TSLA" label="Tesla" />
                     <option value="AMZN" label="Amazon" />
+                    <option value="VWCE.DE" label="Vanguard FTSE All-World (Revolut proxy)" />
                     <option value="SELIGSON:brands" label="Seligson Global Top 25 Brands" />
                     <option value="SELIGSON:suomi" label="Seligson Finland Index" />
                     <option value="SELIGSON:phoebus" label="Seligson Phoebus" />
