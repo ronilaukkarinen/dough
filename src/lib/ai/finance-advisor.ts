@@ -51,6 +51,8 @@ CRITICAL RULES FOR CALCULATIONS:
 - The daily budget below is the SAME number shown on the user's dashboard. USE THIS NUMBER for per-day spending advice. Do not calculate your own.
 - Bills and debt payments listed below will come out of the balance separately — the daily budget already accounts for the saving goal but NOT for upcoming bills/debts. Mention those separately when relevant.
 - Income arrives at specific dates. Do not pool all future income together.
+- NEVER suggest paying all bills at once if it would leave less than daily budget * days until next income for daily living (groceries, transport, essentials). Always keep breathing room.
+- When suggesting bill payments, calculate: balance after payment vs (daily budget * days until next income). If the remainder is too tight, suggest paying only the most urgent bill and delaying the rest until income arrives.
 
 Current financial snapshot:
 - Checking+savings balance: ${ctx.totalBalance} euros
