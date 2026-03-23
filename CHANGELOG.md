@@ -1,15 +1,19 @@
 ### 1.6.0: 2026-03-23
 
 * Add ticker field to investment overrides for linking accounts to stock/index symbols
-* Add ticker API with Yahoo Finance scraping and 15-minute SQLite cache
-* Show live stock price and daily change on investment accounts with linked tickers
+* Add ticker API with Yahoo Finance scraping and 15-minute SQLite cache, all-time monthly data for MAX
+* Show live stock price, daily change, and interactive chart per investment with 1W/6M/MAX range filter
+* Add Seligson fund scraping with proxy chart data from related indexes
+* Add drag-and-drop reordering of investment accounts with saved order
+* Auto-calculate return % from ticker data when available
+* Add investment projection chart and summary to net worth page
 * Add notes to all three investment summary cards
-* Improve net worth forecast to use full snapshot history trend, extend to 14 days
-* Add investment return forecast and monthly investment summary to net worth page
 * Serve investment data from SQLite instead of legacy JSON cache
 * Fix Finnish typing indicator, separate typing and thinking translations
 * Add no em-dash rule to AI chat default guidelines
 * Show family spending in greeting even when personal spending is zero
+* Always show savings amount in green in greeting
+* Fix transaction unread indicator triggering from own transactions
 * Always show savings amount in green in greeting
 
 ### 1.5.4: 2026-03-23
