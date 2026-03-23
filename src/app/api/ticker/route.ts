@@ -51,6 +51,29 @@ async function fetchSeligson(fundKey: string): Promise<TickerData | null> {
 
     console.info("[ticker] Seligson", fund.name, "NAV:", price, "change:", dayChangePct + "%");
 
+    // Fetch proxy chart data from a related index for sparkline
+    let sparkline: number[] = [];
+    const proxyTicker = fund.slug.includes("suomi") ? "^OMXH25" : "URTH";
+    try {
+      const proxyRes = await fetch(`${YAHOO_CHART_URL}/${proxyTicker}?range=1y&interval=1d`, {
+        headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (proxyRes.ok) {
+        const proxyData = await proxyRes.json();
+        const closes: number[] = (proxyData?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? []).filter((v: number | null) => v != null);
+        if (closes.length > 1) {
+          // Normalize proxy data to match fund NAV scale
+          const proxyFirst = closes[0];
+          const scale = price / (closes[closes.length - 1] || proxyFirst);
+          sparkline = closes.map((c) => Math.round(c * scale * 1000) / 1000);
+          console.debug("[ticker] Seligson proxy sparkline from", proxyTicker, sparkline.length, "points");
+        }
+      }
+    } catch (proxyErr) {
+      console.warn("[ticker] Seligson proxy chart error:", proxyErr);
+    }
+
     return {
       symbol: `SELIGSON:${fundKey.toUpperCase()}`,
       name: fund.name,
@@ -60,7 +83,7 @@ async function fetchSeligson(fundKey: string): Promise<TickerData | null> {
       dayChangePct,
       week52High: 0,
       week52Low: 0,
-      sparkline: [],
+      sparkline,
     };
   } catch (err) {
     console.error("[ticker] Seligson scrape error:", err);

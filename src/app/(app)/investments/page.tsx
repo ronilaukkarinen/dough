@@ -68,7 +68,7 @@ function TickerChart({ data, positive, currency, fmt: fmtFn, range }: { data: nu
             <stop offset="100%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <YAxis hide domain={[0, "auto"]} />
+        <YAxis hide />
         <Tooltip
           content={({ active, payload }) => {
             if (!active || !payload?.length) return null;
