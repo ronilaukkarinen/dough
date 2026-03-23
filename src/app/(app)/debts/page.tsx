@@ -119,7 +119,7 @@ export default function DebtsPage() {
     setAiLoading(true);
     setAiSuggestion(null);
     console.info("[debts] Fetching AI suggestion");
-    fetch("/api/debts/suggestion")
+    fetch("/api/debts/suggestion?refresh=1")
       .then((r) => r.json())
       .then((data) => {
         if (data.suggestion) setAiSuggestion(data.suggestion);
