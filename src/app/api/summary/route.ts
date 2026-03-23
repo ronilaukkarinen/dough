@@ -230,7 +230,12 @@ export async function GET(request: Request) {
       resolveDay,
     });
 
+    const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const weekday = weekdays[now.getDay()];
+
     const prompt = `${lang} You are a personal finance advisor.${householdProfile ? ` Household: ${householdProfile}.` : ""} ${summaryInstructions}
+
+Today is ${weekday} ${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}.
 
 CRITICAL RULES:
 - Use the PRE-CALCULATED projected month-end balance below. Do NOT calculate your own projection.
