@@ -55,8 +55,8 @@ export function calculateDailyBudget(params: {
   const daysLeft = daysInMonth - today;
   if (daysLeft <= 0) return { dailyBudget: 0, tightestSegment: null, segmentCount: 0 };
 
-  // Start with current balance — overdue obligations are already reflected in the balance
-  // Only future obligations (due after today) are handled in the segment walk below
+  // Start with current balance
+  // Overdue obligations are already reflected in the balance
   const startBalance = balance;
 
   // Build sorted list of income event days as segment boundaries
@@ -106,7 +106,7 @@ export function calculateDailyBudget(params: {
     }
 
     // Available pool for this segment = running balance minus obligations
-    // For the last segment, also subtract saving goal (money to keep at month end)
+    // For the last segment, also subtract saving goal (money to save from income)
     const isLastSegment = s === boundaries.length - 2;
     const savingGoalDeducted = isLastSegment ? savingGoal : 0;
     const pool = runningBalance - segObligations - savingGoalDeducted;

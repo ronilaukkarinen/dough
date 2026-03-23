@@ -144,8 +144,8 @@ export function DailyAllowance({
             ) : (
               `${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}`
             )}
-            {!overspent && status === "danger" && `. ${t.dashboard.cutNonEssentials}`}
-            {!overspent && status === "tight" && `. ${t.dashboard.beCareful}`}
+            {!billsDelayNeeded && !overspent && status === "danger" && `. ${t.dashboard.cutNonEssentials}`}
+            {!billsDelayNeeded && !overspent && status === "tight" && `. ${t.dashboard.beCareful}`}
           </p>
         </div>
         <div className="daily-allowance-hero-bg">
