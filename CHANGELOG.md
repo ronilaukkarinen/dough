@@ -1,3 +1,7 @@
+### 1.7.1: 2026-03-23
+
+* Add auto mode for bills in daily budget: includes bills when balance covers them, excludes when it does not
+
 ### 1.7.0: 2026-03-23
 
 * Add savings streak tracker with animated fire/cross indicators for last 7 days
