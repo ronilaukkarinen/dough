@@ -106,7 +106,7 @@ export function DailyAllowance({
                       const tStatus = tomorrowBudget > 50 ? "text-positive" : tomorrowBudget > 20 ? "text-chart-3" : "text-negative";
                       return <span className={tStatus}><F v={tomorrowBudget} s={` ${currency}`} /></span>;
                     })()}
-                    {` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}`}
+                    {` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}.`}
                   </>
                 )}
               </>
