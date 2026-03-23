@@ -49,9 +49,11 @@ interface TickerData {
   sparkline: number[];
 }
 
+let tickerChartId = 0;
+
 function TickerChart({ data, positive, currency, fmt: fmtFn, range }: { data: number[]; positive: boolean; currency: string; fmt: (v: number) => string; range: "1W" | "6M" | "YTD" }) {
   if (data.length < 2) return null;
-  // Slice data based on range (approximate trading days: 1W=5, 6M=130, YTD=varies)
+  const uid = `tc-${++tickerChartId}`;
   const now = new Date();
   const ytdDays = Math.ceil((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000) * 5 / 7;
   const sliceCount = range === "1W" ? 5 : range === "6M" ? 130 : Math.round(ytdDays);
@@ -63,7 +65,7 @@ function TickerChart({ data, positive, currency, fmt: fmtFn, range }: { data: nu
     <ResponsiveContainer width="100%" height={100}>
       <AreaChart data={chartData} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
         <defs>
-          <linearGradient id={`tcFill-${positive}`} x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={uid} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity={0.15} />
             <stop offset="100%" stopColor={color} stopOpacity={0} />
           </linearGradient>
@@ -80,7 +82,7 @@ function TickerChart({ data, positive, currency, fmt: fmtFn, range }: { data: nu
             );
           }}
         />
-        <Area type="monotone" dataKey="price" stroke={color} strokeWidth={2} fill={`url(#tcFill-${positive})`} dot={false} />
+        <Area type="monotone" dataKey="price" stroke={color} strokeWidth={2} fill={`url(#${uid})`} dot={false} />
       </AreaChart>
     </ResponsiveContainer>
   );
