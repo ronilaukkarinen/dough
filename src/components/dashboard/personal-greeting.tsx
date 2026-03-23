@@ -61,7 +61,7 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
               {locale === "fi" ? " verran. Huomenna parempi kulukuri sitten." : "."}
             </>
           : <>
-              {locale === "fi" ? "Käytä alle " : "Spend under "}
+              {locale === "fi" ? "Käytä mielellään alle " : "Preferably spend under "}
               <span className="personal-greeting-value" data-status={valueStatus(suggestedForYou, dailyBudget)}>
                 <F v={suggestedForYou} />
               </span>
