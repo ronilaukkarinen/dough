@@ -16,6 +16,7 @@ import { NetWorth } from "@/components/dashboard/net-worth";
 import { EntryReminder } from "@/components/dashboard/entry-reminder";
 import { PersonalGreeting } from "@/components/dashboard/personal-greeting";
 import { SpendingFlow } from "@/components/dashboard/spending-flow";
+import { SavingsStreak } from "@/components/dashboard/savings-streak";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -128,6 +129,7 @@ export default function DashboardPage() {
     if (data?.syncedAt) setLastYnabSync(data.syncedAt);
   }, [data?.syncedAt]);
 
+
   if (loading && !data) {
     return (
       <div className="page-loading">
@@ -228,6 +230,8 @@ export default function DashboardPage() {
   const budgetResult = budgetIncludeBills ? budgetWithBills : budgetWithoutBills;
   const dailyBudget = budgetResult.dailyBudget;
   const billsDelayNeeded = !budgetIncludeBills && budgetWithBills.dailyBudget < budgetWithoutBills.dailyBudget;
+
+  // Persist today's daily budget for streak tracking (fire once on load)
 
   const todayRemaining = dailyBudget - todaySpentAll;
 
@@ -450,6 +454,7 @@ export default function DashboardPage() {
         monthExpenses={Math.round((realSpendingTotal + unpaidBillsAmount + (dailyDiscretionary * daysLeft) + investmentMonthly + debtMonthly) * 100) / 100}
         trendPercent={trendPercent}
         budgetBreakdown={budgetResult.tightestSegment}
+        streakProps={{ dailyBudget, todaySpent: todaySpentAll }}
       />
 
       <div className="page-grid-2">

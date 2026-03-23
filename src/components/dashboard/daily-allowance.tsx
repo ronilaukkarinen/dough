@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowDown, ArrowUp, CalendarClock, Wallet, Info } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import { F } from "@/components/ui/f";
+import { SavingsStreak } from "./savings-streak";
 
 interface DailyAllowanceProps {
   dailyBudget: number;
@@ -24,6 +25,10 @@ interface DailyAllowanceProps {
   trendPercent?: number;
   billsDelayNeeded?: boolean;
   budgetWithBills?: number;
+  streakProps?: {
+    dailyBudget: number;
+    todaySpent: number;
+  };
   thresholds?: { tight: number; normal: number; good: number };
   budgetBreakdown?: {
     startDay: number;
@@ -56,6 +61,7 @@ export function DailyAllowance({
   trendPercent = 0,
   billsDelayNeeded = false,
   budgetWithBills = 0,
+  streakProps,
   thresholds = { tight: 20, normal: 30, good: 50 },
   budgetBreakdown,
   currency = "€",
@@ -158,7 +164,7 @@ export function DailyAllowance({
       </Card>
 
       {monthIncome > 0 && (
-        <Card className="metric-card metric-card-span2">
+        <Card className="metric-card">
           <div className="metric-card-row">
             <div className="metric-card-icon" data-color={monthIncome - monthExpenses >= 0 ? "positive" : "negative"}>
               {monthIncome - monthExpenses >= 0 ? <ArrowDown /> : <ArrowUp />}
@@ -192,6 +198,8 @@ export function DailyAllowance({
           </div>
         </Card>
       )}
+
+      {streakProps && <SavingsStreak {...streakProps} />}
 
       <Card className="metric-card">
         <div className="metric-card-row">

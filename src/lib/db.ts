@@ -156,6 +156,13 @@ function initializeDb(db: Database.Database) {
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_user_linked_accounts ON user_linked_accounts(user_id, ynab_account_id);
 
+    CREATE TABLE IF NOT EXISTS daily_budget_history (
+      date TEXT PRIMARY KEY,
+      budget REAL NOT NULL DEFAULT 0,
+      spent REAL NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS bill_manual_status (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       bill_id INTEGER NOT NULL,
