@@ -74,8 +74,12 @@ export async function GET(request: Request) {
       .prepare("SELECT month, income, expenses FROM monthly_snapshots WHERE month < ? ORDER BY month DESC LIMIT 3")
       .all(billMonth) as { month: string; income: number; expenses: number }[];
 
+    const { getHouseholdSetting: getExcludedSetting } = await import("@/lib/household");
+    const excludedRaw = getExcludedSetting("budget_excluded_accounts");
+    const excludedIds: string[] = excludedRaw ? JSON.parse(excludedRaw) : [];
+
     const checkingSavings = summary.accounts
-      .filter((a: any) => a.type === "checking" || a.type === "savings")
+      .filter((a: any) => (a.type === "checking" || a.type === "savings") && !excludedIds.includes(a.id))
       .reduce((s: number, a: any) => s + a.balance, 0);
 
     // Load account notes for context

@@ -39,8 +39,12 @@ export async function POST(request: Request) {
           const ynabData = JSON.parse(cached.data);
           const { summary, transactions, monthBudget } = ynabData;
 
+          // Load excluded accounts for budget calculation
+          const excludedRaw = getHouseholdSetting("budget_excluded_accounts");
+          const excludedIds: string[] = excludedRaw ? JSON.parse(excludedRaw) : [];
+
           const checkingSavings = summary.accounts
-            .filter((a: any) => a.type === "checking" || a.type === "savings")
+            .filter((a: any) => (a.type === "checking" || a.type === "savings") && !excludedIds.includes(a.id))
             .reduce((s: number, a: any) => s + a.balance, 0);
 
           // Load account notes for AI context
