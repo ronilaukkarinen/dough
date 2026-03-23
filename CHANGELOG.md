@@ -1,3 +1,11 @@
+### 1.6.3: 2026-03-23
+
+* Show bill coverage warning when daily budget is 0 due to bills exceeding available balance
+* Fix spending flow bubble showing total spent instead of over/under when dailyBudget is 0
+* Fix daily budget double-counting overdue bills already reflected in account balance
+* Fix decimal_places API passthrough
+* Emit SSE event on settings change so dashboard updates without page reload
+
 ### 1.6.2: 2026-03-23
 
 * Add account exclusion from daily budget and available balance in settings
