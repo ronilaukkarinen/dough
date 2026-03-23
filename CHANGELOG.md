@@ -1,3 +1,8 @@
+### 1.6.2: 2026-03-23
+
+* Add account exclusion from daily budget and available balance in settings
+* Excluded accounts still count toward net worth but not daily spending calculations
+
 ### 1.6.1: 2026-03-23
 
 * Add transaction edit modal with click-to-edit payee, amount, date, account, memo
