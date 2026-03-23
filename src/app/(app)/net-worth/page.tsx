@@ -38,17 +38,28 @@ export default function NetWorthPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [snapshotting, setSnapshotting] = useState(false);
+  const [investmentSummary, setInvestmentSummary] = useState<{ totalValue: number; totalMonthly: number; weightedReturn: number } | null>(null);
 
   useEffect(() => {
-    console.debug("[net-worth] Loading snapshots");
-    fetch("/api/net-worth")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.snapshots) {
-          console.info("[net-worth] Loaded", data.snapshots.length, "snapshots");
-          setSnapshots(data.snapshots);
-        }
-      })
+    console.debug("[net-worth] Loading snapshots and investment data");
+    Promise.all([
+      fetch("/api/net-worth").then((r) => r.json()),
+      fetch("/api/investments").then((r) => r.json()),
+    ]).then(([snapshotData, investData]) => {
+      if (snapshotData.snapshots) {
+        console.info("[net-worth] Loaded", snapshotData.snapshots.length, "snapshots");
+        setSnapshots(snapshotData.snapshots);
+      }
+      if (investData.investments?.length > 0) {
+        const invs = investData.investments;
+        const totalValue = invs.reduce((s: number, i: { balance: number }) => s + i.balance, 0);
+        const totalMonthly = invs.reduce((s: number, i: { monthlyContribution: number }) => s + i.monthlyContribution, 0);
+        const weightedReturn = totalMonthly > 0
+          ? invs.reduce((s: number, i: { expectedReturn: number; monthlyContribution: number }) => s + i.expectedReturn * i.monthlyContribution, 0) / totalMonthly
+          : invs.reduce((s: number, i: { expectedReturn: number }) => s + i.expectedReturn, 0) / invs.length;
+        setInvestmentSummary({ totalValue, totalMonthly, weightedReturn: Math.round(weightedReturn * 10) / 10 });
+      }
+    })
       .catch((err) => console.error("[net-worth] Load error:", err))
       .finally(() => setLoading(false));
   }, []);
@@ -101,17 +112,17 @@ export default function NetWorthPage() {
     netWorth: Math.round(s.net_worth),
   }));
 
-  // Add forecast: project 7 days from last value using weekly trend
-  if (snapshots.length >= 2 && latest) {
-    const prevWeek = snapshots.length >= 7 ? snapshots[snapshots.length - 7] : snapshots[0];
-    const daysBetween = Math.max(1, (new Date(latest.date).getTime() - new Date(prevWeek.date).getTime()) / 86400000);
-    const dailyTrend = (latest.net_worth - prevWeek.net_worth) / daysBetween;
+  // Forecast: use full history trend + extend 14 days
+  if (uniqueSnapshots.length >= 2 && latest) {
+    const first = uniqueSnapshots[0];
+    const totalDays = Math.max(1, (new Date(latest.date).getTime() - new Date(first.date).getTime()) / 86400000);
+    const dailyTrend = (latest.net_worth - first.net_worth) / totalDays;
 
-    // Bridge point: last actual value also starts the forecast
+    // Bridge point
     chartData[chartData.length - 1].forecast = Math.round(latest.net_worth);
 
     const lastDate = new Date(latest.date);
-    for (let d = 1; d <= 7; d++) {
+    for (let d = 1; d <= 14; d++) {
       const forecastDate = new Date(lastDate);
       forecastDate.setDate(forecastDate.getDate() + d);
       chartData.push({
@@ -302,6 +313,36 @@ export default function NetWorthPage() {
                   <div>
                     <p className="net-worth-card-label">{t.debts.title}</p>
                     <p className="net-worth-card-value text-negative"><F v={latest.debts} s=" €" /></p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* Investment return summary */}
+          {investmentSummary && investmentSummary.totalValue > 0 && (
+            <div className="net-worth-grid">
+              <Card className="net-worth-card">
+                <div className="net-worth-card-row">
+                  <div className="net-worth-card-icon" data-color="positive">
+                    <TrendingUp />
+                  </div>
+                  <div>
+                    <p className="net-worth-card-label">{locale === "fi" ? "Tuottoennuste" : "Return forecast"}</p>
+                    <p className="net-worth-card-value text-positive">+{fmt(Math.round(investmentSummary.totalValue * investmentSummary.weightedReturn / 100))} €/{locale === "fi" ? "v" : "y"}</p>
+                    <p className="net-worth-card-note">{investmentSummary.weightedReturn}% {locale === "fi" ? "keskituotto" : "avg return"}</p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="net-worth-card">
+                <div className="net-worth-card-row">
+                  <div className="net-worth-card-icon" data-color="primary">
+                    <Wallet />
+                  </div>
+                  <div>
+                    <p className="net-worth-card-label">{locale === "fi" ? "Kk-sijoitukset" : "Monthly investments"}</p>
+                    <p className="net-worth-card-value"><F v={investmentSummary.totalMonthly} s=" €" /></p>
+                    <p className="net-worth-card-note">{fmt(investmentSummary.totalMonthly * 12)} €/{locale === "fi" ? "v" : "y"}</p>
                   </div>
                 </div>
               </Card>
