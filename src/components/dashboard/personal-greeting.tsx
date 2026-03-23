@@ -37,19 +37,23 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
     <div className="personal-greeting">
       <p className="personal-greeting-text">
         {locale === "fi" ? `Hei ${name}! ` : `Hi ${name}! `}
-        {locale === "fi" ? "Sinä olet käyttänyt tänään " : "You spent "}
-        <span className="personal-greeting-value" data-status={todaySpentPersonal > dailyBudget * 0.3 ? "danger" : todaySpentPersonal > dailyBudget * 0.15 ? "tight" : "good"}>
-          <F v={todaySpentPersonal} />
-        </span>
-        {todaySpentAll > todaySpentPersonal && (
+        {todaySpentPersonal > 0 && (
           <>
-            {locale === "fi" ? ", perhe yhteensä " : ", household total "}
-            <span className="personal-greeting-value" data-status={todaySpentAll > dailyBudget * 0.8 ? "danger" : todaySpentAll > dailyBudget * 0.5 ? "tight" : "good"}>
-              <F v={todaySpentAll} />
+            {locale === "fi" ? "Olet käyttänyt tänään " : "You spent "}
+            <span className="personal-greeting-value" data-status={todaySpentPersonal > dailyBudget * 0.3 ? "danger" : todaySpentPersonal > dailyBudget * 0.15 ? "tight" : "good"}>
+              <F v={todaySpentPersonal} />
             </span>
+            {todaySpentAll > todaySpentPersonal && (
+              <>
+                {locale === "fi" ? ", perhe yhteensä " : ", household total "}
+                <span className="personal-greeting-value" data-status={todaySpentAll > dailyBudget * 0.8 ? "danger" : todaySpentAll > dailyBudget * 0.5 ? "tight" : "good"}>
+                  <F v={todaySpentAll} />
+                </span>
+              </>
+            )}
+            {". "}
           </>
         )}
-        {". "}
         {exceeded
           ? <>
               {locale === "fi" ? "Päiväbudjetti ylittynyt " : "Daily budget exceeded by "}
@@ -57,7 +61,7 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
               {locale === "fi" ? " verran. Huomenna parempi kulukuri sitten." : "."}
             </>
           : <>
-              {locale === "fi" ? "Käytettävissä sinulle " : "Available for you "}
+              {locale === "fi" ? "Käytä alle " : "Spend under "}
               <span className="personal-greeting-value" data-status={valueStatus(suggestedForYou, dailyBudget)}>
                 <F v={suggestedForYou} />
               </span>
