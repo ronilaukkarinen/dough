@@ -59,6 +59,7 @@ export function DailyAllowance({
   const [budgetInfoOpen, setBudgetInfoOpen] = useState(false);
   const effectiveBudget = todaySpentAll > 0 ? Math.max(0, todayRemaining) : dailyBudget;
   const overspent = todayRemaining < 0;
+  const billsExceedBalance = dailyBudget === 0 && upcomingBills > availableBalance;
   const status =
     effectiveBudget > 50 ? "good" : effectiveBudget > 20 ? "tight" : "danger";
 
@@ -89,7 +90,14 @@ export function DailyAllowance({
             <span className="daily-allowance-hero-unit">{todaySpentAll > 0 ? "" : t.dashboard.perDay}</span>
           </div>
           <p className="daily-allowance-hero-note">
-            {overspent ? (
+            {billsExceedBalance ? (
+              <>
+                {locale === "fi"
+                  ? `Laskuja ${fmt(upcomingBills)} ${currency}, mutta tilien kate ei riitä. `
+                  : `Bills ${fmt(upcomingBills)} ${currency}, but account balance is not enough. `}
+                {daysUntilIncome > 0 && `${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}.`}
+              </>
+            ) : overspent ? (
               <>
                 {locale === "fi" ? "Ylitetty " : "Exceeded by "}
                 <span className="text-negative"><F v={Math.abs(todayRemaining)} s={` ${currency}`} /></span>
