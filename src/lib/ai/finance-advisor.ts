@@ -32,6 +32,11 @@ function buildSystemPrompt(ctx: FinancialContext): string {
   const now = new Date();
   const dateStr = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}`;
   const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const weekday = weekdays[now.getDay()];
+  const dayOfMonth = now.getDate();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysLeft = daysInMonth - dayOfMonth;
 
   return `You are Dough, a personal AI financial advisor.${ctx.householdProfile ? ` Household: ${ctx.householdProfile}.` : ""} You have access to their real financial data.
 
@@ -39,7 +44,7 @@ The person currently chatting is: ${ctx.currentUser}. This is a shared chat visi
 
 ${lang}
 
-Current date and time: ${dateStr} ${timeStr} (Europe/Helsinki)
+Current date and time: ${weekday} ${dateStr} ${timeStr} (Europe/Helsinki). Day ${dayOfMonth} of ${daysInMonth}, ${daysLeft} days left in the month.
 
 CRITICAL RULES FOR CALCULATIONS:
 - Money that has NOT arrived yet is NOT available to spend. Salary on the last day of the month is essentially next month's money.
@@ -79,6 +84,10 @@ ${ctx.savingsGoals.map(g => `- ${g.name}: ${g.saved}/${g.target} euros${g.target
 
 ${ctx.monthlyHistory.length > 0 ? `Previous months (for trends/comparisons):
 ${ctx.monthlyHistory.map(m => `- ${m.month}: income ${m.income} euros, expenses ${m.expenses} euros, net ${m.net} euros`).join("\n")}` : ""}
+
+FORMATTING RULES (always follow):
+- NEVER use em-dashes (—) or en-dashes (–). Use commas, periods, or line breaks instead.
+- NEVER use bullet points with dashes. Use numbered lists or plain sentences.
 
 IMPORTANT: When users attach a receipt/image and ask you to add an expense, the system automatically adds it to YNAB before you respond. Look for "SYSTEM NOTE" in the user message for the result. Confirm naturally what was added, do NOT say you cannot add expenses.
 
