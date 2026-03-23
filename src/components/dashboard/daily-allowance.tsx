@@ -93,6 +93,9 @@ export function DailyAllowance({
             <span className="daily-allowance-hero-unit">{todaySpentAll > 0 ? "" : t.dashboard.perDay}</span>
           </div>
           <p className="daily-allowance-hero-note">
+            {locale === "fi" ? "Tämän päivän kokonaisbudjetti on " : "Today's total budget is "}
+            <span className={dailyBudget > 50 ? "text-positive" : dailyBudget > 20 ? "text-chart-3" : "text-negative"}><F v={dailyBudget} s={` ${currency}`} /></span>
+            {". "}
             {billsDelayNeeded ? (
               <>
                 {locale === "fi"
@@ -141,8 +144,8 @@ export function DailyAllowance({
             ) : (
               `${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}`
             )}
-            {!overspent && status === "danger" && ` \u2014 ${t.dashboard.cutNonEssentials}`}
-            {!overspent && status === "tight" && ` \u2014 ${t.dashboard.beCareful}`}
+            {!overspent && status === "danger" && `. ${t.dashboard.cutNonEssentials}`}
+            {!overspent && status === "tight" && `. ${t.dashboard.beCareful}`}
           </p>
         </div>
         <div className="daily-allowance-hero-bg">
@@ -179,7 +182,7 @@ export function DailyAllowance({
                 {monthIncome - monthExpenses >= 0
                   ? (locale === "fi" ? "Plussalla" : "Surplus")
                   : (locale === "fi" ? "Miinuksella" : "Deficit")}
-                {" \u00B7 "}{locale === "fi" ? "tulot " : "income "}<span className="text-positive"><F v={monthIncome} s={` ${currency}`} /></span>{" \u2013 "}{locale === "fi" ? "menot (arvio) " : "expenses (est.) "}<span className="text-negative"><F v={monthExpenses} s={` ${currency}`} /></span>
+                {" \u00B7 "}{locale === "fi" ? "tulot " : "income "}<span className="text-positive"><F v={monthIncome} s={` ${currency}`} /></span>{", "}{locale === "fi" ? "menot (arvio) " : "expenses (est.) "}<span className="text-negative"><F v={monthExpenses} s={` ${currency}`} /></span>
               </p>
             </div>
           </div>

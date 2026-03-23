@@ -121,11 +121,13 @@ export function Sidebar({ isOpen, onClose, privacyMode, onTogglePrivacy }: Sideb
     >
       {/* Logo */}
       <div className="l-sidebar-logo">
-        {collapsed ? (
-          <img src="/favicon.png" alt="Dough" className="l-sidebar-logo-icon" />
-        ) : (
-          <span className="l-sidebar-logo-text">Dough</span>
-        )}
+        <Link href="/dashboard" onClick={handleNavClick} className="l-sidebar-logo-link">
+          {collapsed ? (
+            <img src="/favicon.png" alt="Dough" className="l-sidebar-logo-icon" />
+          ) : (
+            <span className="l-sidebar-logo-text">Dough</span>
+          )}
+        </Link>
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="l-sidebar-collapse-btn"

@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2, PiggyBank, Users, Sparkles, User } from "lucide-react";
+import { RefreshCw, CheckCircle2, XCircle, Globe, Link, Loader2, PiggyBank, Users, Sparkles, User, Wallet } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import type { Locale } from "@/lib/i18n";
 import { F } from "@/components/ui/f";
@@ -677,6 +677,18 @@ export default function SettingsPage() {
                   : "Deducted from available balance before calculating daily budget"}
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Daily budget settings */}
+        <Card className="settings-card">
+          <CardHeader>
+            <CardTitle className="settings-card-title">
+              <Wallet />
+              {locale === "fi" ? "Päiväbudjetti" : "Daily budget"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="form-stack">
             <div className="form-field">
               <label className="settings-account-item">
                 <input

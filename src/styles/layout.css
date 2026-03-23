@@ -161,6 +161,12 @@
   position: relative;
 }
 
+.l-sidebar-logo-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
 .l-sidebar-logo-text {
   font-size: 1.125rem;
   font-weight: 600;
