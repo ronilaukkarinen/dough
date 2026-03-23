@@ -90,8 +90,17 @@ export function runAutoMatch(transactions: any[], month: string): { matched: num
   let matched = 0;
   const details: string[] = [];
 
+  // Load due days for bills and subscriptions to filter by date window
+  const billDueDays: Record<number, number> = {};
+  const bills = db.prepare("SELECT id, due_day FROM recurring_bills WHERE is_active = 1").all() as { id: number; due_day: number }[];
+  for (const b of bills) billDueDays[b.id] = b.due_day;
+  const subs = db.prepare("SELECT id, due_day FROM subscriptions WHERE is_active = 1").all() as { id: number; due_day: number }[];
+  for (const s of subs) billDueDays[s.id] = s.due_day;
+
   for (const pattern of patterns) {
     const matcher = patternToMatcher(pattern.payee_pattern);
+    const dueDay = (pattern.source_type === "bill" || pattern.source_type === "subscription") ? billDueDays[pattern.source_id] || 0 : 0;
+
     const matchingTx = transactions.find((tx: any) => {
       const payee = tx.payee || tx.payee_name || "";
       if (!matcher(payee)) return false;
@@ -100,6 +109,14 @@ export function runAutoMatch(transactions: any[], month: string): { matched: num
         const absAmount = Math.abs(tx.amount);
         if (pattern.min_amount > 0 && absAmount < pattern.min_amount) return false;
         if (pattern.max_amount > 0 && absAmount > pattern.max_amount) return false;
+      }
+      // For bills/subscriptions with a due day, only match transactions near the due date
+      // This prevents a previous month's late payment from being matched as current month
+      if (dueDay > 0 && tx.date) {
+        const txDay = parseInt(tx.date.split("-")[2], 10);
+        // Allow a window: due day minus 10 to due day plus 10 (wrapping)
+        const earliest = Math.max(1, dueDay - 10);
+        if (txDay < earliest) return false;
       }
       return true;
     });
