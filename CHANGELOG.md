@@ -1,3 +1,12 @@
+### 1.8.0: 2026-03-24
+
+* Fix net worth projection with correct component model tracking cash, investments, and debts separately
+* Use snowball debt payoff matching Velat tab logic for net worth forecast
+* Show actual years on net worth projection X axis, default to 10 year view
+* Add breathing room and money timeline rules to AI advisor
+* Apply bills inclusion setting to AI chat daily budget
+* Fix tooltip font-weight inheritance from parent elements
+
 ### 1.7.4: 2026-03-23
 
 * Fix bill auto-matching to not match previous month late payments as current month
