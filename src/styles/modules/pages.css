@@ -463,8 +463,8 @@
 }
 
 .chart-range-btn.is-active {
-  color: #b4b4b4;
-  border-color: #b4b4b4;
+  color: #a1a1a1;
+  border-color: #3b3b3b;
 }
 
 @media (hover: hover) {

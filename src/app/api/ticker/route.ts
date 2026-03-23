@@ -102,19 +102,20 @@ async function fetchTicker(symbol: string): Promise<TickerData | null> {
     }
 
     const price = meta.regularMarketPrice ?? 0;
-    const previousClose = meta.chartPreviousClose ?? meta.previousClose ?? price;
-    const dayChangePct = previousClose > 0 ? ((price - previousClose) / previousClose) * 100 : 0;
 
     // Extract historical close prices for sparkline
     const closes: number[] = (result0?.indicators?.quote?.[0]?.close ?? []).filter((v: number | null) => v != null);
-    // Keep all data points (up to ~260 trading days for 1 year)
     const sparkline = closes;
+
+    // Daily change: compare current price to second-to-last close (yesterday)
+    const yesterdayClose = closes.length >= 2 ? closes[closes.length - 2] : price;
+    const dayChangePct = yesterdayClose > 0 ? ((price - yesterdayClose) / yesterdayClose) * 100 : 0;
 
     const tickerResult: TickerData = {
       symbol: meta.symbol || symbol,
       name: meta.shortName || meta.longName || symbol,
       price,
-      previousClose,
+      previousClose: yesterdayClose,
       currency: meta.currency || "USD",
       dayChangePct: Math.round(dayChangePct * 100) / 100,
       week52High: meta.fiftyTwoWeekHigh ?? 0,

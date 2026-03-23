@@ -357,7 +357,7 @@ export default function InvestmentsPage() {
                       {isIndex ? `${locale === "fi" ? "Indeksi" : "Index"}: ` : ""}{td.name}: {td.price.toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {td.currency}
                       {" "}
                       <span className={td.dayChangePct >= 0 ? "text-positive" : "text-negative"}>
-                        {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}%
+                        {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}% {locale === "fi" ? "tänään" : "today"}
                       </span>
                     </p>
                     {td.sparkline?.length > 1 && <TickerChart data={td.sparkline} positive={td.dayChangePct >= 0} currency={td.currency} fmt={fmt} range={chartRange} />}
