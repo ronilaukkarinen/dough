@@ -271,6 +271,7 @@ function initializeDb(db: Database.Database) {
       week_52_high REAL NOT NULL DEFAULT 0,
       week_52_low REAL NOT NULL DEFAULT 0,
       sparkline_json TEXT DEFAULT '[]',
+      sparkline_max_json TEXT DEFAULT '[]',
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -301,12 +302,16 @@ function initializeDb(db: Database.Database) {
     );
   `);
 
-  // Add sparkline_json column to ticker_cache if missing
+  // Add sparkline columns to ticker_cache if missing
   try {
     const tickerCols = db.prepare("PRAGMA table_info(ticker_cache)").all() as { name: string }[];
     if (tickerCols.length > 0 && !tickerCols.some((c) => c.name === "sparkline_json")) {
       console.info("[db] Adding sparkline_json column to ticker_cache");
       db.exec("ALTER TABLE ticker_cache ADD COLUMN sparkline_json TEXT DEFAULT '[]'");
+    }
+    if (tickerCols.length > 0 && !tickerCols.some((c) => c.name === "sparkline_max_json")) {
+      console.info("[db] Adding sparkline_max_json column to ticker_cache");
+      db.exec("ALTER TABLE ticker_cache ADD COLUMN sparkline_max_json TEXT DEFAULT '[]'");
     }
   } catch (err) {
     console.warn("[db] ticker_cache migration:", err);

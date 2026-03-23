@@ -84,6 +84,7 @@ async function fetchSeligson(fundKey: string): Promise<TickerData | null> {
       week52High: 0,
       week52Low: 0,
       sparkline,
+      sparklineMax: sparkline,
     };
   } catch (err) {
     console.error("[ticker] Seligson scrape error:", err);
@@ -101,52 +102,58 @@ interface TickerData {
   week52High: number;
   week52Low: number;
   sparkline: number[];
+  sparklineMax: number[];
+}
+
+async function fetchYahooChart(symbol: string, range: string, interval: string): Promise<{ meta: Record<string, unknown>; closes: number[] } | null> {
+  const res = await fetch(`${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`, {
+    headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const result0 = data?.chart?.result?.[0];
+  if (!result0?.meta) return null;
+  const closes: number[] = (result0.indicators?.quote?.[0]?.close ?? []).filter((v: number | null) => v != null);
+  return { meta: result0.meta, closes };
 }
 
 async function fetchTicker(symbol: string): Promise<TickerData | null> {
   console.info("[ticker] Fetching", symbol, "from Yahoo Finance");
   try {
-    const res = await fetch(`${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?range=1y&interval=1d`, {
-      headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" },
-      signal: AbortSignal.timeout(10000),
-    });
+    // Fetch 1y daily for short ranges + 5y weekly for MAX in parallel
+    const [daily, longTerm] = await Promise.all([
+      fetchYahooChart(symbol, "1y", "1d"),
+      fetchYahooChart(symbol, "5y", "1wk"),
+    ]);
 
-    if (!res.ok) {
-      console.warn("[ticker] Yahoo Finance returned", res.status, "for", symbol);
+    if (!daily) {
+      console.warn("[ticker] No data for", symbol);
       return null;
     }
 
-    const data = await res.json();
-    const result0 = data?.chart?.result?.[0];
-    const meta = result0?.meta;
-    if (!meta) {
-      console.warn("[ticker] No meta data for", symbol);
-      return null;
-    }
+    const { meta, closes: sparkline } = daily;
+    const sparklineMax = longTerm?.closes ?? sparkline;
+    const price = (meta.regularMarketPrice as number) ?? 0;
 
-    const price = meta.regularMarketPrice ?? 0;
-
-    // Extract historical close prices for sparkline
-    const closes: number[] = (result0?.indicators?.quote?.[0]?.close ?? []).filter((v: number | null) => v != null);
-    const sparkline = closes;
-
-    // Daily change: compare current price to second-to-last close (yesterday)
-    const yesterdayClose = closes.length >= 2 ? closes[closes.length - 2] : price;
+    // Daily change from second-to-last close
+    const yesterdayClose = sparkline.length >= 2 ? sparkline[sparkline.length - 2] : price;
     const dayChangePct = yesterdayClose > 0 ? ((price - yesterdayClose) / yesterdayClose) * 100 : 0;
 
     const tickerResult: TickerData = {
-      symbol: meta.symbol || symbol,
-      name: meta.shortName || meta.longName || symbol,
+      symbol: (meta.symbol as string) || symbol,
+      name: (meta.shortName as string) || (meta.longName as string) || symbol,
       price,
       previousClose: yesterdayClose,
-      currency: meta.currency || "USD",
+      currency: (meta.currency as string) || "USD",
       dayChangePct: Math.round(dayChangePct * 100) / 100,
-      week52High: meta.fiftyTwoWeekHigh ?? 0,
-      week52Low: meta.fiftyTwoWeekLow ?? 0,
+      week52High: (meta.fiftyTwoWeekHigh as number) ?? 0,
+      week52Low: (meta.fiftyTwoWeekLow as number) ?? 0,
       sparkline,
+      sparklineMax,
     };
 
-    console.info("[ticker] Fetched", symbol, "price:", price, "change:", tickerResult.dayChangePct + "%", "sparkline:", sparkline.length, "points");
+    console.info("[ticker] Fetched", symbol, "price:", price, "change:", tickerResult.dayChangePct + "%", "1y:", sparkline.length, "pts, 5y:", sparklineMax.length, "pts");
     return tickerResult;
   } catch (err) {
     console.error("[ticker] Fetch error for", symbol, err);
@@ -174,7 +181,7 @@ export async function GET(request: Request) {
     for (const sym of symbolList) {
       const cached = db.prepare("SELECT * FROM ticker_cache WHERE symbol = ?").get(sym) as {
         symbol: string; name: string; price: number; previous_close: number; currency: string;
-        day_change_pct: number; week_52_high: number; week_52_low: number; sparkline_json: string; updated_at: string;
+        day_change_pct: number; week_52_high: number; week_52_low: number; sparkline_json: string; sparkline_max_json: string; updated_at: string;
       } | undefined;
 
       if (cached) {
@@ -191,6 +198,7 @@ export async function GET(request: Request) {
             week52High: cached.week_52_high,
             week52Low: cached.week_52_low,
             sparkline: JSON.parse(cached.sparkline_json || "[]"),
+            sparklineMax: JSON.parse(cached.sparkline_max_json || "[]"),
           };
           continue;
         }
@@ -207,11 +215,11 @@ export async function GET(request: Request) {
       }));
 
       const upsert = db.prepare(`
-        INSERT INTO ticker_cache (symbol, name, price, previous_close, currency, day_change_pct, week_52_high, week_52_low, sparkline_json, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        INSERT INTO ticker_cache (symbol, name, price, previous_close, currency, day_change_pct, week_52_high, week_52_low, sparkline_json, sparkline_max_json, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
         ON CONFLICT(symbol) DO UPDATE SET name=excluded.name, price=excluded.price, previous_close=excluded.previous_close,
           currency=excluded.currency, day_change_pct=excluded.day_change_pct, week_52_high=excluded.week_52_high,
-          week_52_low=excluded.week_52_low, sparkline_json=excluded.sparkline_json, updated_at=datetime('now')
+          week_52_low=excluded.week_52_low, sparkline_json=excluded.sparkline_json, sparkline_max_json=excluded.sparkline_max_json, updated_at=datetime('now')
       `);
 
       for (let i = 0; i < toFetch.length; i++) {
@@ -219,7 +227,7 @@ export async function GET(request: Request) {
         if (data) {
           result[toFetch[i]] = data;
           try {
-            upsert.run(data.symbol, data.name, data.price, data.previousClose, data.currency, data.dayChangePct, data.week52High, data.week52Low, JSON.stringify(data.sparkline));
+            upsert.run(data.symbol, data.name, data.price, data.previousClose, data.currency, data.dayChangePct, data.week52High, data.week52Low, JSON.stringify(data.sparkline), JSON.stringify(data.sparklineMax));
           } catch (cacheErr) {
             console.warn("[ticker] Cache write failed for", toFetch[i], cacheErr);
           }

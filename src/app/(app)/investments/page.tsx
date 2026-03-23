@@ -47,15 +47,17 @@ interface TickerData {
   week52High: number;
   week52Low: number;
   sparkline: number[];
+  sparklineMax: number[];
 }
 
 let tickerChartId = 0;
 
-function TickerChart({ data, positive, currency, fmt: fmtFn, range }: { data: number[]; positive: boolean; currency: string; fmt: (v: number) => string; range: "1W" | "6M" | "MAX" }) {
-  if (data.length < 2) return null;
+function TickerChart({ data, dataMax, positive, currency, fmt: fmtFn, range }: { data: number[]; dataMax?: number[]; positive: boolean; currency: string; fmt: (v: number) => string; range: "1W" | "6M" | "MAX" }) {
+  const source = range === "MAX" && dataMax && dataMax.length > 1 ? dataMax : data;
+  if (source.length < 2) return null;
   const uid = `tc-${++tickerChartId}`;
-  const sliceCount = range === "1W" ? 5 : range === "6M" ? 130 : data.length;
-  const sliced = data.length > sliceCount ? data.slice(-sliceCount) : data;
+  const sliceCount = range === "1W" ? 5 : range === "6M" ? 130 : source.length;
+  const sliced = source.length > sliceCount ? source.slice(-sliceCount) : source;
   const rangePositive = sliced.length >= 2 ? sliced[sliced.length - 1] >= sliced[0] : positive;
   const color = rangePositive ? "#4ade80" : "#f87171";
   const chartData = sliced.map((v, i) => ({ i, price: v }));
@@ -358,7 +360,7 @@ export default function InvestmentsPage() {
                         {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}% {locale === "fi" ? "tänään" : "today"}
                       </span>
                     </p>
-                    {td.sparkline?.length > 1 && <TickerChart data={td.sparkline} positive={td.dayChangePct >= 0} currency={td.currency} fmt={fmt} range={chartRange} />}
+                    {(td.sparkline?.length > 1 || td.sparklineMax?.length > 1) && <TickerChart data={td.sparkline || []} dataMax={td.sparklineMax} positive={td.dayChangePct >= 0} currency={td.currency} fmt={fmt} range={chartRange} />}
                   </div>
                 );
               })()}
