@@ -87,25 +87,26 @@ export default function NetWorthPage() {
 
       const tl: { year: string; netWorth: number; baseline: number }[] = [{ year: "0", netWorth: Math.round(currentNw), baseline: Math.round(currentNw) }];
 
-      // Calculate actual months to payoff WITH interest
+      // Calculate actual months to payoff with snowball strategy (freed payments accelerate remaining debts)
       const debts = debtData.debts || [];
       let monthsToPayoff = 0;
       if (debts.length > 0 && monthlyDebtPayment > 0) {
-        // Simulate payoff with interest rates
-        let simDebts = debts.map((d: { balance: number; interestRate: number; minimumPayment: number }) => ({
-          balance: d.balance,
-          rate: (d.interestRate || 0) / 100 / 12,
-          payment: d.minimumPayment || 0,
-        }));
+        const simDebts = debts
+          .map((d: { balance: number; interestRate: number; minimumPayment: number }) => ({
+            balance: d.balance,
+            rate: (d.interestRate || 0) / 100 / 12,
+            payment: d.minimumPayment || 0,
+          }))
+          .sort((a: { balance: number }, b: { balance: number }) => a.balance - b.balance); // snowball: smallest first
         for (let m = 0; m < 600; m++) {
-          let totalRemaining = 0;
+          let extraPayment = 0;
           for (const d of simDebts) {
-            if (d.balance <= 0) continue;
-            d.balance = d.balance * (1 + d.rate) - d.payment;
-            if (d.balance < 0) d.balance = 0;
-            totalRemaining += d.balance;
+            if (d.balance <= 0) { extraPayment += d.payment; continue; }
+            d.balance = d.balance * (1 + d.rate) - d.payment - extraPayment;
+            extraPayment = 0;
+            if (d.balance <= 0) { extraPayment = Math.abs(d.balance); d.balance = 0; }
           }
-          if (totalRemaining <= 0) { monthsToPayoff = m + 1; break; }
+          if (simDebts.every((d: { balance: number }) => d.balance <= 0)) { monthsToPayoff = m + 1; break; }
         }
       }
 
