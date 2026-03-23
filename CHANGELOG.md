@@ -1,3 +1,13 @@
+### 1.7.0: 2026-03-23
+
+* Add savings streak tracker with animated fire/cross indicators for last 7 days
+* Store daily budget and spending history in SQLite for accurate streak tracking
+* Add configurable budget thresholds (tight/normal/good) with splurge warning in settings
+* Add net worth growth projection with debt payoff, savings, and investment compound returns
+* Add 5y/10y/20y range selector to net worth projection chart
+* Add white-space nowrap to all formatted amounts to prevent orphaned currency
+* Replace minimum daily budget with bills inclusion toggle for daily budget calculation
+
 ### 1.6.3: 2026-03-23
 
 * Add bills inclusion toggle in settings under own daily budget card
