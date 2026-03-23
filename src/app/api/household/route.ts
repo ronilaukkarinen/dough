@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getHouseholdSettings, setHouseholdSetting } from "@/lib/household";
+import { eventBus } from "@/lib/event-bus";
 
 export async function GET() {
   try {
@@ -22,6 +23,8 @@ export async function GET() {
         prompt_summary_instructions: settings.prompt_summary_instructions || "",
         prompt_debt_instructions: settings.prompt_debt_instructions || "",
         last_ynab_sync: settings.last_ynab_sync || null,
+        decimal_places: settings.decimal_places !== undefined ? parseInt(settings.decimal_places) : 0,
+        budget_excluded_accounts: settings.budget_excluded_accounts || "[]",
       },
     });
   } catch (error) {
@@ -49,6 +52,7 @@ export async function POST(request: Request) {
       }
     }
 
+    eventBus.emit("data:updated", { source: "settings-changed" });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[household] POST error:", error);
