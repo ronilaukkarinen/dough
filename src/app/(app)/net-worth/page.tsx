@@ -40,34 +40,87 @@ export default function NetWorthPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [snapshotting, setSnapshotting] = useState(false);
-  const [investmentProjection, setInvestmentProjection] = useState<{ timeline: { year: string; value: number; invested: number }[]; finalValue: number; totalReturns: number } | null>(null);
+  const [nwProjection, setNwProjection] = useState<{ timeline: { year: string; netWorth: number; baseline: number }[]; finalValue: number; totalGrowth: number } | null>(null);
 
   useEffect(() => {
     console.debug("[net-worth] Loading snapshots and investment data");
     Promise.all([
       fetch("/api/net-worth").then((r) => r.json()),
       fetch("/api/investments").then((r) => r.json()),
-    ]).then(([snapshotData, investData]) => {
+      fetch("/api/monthly-history").then((r) => r.json()),
+      fetch("/api/debts").then((r) => r.json()),
+    ]).then(([snapshotData, investData, historyData, debtData]) => {
       if (snapshotData.snapshots) {
         console.info("[net-worth] Loaded", snapshotData.snapshots.length, "snapshots");
         setSnapshots(snapshotData.snapshots);
       }
-      if (investData.investments?.length > 0) {
-        const invs = investData.investments;
-        let tv = invs.reduce((s: number, i: { balance: number }) => s + i.balance, 0);
-        let ti = tv;
-        const tm = invs.reduce((s: number, i: { monthlyContribution: number }) => s + i.monthlyContribution, 0);
-        const wr = tm > 0
-          ? invs.reduce((s: number, i: { expectedReturn: number; monthlyContribution: number }) => s + i.expectedReturn * i.monthlyContribution, 0) / tm
-          : invs.reduce((s: number, i: { expectedReturn: number }) => s + i.expectedReturn, 0) / invs.length;
-        const mr = wr / 100 / 12;
-        const tl: { year: string; value: number; invested: number }[] = [{ year: "0", value: Math.round(tv), invested: Math.round(ti) }];
-        for (let y = 1; y <= 20; y++) {
-          for (let m = 0; m < 12; m++) { tv = tv * (1 + mr) + tm; ti += tm; }
-          tl.push({ year: String(y), value: Math.round(tv), invested: Math.round(ti) });
+
+      // Net worth projection: model cash, investments, and debts separately
+      const latestSnap = snapshotData.snapshots?.length > 0 ? snapshotData.snapshots[snapshotData.snapshots.length - 1] : null;
+      const currentNw = latestSnap?.net_worth || 0;
+
+      // Current components
+      let cash = latestSnap ? latestSnap.checking + latestSnap.savings : 0;
+      let investValue = (investData.investments || []).reduce((s: number, i: { balance: number }) => s + i.balance, 0);
+      let debtRemaining = Math.abs((debtData.debts || []).reduce((s: number, d: { balance: number }) => s + d.balance, 0));
+
+      // Monthly flows
+      const invs = investData.investments || [];
+      const monthlyInvestContrib = invs.reduce((s: number, i: { monthlyContribution: number }) => s + i.monthlyContribution, 0);
+      const monthlyDebtPayment = (debtData.debts || []).reduce((s: number, d: { minimumPayment: number }) => s + (d.minimumPayment || 0), 0);
+      const wr = invs.length > 0
+        ? (monthlyInvestContrib > 0
+          ? invs.reduce((s: number, i: { expectedReturn: number; monthlyContribution: number }) => s + i.expectedReturn * i.monthlyContribution, 0) / monthlyInvestContrib
+          : invs.reduce((s: number, i: { expectedReturn: number }) => s + i.expectedReturn, 0) / invs.length)
+        : 0;
+      const mr = wr / 100 / 12;
+
+      // Exclude incomplete current month from average
+      const history = (historyData.snapshots || []).filter((h: { month: string }) => {
+        const now2 = new Date();
+        return h.month !== `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, "0")}`;
+      });
+      const avgMonthlySavings = history.length > 0
+        ? history.reduce((s: number, h: { income: number; expenses: number }) => s + (h.income - h.expenses), 0) / history.length
+        : 0;
+
+      const tl: { year: string; netWorth: number; baseline: number }[] = [{ year: "0", netWorth: Math.round(currentNw), baseline: Math.round(currentNw) }];
+
+      // Model: debt payments end when debts are paid off, freeing up cash flow
+      // avgMonthlySavings includes debt payments as expenses, so after debts clear
+      // the monthly savings increases by monthlyDebtPayment
+      const monthsToPayoff = monthlyDebtPayment > 0 ? Math.ceil(debtRemaining / monthlyDebtPayment) : 0;
+
+      let nw1 = currentNw; // with compound returns
+      let nw2 = currentNw; // without compound returns (baseline)
+      let inv1 = investValue;
+      let monthCount = 0;
+
+      for (let y = 1; y <= 20; y++) {
+        for (let m = 0; m < 12; m++) {
+          monthCount++;
+          // After debts paid off, monthly savings improves by the freed debt payments
+          const monthlySavings = monthCount > monthsToPayoff
+            ? avgMonthlySavings + monthlyDebtPayment
+            : avgMonthlySavings;
+
+          nw1 += monthlySavings;
+          nw2 += monthlySavings;
+
+          // With returns: investments compound on top
+          const returns = inv1 * mr;
+          inv1 = inv1 * (1 + mr) + monthlyInvestContrib;
+          nw1 += returns;
         }
-        setInvestmentProjection({ timeline: tl, finalValue: Math.round(tv), totalReturns: Math.round(tv - ti) });
+        tl.push({
+          year: String(y),
+          netWorth: Math.round(nw1),
+          baseline: Math.round(nw2),
+        });
       }
+
+      const finalNw = tl[tl.length - 1].netWorth;
+      setNwProjection({ timeline: tl, finalValue: finalNw, totalGrowth: finalNw - currentNw });
     })
       .catch((err) => console.error("[net-worth] Load error:", err))
       .finally(() => setLoading(false));
@@ -328,28 +381,28 @@ export default function NetWorthPage() {
             </div>
           )}
 
-          {/* Investment projection chart */}
-          {investmentProjection && investmentProjection.timeline.length > 1 && (
+          {/* Net worth growth projection */}
+          {nwProjection && nwProjection.timeline.length > 1 && (
             <Card className="metric-card" style={{ padding: "1rem" }}>
               <div className="payoff-stats">
                 <div>
-                  <span className="payoff-stats-label">{locale === "fi" ? "Ennustettu arvo 20v" : "Projected value 20y"} </span>
-                  <span className="payoff-stats-value" data-color="positive"><F v={investmentProjection.finalValue} /></span>
+                  <span className="payoff-stats-label">{locale === "fi" ? "Varallisuus 20v" : "Net worth 20y"} </span>
+                  <span className="payoff-stats-value" data-color={nwProjection.finalValue >= 0 ? "positive" : "negative"}><F v={nwProjection.finalValue} /></span>
                 </div>
                 <div>
-                  <span className="payoff-stats-label">{locale === "fi" ? "Tuotto" : "Returns"} </span>
-                  <span className="payoff-stats-value" data-color="positive">+<F v={investmentProjection.totalReturns} /></span>
+                  <span className="payoff-stats-label">{locale === "fi" ? "Kasvu" : "Growth"} </span>
+                  <span className="payoff-stats-value" data-color={nwProjection.totalGrowth >= 0 ? "positive" : "negative"}>{nwProjection.totalGrowth >= 0 ? "+" : ""}<F v={nwProjection.totalGrowth} /></span>
                 </div>
               </div>
               <ChartContainer height={200}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={investmentProjection.timeline} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                  <AreaChart data={nwProjection.timeline} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                     <defs>
-                      <linearGradient id="nwInvestGrad" x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient id="nwGrowthGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#4ade80" stopOpacity={0.3} />
                         <stop offset="100%" stopColor="#4ade80" stopOpacity={0} />
                       </linearGradient>
-                      <linearGradient id="nwInvestedGrad" x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient id="nwBaselineGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#818cf8" stopOpacity={0.2} />
                         <stop offset="100%" stopColor="#818cf8" stopOpacity={0} />
                       </linearGradient>
@@ -362,14 +415,14 @@ export default function NetWorthPage() {
                         active && payload?.length ? (
                           <div className="chart-tooltip">
                             <p className="chart-tooltip-label">{label} {locale === "fi" ? "vuotta" : "years"}</p>
-                            <p className="chart-tooltip-value text-positive">{fmt(Number(payload[0].value))} €</p>
-                            <p className="chart-tooltip-value text-foreground">{locale === "fi" ? "Sijoitettu" : "Invested"}: {fmt(Number(payload[1].value))} €</p>
+                            <p className="chart-tooltip-value text-positive">{locale === "fi" ? "Varallisuus" : "Net worth"}: {fmt(Number(payload[0].value))} €</p>
+                            <p className="chart-tooltip-value text-foreground">{locale === "fi" ? "Ilman tuottoa" : "Without returns"}: {fmt(Number(payload[1].value))} €</p>
                           </div>
                         ) : null
                       }
                     />
-                    <Area type="monotone" dataKey="value" stroke="#4ade80" strokeWidth={2} fill="url(#nwInvestGrad)" />
-                    <Area type="monotone" dataKey="invested" stroke="#818cf8" strokeWidth={1.5} fill="url(#nwInvestedGrad)" strokeDasharray="4 4" />
+                    <Area type="monotone" dataKey="netWorth" stroke="#4ade80" strokeWidth={2} fill="url(#nwGrowthGrad)" />
+                    <Area type="monotone" dataKey="baseline" stroke="#818cf8" strokeWidth={1.5} fill="url(#nwBaselineGrad)" strokeDasharray="4 4" />
                   </AreaChart>
                 </ResponsiveContainer>
               </ChartContainer>
