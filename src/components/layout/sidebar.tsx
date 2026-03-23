@@ -100,7 +100,7 @@ export function Sidebar({ isOpen, onClose, privacyMode, onTogglePrivacy }: Sideb
   // SSE: show indicator on transactions only when someone else adds an expense
   useEvent("data:updated", useCallback((data: unknown) => {
     const d = data as { source?: string; userId?: number };
-    if (d.source === "transaction-added" && pathname !== "/transactions" && d.userId !== myUserId) {
+    if (d.source === "transaction-added" && pathname !== "/transactions" && myUserId !== null && d.userId !== myUserId) {
       setUnreadTx(1);
     }
   }, [pathname, myUserId]));
