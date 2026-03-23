@@ -440,8 +440,6 @@ export default function NetWorthPage() {
           )}
         </>
       )}
-      {/* TEMP DEBUG */}
-      {nwProjection && <pre style={{ fontSize: "0.5rem", opacity: 0.4, whiteSpace: "pre-wrap" }}>{JSON.stringify(nwProjection.timeline.filter((_, i) => i <= 5 || i === 10 || i === 20), null, 1)}</pre>}
     </div>
   );
 }
