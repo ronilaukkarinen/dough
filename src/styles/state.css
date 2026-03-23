@@ -9,6 +9,10 @@
   opacity: 0.5;
 }
 
+.is-clickable {
+  cursor: pointer;
+}
+
 .is-loading {
   cursor: wait;
 }

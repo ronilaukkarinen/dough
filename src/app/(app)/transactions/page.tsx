@@ -59,6 +59,8 @@ export default function TransactionsPage() {
   const [batchTransactions, setBatchTransactions] = useState<{ payee: string; amount: string; date: string; account_id: string; account_name: string }[]>([]);
   const [batchLoading, setBatchLoading] = useState(false);
   const [allAccounts, setAllAccounts] = useState<{ id: string; name: string }[]>([]);
+  const [editTx, setEditTx] = useState<{ id: string; payee: string; amount: number; category: string; memo: string | null; account_id: string; date: string } | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-detect user's linked account
@@ -222,6 +224,37 @@ export default function TransactionsPage() {
   const updateBatchAccount = (index: number, accountId: string) => {
     const acc = allAccounts.find((a) => a.id === accountId);
     setBatchTransactions((prev) => prev.map((tx, i) => i === index ? { ...tx, account_id: accountId, account_name: acc?.name || "" } : tx));
+  };
+
+  const handleEditSave = async () => {
+    if (!editTx) return;
+    setEditSaving(true);
+    try {
+      const res = await fetch("/api/ynab/transaction", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transaction_id: editTx.id,
+          amount: Math.abs(parseFloat(String(editTx.amount))),
+          payee_name: editTx.payee,
+          memo: editTx.memo || "",
+          account_id: editTx.account_id,
+          date: editTx.date,
+        }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        console.info("[transactions] Edit saved for", editTx.id);
+        setEditTx(null);
+        refresh();
+      } else {
+        console.error("[transactions] Edit failed:", result.error);
+      }
+    } catch (err) {
+      console.error("[transactions] Edit save error:", err);
+    } finally {
+      setEditSaving(false);
+    }
   };
 
   const filterLabels: Record<FilterType, string> = {
@@ -413,7 +446,7 @@ export default function TransactionsPage() {
           {filtered.map((tx) => {
             const txIsTransfer = isTransfer(tx.payee, tx.category);
             return (
-            <div key={tx.id} className="list-item">
+            <div key={tx.id} className="list-item is-clickable" onClick={() => setEditTx({ id: tx.id, payee: tx.payee, amount: tx.amount, category: tx.category, memo: tx.memo, account_id: tx.account_id || "", date: tx.date })}>
               <div className="list-item-icon" data-color={txIsTransfer ? "chart-3" : tx.amount < 0 ? "negative" : "positive"}>
                 {tx.amount < 0 ? <ArrowUpRight className="icon-sm" /> : <ArrowDownLeft className="icon-sm" />}
               </div>
@@ -440,6 +473,45 @@ export default function TransactionsPage() {
           )}
         </Card>
       )}
+
+      {/* Edit transaction dialog */}
+      <Dialog open={!!editTx} onOpenChange={(open) => { if (!open) setEditTx(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{locale === "fi" ? "Muokkaa tapahtumaa" : "Edit transaction"}</DialogTitle>
+          </DialogHeader>
+          {editTx && (
+            <div className="form-stack">
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Saaja" : "Payee"}</Label>
+                <Input value={editTx.payee} onChange={(e) => setEditTx({ ...editTx, payee: e.target.value })} />
+              </div>
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Summa" : "Amount"}</Label>
+                <Input type="number" step="0.01" value={Math.abs(editTx.amount)} onChange={(e) => setEditTx({ ...editTx, amount: editTx.amount < 0 ? -Math.abs(parseFloat(e.target.value) || 0) : Math.abs(parseFloat(e.target.value) || 0) })} />
+              </div>
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Päivämäärä" : "Date"}</Label>
+                <Input type="date" value={editTx.date} onChange={(e) => setEditTx({ ...editTx, date: e.target.value })} />
+              </div>
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Tili" : "Account"}</Label>
+                <select className="input" value={editTx.account_id} onChange={(e) => setEditTx({ ...editTx, account_id: e.target.value })}>
+                  <option value="">{locale === "fi" ? "Valitse tili" : "Select account"}</option>
+                  {allAccounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                </select>
+              </div>
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Kuvaus" : "Memo"}</Label>
+                <Input value={editTx.memo || ""} onChange={(e) => setEditTx({ ...editTx, memo: e.target.value })} />
+              </div>
+              <Button onClick={handleEditSave} disabled={editSaving}>
+                {editSaving ? <Loader2 className="icon-sm animate-spin" /> : (locale === "fi" ? "Tallenna" : "Save")}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
