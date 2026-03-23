@@ -246,7 +246,7 @@ export default function DebtsPage() {
           <p className="ai-summary-text">{aiSuggestion}</p>
         ) : (
           <p className="ai-summary-text page-subtitle">
-            {locale === "fi" ? "Hae AI-suositus velkojesi maksustrategiasta" : "Get AI suggestion for your debt payoff strategy"}
+            {locale === "fi" ? "Hae AI-suositus velkojesi maksustrategiasta." : "Get AI suggestion for your debt payoff strategy."}
           </p>
         )}
       </Card>
