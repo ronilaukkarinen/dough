@@ -52,6 +52,8 @@ export default function SettingsPage() {
   const [nameSaved, setNameSaved] = useState(false);
   const [allAccounts, setAllAccounts] = useState<{ id: string; name: string; balance: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
+  const [excludedAccounts, setExcludedAccounts] = useState<string[]>([]);
+  const [excludedSaved, setExcludedSaved] = useState(false);
   const [accountsSaved, setAccountsSaved] = useState(false);
   const [accountNotes, setAccountNotes] = useState<Record<string, string>>({});
   const [notesSaved, setNotesSaved] = useState(false);
@@ -102,6 +104,9 @@ export default function SettingsPage() {
           }
           if (householdData.settings?.prompt_debt_instructions) {
             setPrompts((p) => ({ ...p, debt: householdData.settings.prompt_debt_instructions }));
+          }
+          if (householdData.settings?.budget_excluded_accounts) {
+            try { setExcludedAccounts(JSON.parse(householdData.settings.budget_excluded_accounts)); } catch {}
           }
           if (profileData.profile) {
             setDisplayName(profileData.profile.display_name || "");
@@ -398,6 +403,49 @@ export default function SettingsPage() {
                     {t.common.save}
                   </Button>
                   {accountsSaved && <span className="settings-saved">{t.common.saved}</span>}
+                </div>
+              </div>
+            )}
+            {allAccounts.length > 0 && (
+              <div className="form-field">
+                <Label>{locale === "fi" ? "Tilit pois päiväbudjetista" : "Accounts excluded from daily budget"}</Label>
+                <p className="settings-help settings-help-mb">
+                  {locale === "fi" ? "Valitut tilit eivät näy käytettävissä olevassa saldossa tai päiväbudjetissa, mutta lasketaan varallisuuteen." : "Selected accounts won't count toward available balance or daily budget, but are included in net worth."}
+                </p>
+                <div className="settings-account-list">
+                  {allAccounts.map((a) => (
+                    <label key={a.id} className="settings-account-item">
+                      <input
+                        type="checkbox"
+                        checked={excludedAccounts.includes(a.id)}
+                        onChange={(e) => {
+                          setExcludedAccounts((prev) =>
+                            e.target.checked ? [...prev, a.id] : prev.filter((id) => id !== a.id)
+                          );
+                        }}
+                      />
+                      <span className="settings-account-name">{a.name}</span>
+                      <span className="settings-account-balance"><F v={a.balance} /></span>
+                    </label>
+                  ))}
+                </div>
+                <div className="settings-row">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      await fetch("/api/household", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ budget_excluded_accounts: JSON.stringify(excludedAccounts) }),
+                      });
+                      setExcludedSaved(true);
+                      setTimeout(() => setExcludedSaved(false), 2000);
+                    }}
+                  >
+                    {t.common.save}
+                  </Button>
+                  {excludedSaved && <span className="settings-saved">{t.common.saved}</span>}
                 </div>
               </div>
             )}
