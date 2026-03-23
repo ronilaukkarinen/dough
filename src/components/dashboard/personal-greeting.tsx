@@ -70,7 +70,7 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
             </>
           : todaySpentAll > 0 ? <>
               {locale === "fi" ? "Jos et osta enää tänään mitään, säästöön jää " : "If you don't buy anything else today, you save "}
-              <span className="personal-greeting-value" data-status={valueStatus(todayRemaining, dailyBudget)}>
+              <span className="personal-greeting-value" data-status="good">
                 <F v={todayRemaining} />
               </span>
               {"."}
