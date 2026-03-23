@@ -152,13 +152,7 @@ export function SpendingFlow({
                 ))}
               </linearGradient>
             </defs>
-            <XAxis
-              dataKey="label"
-              tick={{ fill: "#52525b", fontSize: 9 }}
-              tickLine={false}
-              axisLine={false}
-              interval={Math.floor(daysInMonth / 6)}
-            />
+            <XAxis dataKey="label" hide />
             <YAxis hide />
             <Tooltip
               content={({ active, payload, label }) => {

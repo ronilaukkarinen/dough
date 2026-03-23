@@ -307,7 +307,7 @@ export default function NetWorthPage() {
                           ))}
                         </linearGradient>
                       </defs>
-                      <XAxis dataKey="date" tick={{ fill: "#52525b", fontSize: 9 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                      <XAxis dataKey="date" hide />
                       <YAxis hide domain={[(dataMin: number) => Math.min(dataMin, 0) - 200, (dataMax: number) => Math.max(dataMax, 0) + 200]} />
                       <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeDasharray="3 3" />
                       <Tooltip
