@@ -40,6 +40,7 @@ export default function NetWorthPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [snapshotting, setSnapshotting] = useState(false);
+  const [projectionRange, setProjectionRange] = useState(5);
   const [nwProjection, setNwProjection] = useState<{ timeline: { year: string; netWorth: number; baseline: number }[]; finalValue: number; totalGrowth: number } | null>(null);
 
   useEffect(() => {
@@ -383,21 +384,34 @@ export default function NetWorthPage() {
           )}
 
           {/* Net worth growth projection */}
-          {nwProjection && nwProjection.timeline.length > 1 && (
+          {nwProjection && nwProjection.timeline.length > 1 && (() => {
+            const rangeData = nwProjection.timeline.filter((t) => parseInt(t.year) <= projectionRange);
+            const rangeEnd = rangeData[rangeData.length - 1];
+            const rangeStart = rangeData[0];
+            return (
             <Card className="metric-card" style={{ padding: "1rem" }}>
-              <div className="payoff-stats">
-                <div>
-                  <span className="payoff-stats-label">{locale === "fi" ? "Varallisuus 20v" : "Net worth 20y"} </span>
-                  <span className="payoff-stats-value" data-color={nwProjection.finalValue >= 0 ? "positive" : "negative"}><F v={nwProjection.finalValue} /></span>
+              <div className="nw-projection-header">
+                <div className="payoff-stats">
+                  <div>
+                    <span className="payoff-stats-label">{locale === "fi" ? `Varallisuus ${projectionRange}v` : `Net worth ${projectionRange}y`} </span>
+                    <span className="payoff-stats-value" data-color={rangeEnd.netWorth >= 0 ? "positive" : "negative"}><F v={rangeEnd.netWorth} /></span>
+                  </div>
+                  <div>
+                    <span className="payoff-stats-label">{locale === "fi" ? "Kasvu" : "Growth"} </span>
+                    <span className="payoff-stats-value" data-color={(rangeEnd.netWorth - rangeStart.netWorth) >= 0 ? "positive" : "negative"}>{(rangeEnd.netWorth - rangeStart.netWorth) >= 0 ? "+" : ""}<F v={rangeEnd.netWorth - rangeStart.netWorth} /></span>
+                  </div>
                 </div>
-                <div>
-                  <span className="payoff-stats-label">{locale === "fi" ? "Kasvu" : "Growth"} </span>
-                  <span className="payoff-stats-value" data-color={nwProjection.totalGrowth >= 0 ? "positive" : "negative"}>{nwProjection.totalGrowth >= 0 ? "+" : ""}<F v={nwProjection.totalGrowth} /></span>
+                <div className="chart-range-filter nw-range-filter">
+                  {[5, 10, 20].map((r) => (
+                    <button key={r} type="button" className={`chart-range-btn ${projectionRange === r ? "is-active" : ""}`} onClick={() => setProjectionRange(r)}>
+                      {r}{locale === "fi" ? "v" : "y"}
+                    </button>
+                  ))}
                 </div>
               </div>
               <ChartContainer height={200}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={nwProjection.timeline} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                  <AreaChart data={rangeData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="nwGrowthGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#4ade80" stopOpacity={0.3} />
@@ -429,7 +443,8 @@ export default function NetWorthPage() {
                 </ResponsiveContainer>
               </ChartContainer>
             </Card>
-          )}
+            );
+          })()}
 
           {chartData.length <= 1 && (
             <p className="page-subtitle">
