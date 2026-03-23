@@ -46,7 +46,7 @@ export default function DashboardPage() {
   const [debtItems, setDebtItems] = useState<{ amount: number; dueDay: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [excludedAccountIds, setExcludedAccountIds] = useState<string[]>([]);
-  const [budgetIncludeBills, setBudgetIncludeBills] = useState(true);
+  const [budgetIncludeBills, setBudgetIncludeBills] = useState<boolean | "auto">("auto");
   const [thresholds, setThresholds] = useState({ tight: 20, normal: 30, good: 50 });
   const [householdSize, setHouseholdSize] = useState(1);
   const [personalBudgetShare, setPersonalBudgetShare] = useState(0);
@@ -74,7 +74,8 @@ export default function DashboardPage() {
         try { setExcludedAccountIds(JSON.parse(householdData.settings.budget_excluded_accounts)); } catch {}
       }
       if (householdData.settings?.budget_include_bills !== undefined) {
-        setBudgetIncludeBills(householdData.settings.budget_include_bills === "1");
+        const v = householdData.settings.budget_include_bills;
+        setBudgetIncludeBills(v === "auto" ? "auto" : v === "1");
       }
       setThresholds({
         tight: parseInt(householdData.settings?.budget_threshold_tight) || 20,
@@ -227,9 +228,20 @@ export default function DashboardPage() {
   // Calculate with and without bills
   const budgetWithBills = calculateDailyBudget(budgetParams);
   const budgetWithoutBills = calculateDailyBudget({ ...budgetParams, unpaidBills: [], debts: [] });
-  const budgetResult = budgetIncludeBills ? budgetWithBills : budgetWithoutBills;
+
+  // Auto mode: include bills if balance covers them AND budget stays above "normal" threshold
+  let useBills: boolean;
+  if (budgetIncludeBills === "auto") {
+    const totalUnpaidBills = budgetParams.unpaidBills.reduce((s, b) => s + b.amount, 0) + budgetParams.debts.reduce((s, d) => s + d.amount, 0);
+    const canAfford = availableBalance + todaySpentAll > totalUnpaidBills && budgetWithBills.dailyBudget >= thresholds.normal;
+    useBills = canAfford;
+  } else {
+    useBills = budgetIncludeBills === true;
+  }
+
+  const budgetResult = useBills ? budgetWithBills : budgetWithoutBills;
   const dailyBudget = budgetResult.dailyBudget;
-  const billsDelayNeeded = !budgetIncludeBills && budgetWithBills.dailyBudget < budgetWithoutBills.dailyBudget;
+  const billsDelayNeeded = !useBills && budgetWithBills.dailyBudget < budgetWithoutBills.dailyBudget;
 
   // Persist today's daily budget for streak tracking (fire once on load)
 

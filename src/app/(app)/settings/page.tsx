@@ -54,8 +54,8 @@ export default function SettingsPage() {
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [excludedAccounts, setExcludedAccounts] = useState<string[]>([]);
   const [excludedSaved, setExcludedSaved] = useState(false);
-  const [budgetIncludeBills, setBudgetIncludeBills] = useState(true);
-  const [billsToggleSaved, setBillsToggleSaved] = useState(false);
+  const [budgetBillsMode, setBudgetBillsMode] = useState("auto");
+  const [billsModeSaved, setBillsModeSaved] = useState(false);
   const [thresholds, setThresholds] = useState({ tight: "20", normal: "30", good: "50" });
   const [thresholdsSaved, setThresholdsSaved] = useState(false);
   const [accountsSaved, setAccountsSaved] = useState(false);
@@ -113,7 +113,7 @@ export default function SettingsPage() {
             try { setExcludedAccounts(JSON.parse(householdData.settings.budget_excluded_accounts)); } catch {}
           }
           if (householdData.settings?.budget_include_bills !== undefined) {
-            setBudgetIncludeBills(householdData.settings.budget_include_bills === "1");
+            setBudgetBillsMode(householdData.settings.budget_include_bills);
           }
           if (householdData.settings?.budget_threshold_tight) setThresholds((p) => ({ ...p, tight: householdData.settings.budget_threshold_tight }));
           if (householdData.settings?.budget_threshold_normal) setThresholds((p) => ({ ...p, normal: householdData.settings.budget_threshold_normal }));
@@ -695,28 +695,32 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="form-stack">
             <div className="form-field">
-              <label className="settings-account-item">
-                <input
-                  type="checkbox"
-                  checked={budgetIncludeBills}
+              <Label>{locale === "fi" ? "Laskut päiväbudjetissa" : "Bills in daily budget"}</Label>
+              <div className="settings-row">
+                <select
+                  className="input settings-input"
+                  value={budgetBillsMode}
                   onChange={async (e) => {
-                    setBudgetIncludeBills(e.target.checked);
+                    setBudgetBillsMode(e.target.value);
                     await fetch("/api/household", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ budget_include_bills: e.target.checked ? "1" : "0" }),
+                      body: JSON.stringify({ budget_include_bills: e.target.value }),
                     });
-                    setBillsToggleSaved(true);
-                    setTimeout(() => setBillsToggleSaved(false), 2000);
+                    setBillsModeSaved(true);
+                    setTimeout(() => setBillsModeSaved(false), 2000);
                   }}
-                />
-                <span>{locale === "fi" ? "Huomioi laskut päiväbudjetissa" : "Include bills in daily budget"}</span>
-                {billsToggleSaved && <span className="settings-saved">{t.common.saved}</span>}
-              </label>
+                >
+                  <option value="auto">{locale === "fi" ? "Automaattinen" : "Automatic"}</option>
+                  <option value="1">{locale === "fi" ? "Aina mukana" : "Always included"}</option>
+                  <option value="0">{locale === "fi" ? "Ei koskaan" : "Never"}</option>
+                </select>
+                {billsModeSaved && <span className="settings-saved">{t.common.saved}</span>}
+              </div>
               <p className="settings-help">
                 {locale === "fi"
-                  ? "Jos pois päältä, päiväbudjetti lasketaan ilman laskuja ja velkoja. Laskujen vaikutus näytetään erikseen."
-                  : "If off, daily budget is calculated without bills and debts. Bill impact is shown separately."}
+                  ? "Automaattinen: laskut mukana jos tili kattaa ne ja budjetti pysyy normaalin yllä. Muuten lasketaan ilman."
+                  : "Automatic: bills included if balance covers them and budget stays above normal threshold. Otherwise excluded."}
               </p>
             </div>
             <div className="form-field">
