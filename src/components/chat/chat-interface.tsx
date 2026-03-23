@@ -332,9 +332,7 @@ export function ChatInterface() {
           )}
           {typingUsers.length > 0 && !loading && (
             <div className="chat-typing-indicator">
-              {typingUsers.join(", ")} {typingUsers.length === 1
-                ? (t.chat.thinking || "is typing...")
-                : (t.chat.thinking || "are typing...")}
+              {typingUsers.join(", ")} {t.chat.typing || "is typing..."}
             </div>
           )}
         </div>
