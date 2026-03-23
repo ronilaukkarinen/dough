@@ -51,12 +51,10 @@ interface TickerData {
 
 let tickerChartId = 0;
 
-function TickerChart({ data, positive, currency, fmt: fmtFn, range }: { data: number[]; positive: boolean; currency: string; fmt: (v: number) => string; range: "1W" | "6M" | "YTD" }) {
+function TickerChart({ data, positive, currency, fmt: fmtFn, range }: { data: number[]; positive: boolean; currency: string; fmt: (v: number) => string; range: "1W" | "6M" | "MAX" }) {
   if (data.length < 2) return null;
   const uid = `tc-${++tickerChartId}`;
-  const now = new Date();
-  const ytdDays = Math.ceil((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000) * 5 / 7;
-  const sliceCount = range === "1W" ? 5 : range === "6M" ? 130 : Math.round(ytdDays);
+  const sliceCount = range === "1W" ? 5 : range === "6M" ? 130 : data.length;
   const sliced = data.length > sliceCount ? data.slice(-sliceCount) : data;
   const rangePositive = sliced.length >= 2 ? sliced[sliced.length - 1] >= sliced[0] : positive;
   const color = rangePositive ? "#4ade80" : "#f87171";
@@ -70,7 +68,7 @@ function TickerChart({ data, positive, currency, fmt: fmtFn, range }: { data: nu
             <stop offset="100%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <YAxis hide />
+        <YAxis hide domain={[0, "auto"]} />
         <Tooltip
           content={({ active, payload }) => {
             if (!active || !payload?.length) return null;
@@ -133,7 +131,7 @@ export default function InvestmentsPage() {
   const [saving, setSaving] = useState<string | null>(null);
   const [projectionYears, setProjectionYears] = useState(20);
   const [tickerData, setTickerData] = useState<Record<string, TickerData>>({});
-  const [chartRange, setChartRange] = useState<"1W" | "6M" | "YTD">("6M");
+  const [chartRange, setChartRange] = useState<"1W" | "6M" | "MAX">("6M");
 
   useEffect(() => {
     console.debug("[investments] Loading investment accounts");
@@ -326,7 +324,7 @@ export default function InvestmentsPage() {
       {investments.length > 0 && (
         <>
           <div className="chart-range-filter">
-            {(["1W", "6M", "YTD"] as const).map((r) => (
+            {(["1W", "6M", "MAX"] as const).map((r) => (
               <button key={r} type="button" className={`chart-range-btn ${chartRange === r ? "is-active" : ""}`} onClick={() => setChartRange(r)}>
                 {r}
               </button>
