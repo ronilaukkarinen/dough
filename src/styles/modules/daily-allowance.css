@@ -199,6 +199,8 @@
   left: 0;
   font-size: 0.6875rem;
   line-height: 1.4;
+  font-weight: 400;
+  letter-spacing: 0.5px;
   color: #fafafa;
   background: #000;
   padding: 0.5rem 0.75rem;
