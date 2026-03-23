@@ -1,3 +1,8 @@
+### 1.8.1: 2026-03-24
+
+* Show current balance and days in daily budget tooltip alongside tightest segment
+* Hide X axis from spending flow and net worth top charts for minimal look
+
 ### 1.8.0: 2026-03-24
 
 * Fix net worth projection with correct component model tracking cash, investments, and debts separately
