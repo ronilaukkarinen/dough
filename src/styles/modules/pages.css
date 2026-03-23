@@ -451,7 +451,8 @@
   opacity: 0.3;
   cursor: grab;
   touch-action: none;
-  align-self: center;
+  position: relative;
+  top: 2px;
 }
 
 .drag-handle:active {
