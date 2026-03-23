@@ -218,6 +218,13 @@ export async function POST(request: Request) {
             dailyBudget = budgetWithoutBills.dailyBudget;
           }
 
+          // Build segment summary for AI context
+          const segmentSummary = incomeWithIds
+            .filter((i) => resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
+            .sort((a, b) => resolveDay(a.expected_day) - resolveDay(b.expected_day))
+            .map((i) => `Day ${resolveDay(i.expected_day)}: ${i.name} ${i.amount} euros arrives`)
+            .join(", ");
+
           const incomeBeforePayday = incomeWithIds
             .filter((i) => i.expected_day >= today && i.expected_day < daysInMonth && !matchedIncomeIds.has(i.id))
             .reduce((s, i) => s + i.amount, 0);
