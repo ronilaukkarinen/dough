@@ -1,3 +1,9 @@
+### 1.5.4: 2026-03-23
+
+* Cap personal budget suggestion at family remaining so it never exceeds available
+* Persist new transactions to local SQLite immediately so all users see them without sync
+* Refresh YNAB cache from SQLite on data changes so dashboard updates for all household members
+
 ### 1.5.3: 2026-03-23
 
 * Redesign net worth page with change summary, dynamic gradient chart, forecast line, and zero reference
