@@ -25,6 +25,7 @@ export async function GET() {
         last_ynab_sync: settings.last_ynab_sync || null,
         decimal_places: settings.decimal_places,
         budget_excluded_accounts: settings.budget_excluded_accounts || "[]",
+        min_daily_budget: settings.min_daily_budget || "0",
       },
     });
   } catch (error) {

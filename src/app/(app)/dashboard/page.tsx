@@ -45,6 +45,7 @@ export default function DashboardPage() {
   const [debtItems, setDebtItems] = useState<{ amount: number; dueDay: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [excludedAccountIds, setExcludedAccountIds] = useState<string[]>([]);
+  const [minDailyBudget, setMinDailyBudget] = useState(0);
   const [householdSize, setHouseholdSize] = useState(1);
   const [personalBudgetShare, setPersonalBudgetShare] = useState(0);
   const [monthlyHistory, setMonthlyHistory] = useState<{ month: string; income: number; expenses: number }[]>([]);
@@ -69,6 +70,9 @@ export default function DashboardPage() {
       if (householdData.settings?.household_size) setHouseholdSize(parseInt(householdData.settings.household_size, 10) || 1);
       if (householdData.settings?.budget_excluded_accounts) {
         try { setExcludedAccountIds(JSON.parse(householdData.settings.budget_excluded_accounts)); } catch {}
+      }
+      if (householdData.settings?.min_daily_budget) {
+        setMinDailyBudget(parseFloat(householdData.settings.min_daily_budget) || 0);
       }
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       // Merge subscriptions into bills for unified calculations
@@ -200,7 +204,7 @@ export default function DashboardPage() {
   // Daily budget via segment-based cash flow simulation
   // Add todaySpentAll back to balance so simulation sees start-of-day balance
   // This makes today's budget "stick" — overspend/underspend carries to future days
-  const budgetResult = calculateDailyBudget({
+  const budgetParams = {
     balance: availableBalance + todaySpentAll,
     savingGoal: savingRate,
     today,
@@ -211,8 +215,19 @@ export default function DashboardPage() {
       .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
       .map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
     resolveDay,
-  });
-  const dailyBudget = budgetResult.dailyBudget;
+  };
+  const budgetResult = calculateDailyBudget(budgetParams);
+  let dailyBudget = Math.max(budgetResult.dailyBudget, minDailyBudget);
+  const billsDelayNeeded = budgetResult.dailyBudget === 0 && budgetParams.unpaidBills.length > 0;
+
+  // If budget is 0 due to bills, calculate what it would be without bills
+  let budgetIfDelayed = 0;
+  if (billsDelayNeeded) {
+    const noBillsResult = calculateDailyBudget({ ...budgetParams, unpaidBills: [], debts: [] });
+    budgetIfDelayed = noBillsResult.dailyBudget;
+    dailyBudget = Math.max(dailyBudget, minDailyBudget);
+  }
+
   const todayRemaining = dailyBudget - todaySpentAll;
 
   // Burn rate = average daily real spending this month
@@ -401,6 +416,8 @@ export default function DashboardPage() {
       <DailyAllowance
         dailyBudget={dailyBudget}
         availableBalance={availableBalance}
+        billsDelayNeeded={billsDelayNeeded}
+        budgetIfDelayed={budgetIfDelayed}
         upcomingBills={bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0)}
         accountCount={data.summary.accounts.filter((a) => (a.type === "checking" || a.type === "savings") && !excludedAccountIds.includes(a.id)).length}
         billCount={bills.filter((b) => b.is_active && !b.is_paid).length}

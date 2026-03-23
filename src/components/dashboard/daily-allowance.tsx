@@ -22,6 +22,8 @@ interface DailyAllowanceProps {
   monthIncome?: number;
   monthExpenses?: number;
   trendPercent?: number;
+  billsDelayNeeded?: boolean;
+  budgetIfDelayed?: number;
   budgetBreakdown?: {
     startDay: number;
     endDay: number;
@@ -51,6 +53,8 @@ export function DailyAllowance({
   monthIncome = 0,
   monthExpenses = 0,
   trendPercent = 0,
+  billsDelayNeeded = false,
+  budgetIfDelayed = 0,
   budgetBreakdown,
   currency = "€",
 }: DailyAllowanceProps) {
@@ -90,15 +94,15 @@ export function DailyAllowance({
             <span className="daily-allowance-hero-unit">{todaySpentAll > 0 ? "" : t.dashboard.perDay}</span>
           </div>
           <p className="daily-allowance-hero-note">
-            {budgetZero ? (
+            {budgetZero && billsDelayNeeded ? (
               <>
                 {locale === "fi"
-                  ? `Laskuja ${fmt(upcomingBills)} ${currency}, mutta tilien kate ei riitä. `
-                  : `Bills ${fmt(upcomingBills)} ${currency} exceed available balance. `}
-                {todaySpentAll > 0 && (
+                  ? `Laskuja ${fmt(upcomingBills)} ${currency}, tilien kate ei riitä. `
+                  : `Bills ${fmt(upcomingBills)} ${currency}, balance not enough. `}
+                {budgetIfDelayed > 0 && (
                   <>
-                    {locale === "fi" ? "Käytetty tänään " : "Spent today "}
-                    <span className="text-negative"><F v={todaySpentAll} s={` ${currency}`} /></span>
+                    {locale === "fi" ? "Jos lykkäät laskuja, päiväbudjetti olisi " : "If you delay bills, daily budget would be "}
+                    <span className="text-positive"><F v={budgetIfDelayed} s={` ${currency}`} /></span>
                     {". "}
                   </>
                 )}

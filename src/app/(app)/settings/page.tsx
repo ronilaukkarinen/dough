@@ -54,6 +54,8 @@ export default function SettingsPage() {
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [excludedAccounts, setExcludedAccounts] = useState<string[]>([]);
   const [excludedSaved, setExcludedSaved] = useState(false);
+  const [minBudget, setMinBudget] = useState("0");
+  const [minBudgetSaved, setMinBudgetSaved] = useState(false);
   const [accountsSaved, setAccountsSaved] = useState(false);
   const [accountNotes, setAccountNotes] = useState<Record<string, string>>({});
   const [notesSaved, setNotesSaved] = useState(false);
@@ -107,6 +109,9 @@ export default function SettingsPage() {
           }
           if (householdData.settings?.budget_excluded_accounts) {
             try { setExcludedAccounts(JSON.parse(householdData.settings.budget_excluded_accounts)); } catch {}
+          }
+          if (householdData.settings?.min_daily_budget) {
+            setMinBudget(String(householdData.settings.min_daily_budget));
           }
           if (profileData.profile) {
             setDisplayName(profileData.profile.display_name || "");
@@ -670,6 +675,41 @@ export default function SettingsPage() {
                 {locale === "fi"
                   ? "Vähennetään käytettävissä olevasta saldosta ennen päiväbudjetin laskemista"
                   : "Deducted from available balance before calculating daily budget"}
+              </p>
+            </div>
+            <div className="form-field">
+              <Label>{locale === "fi" ? "Päiväbudjetin minimi (€)" : "Minimum daily budget (€)"}</Label>
+              <div className="settings-row">
+                <Input
+                  type="number"
+                  step="1"
+                  min="0"
+                  value={minBudget}
+                  onChange={(e) => setMinBudget(e.target.value)}
+                  placeholder="0"
+                  className="settings-input"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    await fetch("/api/household", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ min_daily_budget: minBudget || "0" }),
+                    });
+                    setMinBudgetSaved(true);
+                    setTimeout(() => setMinBudgetSaved(false), 2000);
+                  }}
+                >
+                  {t.common.save}
+                </Button>
+                {minBudgetSaved && <span className="settings-saved">{t.common.saved}</span>}
+              </div>
+              <p className="settings-help">
+                {locale === "fi"
+                  ? "Jos laskettu päiväbudjetti on alle tämän, näytetään tämä minimiarvo ja varoitus"
+                  : "If calculated daily budget is below this, show this minimum value and a warning"}
               </p>
             </div>
           </CardContent>
