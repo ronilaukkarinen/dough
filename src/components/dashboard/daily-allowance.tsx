@@ -24,6 +24,7 @@ interface DailyAllowanceProps {
   trendPercent?: number;
   billsDelayNeeded?: boolean;
   budgetWithBills?: number;
+  thresholds?: { tight: number; normal: number; good: number };
   budgetBreakdown?: {
     startDay: number;
     endDay: number;
@@ -55,6 +56,7 @@ export function DailyAllowance({
   trendPercent = 0,
   billsDelayNeeded = false,
   budgetWithBills = 0,
+  thresholds = { tight: 20, normal: 30, good: 50 },
   budgetBreakdown,
   currency = "€",
 }: DailyAllowanceProps) {
@@ -64,7 +66,7 @@ export function DailyAllowance({
   const effectiveBudget = todaySpentAll > 0 ? Math.max(0, todayRemaining) : dailyBudget;
   const overspent = todayRemaining < 0;
   const status =
-    effectiveBudget > 50 ? "good" : effectiveBudget > 20 ? "tight" : "danger";
+    effectiveBudget > thresholds.good ? "good" : effectiveBudget > thresholds.tight ? "tight" : "danger";
 
   return (
     <div className="daily-allowance-grid">
@@ -94,8 +96,10 @@ export function DailyAllowance({
           </div>
           <p className="daily-allowance-hero-note">
             {locale === "fi" ? "Tämän päivän kokonaisbudjetti on " : "Today's total budget is "}
-            <span className={dailyBudget > 50 ? "text-positive" : dailyBudget > 20 ? "text-chart-3" : "text-negative"}><F v={dailyBudget} s={` ${currency}`} /></span>
-            {". "}
+            <span className={dailyBudget > thresholds.good ? "text-positive" : dailyBudget > thresholds.tight ? "text-chart-3" : "text-negative"}><F v={dailyBudget} s={` ${currency}`} /></span>
+            {dailyBudget > thresholds.good
+              ? (locale === "fi" ? ". Rahaa on, mutta älä tuhlaa, säästä. " : ". You have money, but save, don't splurge. ")
+              : ". "}
             {billsDelayNeeded ? (
               <>
                 {locale === "fi"
@@ -125,7 +129,7 @@ export function DailyAllowance({
                     {locale === "fi" ? "Huomisen budjetti noin " : "Tomorrow's budget approx. "}
                     {(() => {
                       const tomorrowBudget = Math.max(0, Math.round(dailyBudget - Math.abs(todayRemaining) / daysUntilIncome));
-                      const tStatus = tomorrowBudget > 50 ? "text-positive" : tomorrowBudget > 20 ? "text-chart-3" : "text-negative";
+                      const tStatus = tomorrowBudget > thresholds.good ? "text-positive" : tomorrowBudget > thresholds.tight ? "text-chart-3" : "text-negative";
                       return <span className={tStatus}><F v={tomorrowBudget} s={` ${currency}`} /></span>;
                     })()}
                     {` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}.`}

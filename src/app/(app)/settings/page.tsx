@@ -56,6 +56,8 @@ export default function SettingsPage() {
   const [excludedSaved, setExcludedSaved] = useState(false);
   const [budgetIncludeBills, setBudgetIncludeBills] = useState(true);
   const [billsToggleSaved, setBillsToggleSaved] = useState(false);
+  const [thresholds, setThresholds] = useState({ tight: "20", normal: "30", good: "50" });
+  const [thresholdsSaved, setThresholdsSaved] = useState(false);
   const [accountsSaved, setAccountsSaved] = useState(false);
   const [accountNotes, setAccountNotes] = useState<Record<string, string>>({});
   const [notesSaved, setNotesSaved] = useState(false);
@@ -113,6 +115,9 @@ export default function SettingsPage() {
           if (householdData.settings?.budget_include_bills !== undefined) {
             setBudgetIncludeBills(householdData.settings.budget_include_bills === "1");
           }
+          if (householdData.settings?.budget_threshold_tight) setThresholds((p) => ({ ...p, tight: householdData.settings.budget_threshold_tight }));
+          if (householdData.settings?.budget_threshold_normal) setThresholds((p) => ({ ...p, normal: householdData.settings.budget_threshold_normal }));
+          if (householdData.settings?.budget_threshold_good) setThresholds((p) => ({ ...p, good: householdData.settings.budget_threshold_good }));
           if (profileData.profile) {
             setDisplayName(profileData.profile.display_name || "");
             if (profileData.profile.budget_share) setPersonalBudgetShare(String(profileData.profile.budget_share));
@@ -712,6 +717,42 @@ export default function SettingsPage() {
                 {locale === "fi"
                   ? "Jos pois päältä, päiväbudjetti lasketaan ilman laskuja ja velkoja. Laskujen vaikutus näytetään erikseen."
                   : "If off, daily budget is calculated without bills and debts. Bill impact is shown separately."}
+              </p>
+            </div>
+            <div className="form-field">
+              <Label>{locale === "fi" ? "Budjettirajat (€)" : "Budget thresholds (€)"}</Label>
+              <div className="settings-row">
+                <div className="list-edit-field">
+                  <Label className="list-edit-label">{locale === "fi" ? "Tiukka" : "Tight"}</Label>
+                  <Input type="number" value={thresholds.tight} onChange={(e) => setThresholds((p) => ({ ...p, tight: e.target.value }))} className="settings-input" />
+                </div>
+                <div className="list-edit-field">
+                  <Label className="list-edit-label">{locale === "fi" ? "Normaali" : "Normal"}</Label>
+                  <Input type="number" value={thresholds.normal} onChange={(e) => setThresholds((p) => ({ ...p, normal: e.target.value }))} className="settings-input" />
+                </div>
+                <div className="list-edit-field">
+                  <Label className="list-edit-label">{locale === "fi" ? "Hyvä" : "Good"}</Label>
+                  <Input type="number" value={thresholds.good} onChange={(e) => setThresholds((p) => ({ ...p, good: e.target.value }))} className="settings-input" />
+                </div>
+                <Button size="sm" variant="outline" onClick={async () => {
+                  await fetch("/api/household", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      budget_threshold_tight: thresholds.tight || "20",
+                      budget_threshold_normal: thresholds.normal || "30",
+                      budget_threshold_good: thresholds.good || "50",
+                    }),
+                  });
+                  setThresholdsSaved(true);
+                  setTimeout(() => setThresholdsSaved(false), 2000);
+                }}>{t.common.save}</Button>
+                {thresholdsSaved && <span className="settings-saved">{t.common.saved}</span>}
+              </div>
+              <p className="settings-help">
+                {locale === "fi"
+                  ? "Alle tiukan = varoitus. Tiukka-normaali = maltillisesti. Normaali-hyvä = ok. Yli hyvän = älä tuhlaa, säästä."
+                  : "Below tight = warning. Tight-normal = be careful. Normal-good = ok. Above good = don't splurge, save."}
               </p>
             </div>
           </CardContent>

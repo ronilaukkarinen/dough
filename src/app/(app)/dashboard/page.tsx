@@ -46,6 +46,7 @@ export default function DashboardPage() {
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [excludedAccountIds, setExcludedAccountIds] = useState<string[]>([]);
   const [budgetIncludeBills, setBudgetIncludeBills] = useState(true);
+  const [thresholds, setThresholds] = useState({ tight: 20, normal: 30, good: 50 });
   const [householdSize, setHouseholdSize] = useState(1);
   const [personalBudgetShare, setPersonalBudgetShare] = useState(0);
   const [monthlyHistory, setMonthlyHistory] = useState<{ month: string; income: number; expenses: number }[]>([]);
@@ -74,6 +75,11 @@ export default function DashboardPage() {
       if (householdData.settings?.budget_include_bills !== undefined) {
         setBudgetIncludeBills(householdData.settings.budget_include_bills === "1");
       }
+      setThresholds({
+        tight: parseInt(householdData.settings?.budget_threshold_tight) || 20,
+        normal: parseInt(householdData.settings?.budget_threshold_normal) || 30,
+        good: parseInt(householdData.settings?.budget_threshold_good) || 50,
+      });
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       // Merge subscriptions into bills for unified calculations
       const allBills = [...(billsData.bills || [])];
@@ -413,6 +419,7 @@ export default function DashboardPage() {
         availableBalance={availableBalance}
         billsDelayNeeded={billsDelayNeeded}
         budgetWithBills={budgetWithBills.dailyBudget}
+        thresholds={thresholds}
         upcomingBills={bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0)}
         accountCount={data.summary.accounts.filter((a) => (a.type === "checking" || a.type === "savings") && !excludedAccountIds.includes(a.id)).length}
         billCount={bills.filter((b) => b.is_active && !b.is_paid).length}
