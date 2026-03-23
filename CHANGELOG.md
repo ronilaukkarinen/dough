@@ -1,3 +1,9 @@
+### 1.7.2: 2026-03-23
+
+* Make investment ticker chart color always reflect daily change
+* Remove 24h TTL from AI summaries, cache forever until explicit refresh
+* Add period to debt AI suggestion prompt text
+
 ### 1.7.1: 2026-03-23
 
 * Add auto mode for bills in daily budget: includes bills when balance covers them, excludes when it does not
