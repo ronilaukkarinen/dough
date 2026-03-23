@@ -114,6 +114,7 @@
   margin-right: auto;
   max-width: 80rem;
   padding: 1.5rem 0.75rem;
+  overflow-x: hidden;
 }
 
 @media (min-width: 768px) {
