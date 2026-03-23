@@ -201,7 +201,7 @@ export async function POST(request: Request) {
               .filter((i) => resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
               .map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
             resolveDay,
-          });
+          };
 
           // Apply bills setting: auto, always, or never
           const budgetWithBills = calculateDailyBudget(budgetParams);
