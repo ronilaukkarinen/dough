@@ -270,6 +270,7 @@ function initializeDb(db: Database.Database) {
       day_change_pct REAL NOT NULL DEFAULT 0,
       week_52_high REAL NOT NULL DEFAULT 0,
       week_52_low REAL NOT NULL DEFAULT 0,
+      sparkline_json TEXT DEFAULT '[]',
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 

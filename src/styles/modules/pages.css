@@ -437,6 +437,17 @@
   color: var(--muted-foreground);
 }
 
+.investment-ticker-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.investment-sparkline {
+  flex-shrink: 0;
+}
+
 .debt-item-right {
   text-align: right;
 }

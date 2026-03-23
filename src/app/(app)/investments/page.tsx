@@ -46,6 +46,23 @@ interface TickerData {
   dayChangePct: number;
   week52High: number;
   week52Low: number;
+  sparkline: number[];
+}
+
+function Sparkline({ data, positive }: { data: number[]; positive: boolean }) {
+  if (data.length < 2) return null;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const w = 120;
+  const h = 32;
+  const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(" ");
+  const color = positive ? "#4ade80" : "#f87171";
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="investment-sparkline">
+      <polyline points={points} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
 }
 
 function calculateProjection(
@@ -228,13 +245,16 @@ export default function InvestmentsPage() {
                     const td = tickerData[inv.ticker.toUpperCase()];
                     const isIndex = inv.ticker.startsWith("^");
                     return (
-                      <p className="debt-item-meta">
-                        {isIndex ? `${locale === "fi" ? "Indeksi" : "Index"}: ` : ""}{td.name}: {td.price.toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {td.currency}
-                        {" "}
-                        <span className={td.dayChangePct >= 0 ? "text-positive" : "text-negative"}>
-                          {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}%
-                        </span>
-                      </p>
+                      <div className="investment-ticker-info">
+                        <p className="debt-item-meta">
+                          {isIndex ? `${locale === "fi" ? "Indeksi" : "Index"}: ` : ""}{td.name}: {td.price.toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {td.currency}
+                          {" "}
+                          <span className={td.dayChangePct >= 0 ? "text-positive" : "text-negative"}>
+                            {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}%
+                          </span>
+                        </p>
+                        {td.sparkline?.length > 1 && <Sparkline data={td.sparkline} positive={td.dayChangePct >= 0} />}
+                      </div>
                     );
                   })()}
                 </div>
