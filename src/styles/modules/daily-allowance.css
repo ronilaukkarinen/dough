@@ -48,6 +48,7 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  position: relative;
 }
 
 .daily-allowance-hero-label .metric-info-popup {
@@ -169,6 +170,7 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  position: relative;
 }
 
 .metric-info-trigger {
@@ -193,7 +195,7 @@
 }
 
 .metric-info-wrap {
-  position: relative;
+  position: static;
   display: inline-flex;
 }
 
@@ -208,7 +210,7 @@
   padding: 0.5rem 0.75rem;
   border-radius: 0.375rem;
   width: max-content;
-  max-width: calc(100vw - 2rem);
+  max-width: 15rem;
   z-index: 50;
   pointer-events: none;
   white-space: normal;
