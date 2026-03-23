@@ -35,7 +35,7 @@ interface IncomeSource {
 
 export default function DashboardPage() {
   const { t, locale } = useLocale();
-  const { data, loading, connected, error: ynabError, sync, savingRate } = useYnab();
+  const { data, loading, connected, error: ynabError, sync, savingRate, refresh } = useYnab();
   const [incomes, setIncomes] = useState<IncomeSource[]>([]);
   const [matchedIncomeIds, setMatchedIncomeIds] = useState<Set<number>>(new Set());
   const [matchedBillIds, setMatchedBillIds] = useState<Set<number>>(new Set());
@@ -106,8 +106,8 @@ export default function DashboardPage() {
 
   useEffect(() => { loadSideData(); }, [loadSideData]);
 
-  // SSE: re-fetch income/bills when data changes
-  useEvent("data:updated", useCallback(() => { loadSideData(); }, [loadSideData]));
+  // SSE: re-fetch income/bills and YNAB cache when data changes
+  useEvent("data:updated", useCallback(() => { loadSideData(); refresh(); }, [loadSideData, refresh]));
 
   // Update sync timestamp when YNAB data changes
   useEffect(() => {
@@ -260,7 +260,8 @@ export default function DashboardPage() {
     .reduce((s, t) => s + Math.abs(t.amount), 0);
   const calculatedShare = realSpendingTotal > 0 ? personalMonthSpend / realSpendingTotal : 0.5;
   const personalShare = personalBudgetShare > 0 ? personalBudgetShare / 100 : calculatedShare;
-  const suggestedForYou = Math.max(0, Math.round((dailyBudget * personalShare - todaySpentPersonal) * 100) / 100);
+  const personalBudgetRaw = Math.round((dailyBudget * personalShare - todaySpentPersonal) * 100) / 100;
+  const suggestedForYou = Math.max(0, Math.min(personalBudgetRaw, todayRemaining));
 
   // Build spending chart data from transactions (exclude transfers)
   const spendingByDay: Record<string, number> = {};
