@@ -11,17 +11,17 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const cacheOnly = url.searchParams.get("cache_only") === "1";
+    const refresh = url.searchParams.get("refresh") === "1";
 
     const db = getDb();
 
-    // Check for cached suggestion (valid for 24 hours)
-    const cachedSuggestion = db
-      .prepare("SELECT content, created_at FROM ai_summaries WHERE user_id = ? AND locale = 'debt' ORDER BY created_at DESC LIMIT 1")
-      .get(user.id) as { content: string; created_at: string } | undefined;
-    if (cachedSuggestion) {
-      const age = Date.now() - new Date(cachedSuggestion.created_at + "Z").getTime();
-      if (age < 24 * 60 * 60 * 1000) {
-        console.debug("[debts/suggestion] Returning cached suggestion, age:", Math.round(age / 60000), "min");
+    // Check for cached suggestion
+    if (!refresh) {
+      const cachedSuggestion = db
+        .prepare("SELECT content, created_at FROM ai_summaries WHERE user_id = ? AND locale = 'debt' ORDER BY created_at DESC LIMIT 1")
+        .get(user.id) as { content: string; created_at: string } | undefined;
+      if (cachedSuggestion) {
+        console.debug("[debts/suggestion] Returning cached suggestion from", cachedSuggestion.created_at);
         return NextResponse.json({ suggestion: cachedSuggestion.content });
       }
     }

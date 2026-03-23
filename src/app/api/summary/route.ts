@@ -39,12 +39,8 @@ export async function GET(request: Request) {
         .get(user.id, requestLocale) as { content: string; created_at: string } | undefined;
 
       if (cached) {
-        const age = Date.now() - new Date(cached.created_at + "Z").getTime();
-        const maxAge = 24 * 60 * 60 * 1000;
-        if (age < maxAge) {
-          console.debug("[summary] Returning cached", requestLocale, "summary, age:", Math.round(age / 60000), "min");
-          return NextResponse.json({ summary: cached.content, cached: true });
-        }
+        console.debug("[summary] Returning cached", requestLocale, "summary from", cached.created_at);
+        return NextResponse.json({ summary: cached.content, cached: true });
       }
     }
 
