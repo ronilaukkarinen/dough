@@ -52,7 +52,7 @@
 
 .daily-allowance-hero-label .metric-info-popup {
   text-transform: none;
-  letter-spacing: 0.1px;
+  letter-spacing: 0;
   font-weight: 400;
   font-size: 0.6875rem;
 }

@@ -888,7 +888,7 @@
   transform: translateX(-50%);
   font-size: 0.6875rem;
   font-weight: 400;
-  letter-spacing: 0.1px;
+  letter-spacing: 0;
   line-height: 1;
   color: #fafafa;
   background: #000;
