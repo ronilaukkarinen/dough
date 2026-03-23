@@ -1,3 +1,8 @@
+### 1.5.3: 2026-03-23
+
+* Redesign net worth page with change summary, dynamic gradient chart, forecast line, and zero reference
+* Move net worth to second position in sidebar navigation
+
 ### 1.5.2: 2026-03-23
 
 * Add over/under diff as first item in spending flow chart tooltip

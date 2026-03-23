@@ -1,4 +1,5 @@
-/* Module: net-worth — minimal */
+/* Module: net-worth */
+
 
 .net-worth-section {
   display: flex;
@@ -22,57 +23,10 @@
 
 @media (min-width: 1024px) {
   .net-worth-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-/* Hero card */
-.card.net-worth-hero {
-  border: none;
-  background: transparent;
-  backdrop-filter: none;
-  padding: 0 0.25rem;
-  gap: 0.125rem;
-  grid-column: 1 / -1;
-}
-
-.card.net-worth-hero:hover {
-  border-color: transparent;
-}
-
-@media (min-width: 1024px) {
-  .card.net-worth-hero {
-    grid-column: span 1;
-  }
-}
-
-.net-worth-hero-label {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.net-worth-hero-value {
-  font-size: 2rem;
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  color: var(--negative);
-  font-variant-numeric: tabular-nums;
-  padding: 0.25rem 0;
-}
-
-@media (min-width: 768px) {
-  .net-worth-hero-value {
-    font-size: 2.25rem;
-  }
-}
-
-.net-worth-hero-value[data-positive] {
-  color: var(--positive);
-}
 
 /* Metric cards — minimal */
 .card.net-worth-card {
@@ -178,10 +132,6 @@
 .net-worth-list-name {
   font-size: 0.8125rem;
   color: var(--foreground);
-}
-
-.card.net-worth-chart-card {
-  padding: 1rem;
 }
 
 .net-worth-list-amount {
