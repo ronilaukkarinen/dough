@@ -34,6 +34,18 @@ interface InvestmentData {
   expectedReturn: number;
   monthlyTransferred: number;
   notes: string;
+  ticker: string;
+}
+
+interface TickerData {
+  symbol: string;
+  name: string;
+  price: number;
+  previousClose: number;
+  currency: string;
+  dayChangePct: number;
+  week52High: number;
+  week52Low: number;
 }
 
 function calculateProjection(
@@ -80,6 +92,7 @@ export default function InvestmentsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [projectionYears, setProjectionYears] = useState(20);
+  const [tickerData, setTickerData] = useState<Record<string, TickerData>>({});
 
   useEffect(() => {
     console.debug("[investments] Loading investment accounts");
@@ -95,6 +108,23 @@ export default function InvestmentsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Fetch ticker data for investments with tickers
+  useEffect(() => {
+    const tickers = investments.filter((i) => i.ticker).map((i) => i.ticker);
+    if (tickers.length === 0) return;
+    const unique = [...new Set(tickers)].join(",");
+    console.debug("[investments] Fetching ticker data for:", unique);
+    fetch(`/api/ticker?symbols=${encodeURIComponent(unique)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.tickers) {
+          console.info("[investments] Got ticker data for", Object.keys(data.tickers).length, "symbols");
+          setTickerData(data.tickers);
+        }
+      })
+      .catch((err) => console.error("[investments] Ticker fetch error:", err));
+  }, [investments]);
+
   const saveOverride = async (inv: InvestmentData) => {
     setSaving(inv.id);
     console.info("[investments] Saving override for", inv.name);
@@ -106,6 +136,7 @@ export default function InvestmentsPage() {
           ynab_account_id: inv.id,
           monthly_contribution: inv.monthlyContribution,
           expected_return: inv.expectedReturn,
+          ticker: inv.ticker,
         }),
       });
     } catch (err) {
@@ -150,6 +181,7 @@ export default function InvestmentsPage() {
             <div>
               <p className="metric-card-label">{t.investments.totalValue}</p>
               <p className="metric-card-value"><F v={totalValue} /></p>
+              <p className="metric-card-note">{investments.length} {locale === "fi" ? "sijoitusta" : "investments"}</p>
             </div>
           </div>
         </Card>
@@ -161,6 +193,7 @@ export default function InvestmentsPage() {
             <div>
               <p className="metric-card-label">{t.investments.totalMonthly}</p>
               <p className="metric-card-value"><F v={totalMonthly} /></p>
+              <p className="metric-card-note">{fmt(totalMonthly * 12)} €/{locale === "fi" ? "v" : "y"}</p>
             </div>
           </div>
         </Card>
@@ -172,7 +205,7 @@ export default function InvestmentsPage() {
             <div>
               <p className="metric-card-label">{t.investments.projectedValue}</p>
               <p className="metric-card-value"><F v={projection.finalValue} /></p>
-              <p className="metric-card-note">{projectionYears} {locale === "fi" ? "v" : "y"}</p>
+              <p className="metric-card-note">{projectionYears} {locale === "fi" ? "v" : "y"}, +{fmt(projection.totalReturns)} € {locale === "fi" ? "tuottoa" : "returns"}</p>
             </div>
           </div>
         </Card>
@@ -191,6 +224,18 @@ export default function InvestmentsPage() {
                       {locale === "fi" ? "Siirretty tässä kuussa" : "Transferred this month"}: <F v={inv.monthlyTransferred} />
                     </p>
                   )}
+                  {inv.ticker && tickerData[inv.ticker.toUpperCase()] && (() => {
+                    const td = tickerData[inv.ticker.toUpperCase()];
+                    return (
+                      <p className="debt-item-meta">
+                        {td.name}: {td.price.toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {td.currency}
+                        {" "}
+                        <span className={td.dayChangePct >= 0 ? "text-positive" : "text-negative"}>
+                          {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}%
+                        </span>
+                      </p>
+                    );
+                  })()}
                 </div>
                 <div className="debt-item-right">
                   <p className="debt-item-amount text-positive"><F v={inv.balance} /></p>
@@ -216,6 +261,16 @@ export default function InvestmentsPage() {
                     value={inv.expectedReturn || ""}
                     onChange={(e) => updateInvestment(inv.id, "expectedReturn", parseFloat(e.target.value) || 0)}
                     placeholder="7"
+                    className="debt-edit-input"
+                  />
+                </div>
+                <div className="debt-edit-field">
+                  <Label className="debt-edit-label">Ticker</Label>
+                  <Input
+                    type="text"
+                    value={inv.ticker || ""}
+                    onChange={(e) => setInvestments((prev) => prev.map((i) => i.id === inv.id ? { ...i, ticker: e.target.value } : i))}
+                    placeholder="NVDA"
                     className="debt-edit-input"
                   />
                 </div>
