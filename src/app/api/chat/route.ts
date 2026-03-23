@@ -208,7 +208,7 @@ export async function POST(request: Request) {
           const budgetWithoutBills = calculateDailyBudget({ ...budgetParams, unpaidBills: [], debts: [] });
           let dailyBudget: number;
           if (billsSetting === "auto") {
-            const totalUnpaid = budgetParams.unpaidBills.reduce((s, b) => s + b.amount, 0) + budgetParams.debts.reduce((s, d) => s + d.amount, 0);
+            const totalUnpaid = budgetParams.unpaidBills.reduce((s: number, b: { amount: number }) => s + b.amount, 0) + budgetParams.debts.reduce((s: number, d: { amount: number }) => s + d.amount, 0);
             const thresholdNormal = parseInt(getHouseholdSetting("budget_threshold_normal") || "30", 10);
             const canAfford = checkingSavings > totalUnpaid && budgetWithBills.dailyBudget >= thresholdNormal;
             dailyBudget = canAfford ? budgetWithBills.dailyBudget : budgetWithoutBills.dailyBudget;
