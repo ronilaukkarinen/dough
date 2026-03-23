@@ -70,6 +70,10 @@ export function ChatInterface() {
           setMessages(msgs);
           setHasOlder(!!data.hasOlder);
           messageCountRef.current = msgs.length;
+          // If last message is from user, AI is still thinking
+          if (msgs.length > 0 && msgs[msgs.length - 1].role === "user") {
+            setLoading(true);
+          }
         } else {
           const greeting = t.chat.greeting;
           setMessages([{ id: "greeting", role: "assistant", content: greeting }]);
