@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocale } from "@/lib/locale-context";
 import { isTransfer } from "@/lib/transaction-utils";
 import { useYnab } from "@/lib/ynab-context";
+import { useEvent } from "@/lib/use-events";
 import { relativeDate } from "@/lib/date-utils";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,7 +35,15 @@ type FilterType = "all" | "income" | "expenses" | "transfers";
 
 export default function TransactionsPage() {
   const { t, locale } = useLocale();
-  const { data, loading, connected, sync } = useYnab();
+  const { data, loading, connected, sync, refresh } = useYnab();
+
+  // SSE: refresh when transactions are added
+  useEvent("data:updated", useCallback((d: unknown) => {
+    const evt = d as { source?: string };
+    if (evt.source === "transaction-added" || evt.source === "ynab-sync") {
+      refresh();
+    }
+  }, [refresh]));
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
   const [addOpen, setAddOpen] = useState(false);
