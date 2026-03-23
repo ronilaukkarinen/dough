@@ -131,12 +131,9 @@ export async function POST() {
       const { getHouseholdSetting: getSnapSetting } = await import("@/lib/household");
       /* eslint-disable @typescript-eslint/no-explicit-any */
       const snapMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-      const snapIncome = transactions
-        .filter((t: any) => t.amount > 0 && !t.payee?.startsWith("Transfer") && !t.payee?.startsWith("Starting Balance") && !t.payee?.startsWith("Reconciliation"))
-        .reduce((s: number, t: any) => s + t.amount, 0);
-      const snapExpenses = transactions
-        .filter((t: any) => t.amount < 0 && !t.payee?.startsWith("Transfer") && !t.payee?.startsWith("Starting Balance") && !t.payee?.startsWith("Reconciliation") && t.category !== "Uncategorized")
-        .reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
+      // Use YNAB's own income/activity figures for accuracy
+      const snapIncome = monthBudget.income;
+      const snapExpenses = Math.abs(monthBudget.activity);
       const snapCategories = monthBudget.categories
         .filter((c: any) => c.activity < 0 && c.name !== "Inflow: Ready to Assign")
         .sort((a: any, b: any) => a.activity - b.activity)
@@ -161,19 +158,9 @@ export async function POST() {
         console.info("[api/ynab/sync] Backfilling monthly snapshot for", pastMonth);
         try {
           const pastSinceDate = `${pastDate.getFullYear()}-${String(pastDate.getMonth() + 1).padStart(2, "0")}-01`;
-          const [pastTx, pastBudget] = await Promise.all([
-            getTransactions(budgetId, pastSinceDate, token),
-            getMonthBudget(budgetId, pastSinceDate, token),
-          ]);
-          const nextMonth = new Date(pastDate.getFullYear(), pastDate.getMonth() + 1, 1);
-          const nextMonthStr = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}`;
-          const filteredTx = pastTx.filter((t: any) => t.date >= pastSinceDate && t.date < `${nextMonthStr}-01`);
-          const pastIncome = filteredTx
-            .filter((t: any) => t.amount > 0 && !t.payee?.startsWith("Transfer") && !t.payee?.startsWith("Starting Balance") && !t.payee?.startsWith("Reconciliation"))
-            .reduce((s: number, t: any) => s + t.amount, 0);
-          const pastExpenses = filteredTx
-            .filter((t: any) => t.amount < 0 && !t.payee?.startsWith("Transfer") && !t.payee?.startsWith("Starting Balance") && !t.payee?.startsWith("Reconciliation") && t.category !== "Uncategorized")
-            .reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
+          const pastBudget = await getMonthBudget(budgetId, pastSinceDate, token);
+          const pastIncome = pastBudget.income;
+          const pastExpenses = Math.abs(pastBudget.activity);
           const pastCategories = pastBudget.categories
             .filter((c: any) => c.activity < 0 && c.name !== "Inflow: Ready to Assign")
             .sort((a: any, b: any) => a.activity - b.activity)
