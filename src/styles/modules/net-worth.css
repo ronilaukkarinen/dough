@@ -74,16 +74,6 @@
   }
 }
 
-/* Net worth page uses 3-col grid (no hero card) */
-.page-stack > .net-worth-grid {
-  grid-template-columns: 1fr 1fr;
-}
-
-@media (min-width: 768px) {
-  .page-stack > .net-worth-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
 
 
 /* Metric cards — minimal */

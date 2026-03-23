@@ -15,7 +15,7 @@ import {
   ReferenceLine,
   ReferenceDot,
 } from "recharts";
-import { RefreshCw, TrendingUp, TrendingDown, Wallet, Loader2 } from "lucide-react";
+import { RefreshCw, TrendingUp, TrendingDown, Wallet, Loader2, LineChart } from "lucide-react";
 import { F } from "@/components/ui/f";
 
 interface Snapshot {
@@ -258,6 +258,18 @@ export default function NetWorthPage() {
           {/* Stat cards */}
           {latest && (
             <div className="net-worth-grid">
+              <Card className="net-worth-card">
+                <div className="net-worth-card-row">
+                  <div className="net-worth-card-icon" data-color={latest.net_worth >= 0 ? "positive" : "negative"}>
+                    <LineChart />
+                  </div>
+                  <div>
+                    <p className="net-worth-card-label">{t.dashboard.netWorth}</p>
+                    <p className={`net-worth-card-value ${latest.net_worth >= 0 ? "text-positive" : "text-negative"}`}><F v={latest.net_worth} s=" €" /></p>
+                  </div>
+                </div>
+              </Card>
+
               <Card className="net-worth-card">
                 <div className="net-worth-card-row">
                   <div className="net-worth-card-icon" data-color="primary">
