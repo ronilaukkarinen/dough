@@ -55,6 +55,7 @@ export default function SettingsPage() {
   const [excludedAccounts, setExcludedAccounts] = useState<string[]>([]);
   const [excludedSaved, setExcludedSaved] = useState(false);
   const [budgetIncludeBills, setBudgetIncludeBills] = useState(true);
+  const [billsToggleSaved, setBillsToggleSaved] = useState(false);
   const [accountsSaved, setAccountsSaved] = useState(false);
   const [accountNotes, setAccountNotes] = useState<Record<string, string>>({});
   const [notesSaved, setNotesSaved] = useState(false);
@@ -688,9 +689,12 @@ export default function SettingsPage() {
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ budget_include_bills: e.target.checked ? "1" : "0" }),
                     });
+                    setBillsToggleSaved(true);
+                    setTimeout(() => setBillsToggleSaved(false), 2000);
                   }}
                 />
                 <span>{locale === "fi" ? "Huomioi laskut päiväbudjetissa" : "Include bills in daily budget"}</span>
+                {billsToggleSaved && <span className="settings-saved">{t.common.saved}</span>}
               </label>
               <p className="settings-help">
                 {locale === "fi"
