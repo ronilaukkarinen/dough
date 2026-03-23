@@ -721,7 +721,7 @@ export default function SettingsPage() {
             </div>
             <div className="form-field">
               <Label>{locale === "fi" ? "Budjettirajat (€)" : "Budget thresholds (€)"}</Label>
-              <div className="settings-row">
+              <div className="list-edit-row">
                 <div className="list-edit-field">
                   <Label className="list-edit-label">{locale === "fi" ? "Tiukka" : "Tight"}</Label>
                   <Input type="number" value={thresholds.tight} onChange={(e) => setThresholds((p) => ({ ...p, tight: e.target.value }))} className="settings-input" />
