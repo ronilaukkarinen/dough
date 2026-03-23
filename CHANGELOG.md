@@ -1,3 +1,8 @@
+### 1.7.3: 2026-03-23
+
+* Show excluded flag on accounts in AI context so advisor considers all accounts
+* Increase form-stack gap, fix settings-account-list margin
+
 ### 1.7.2: 2026-03-23
 
 * Make investment ticker chart color always reflect daily change
