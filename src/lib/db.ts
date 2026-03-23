@@ -261,6 +261,18 @@ function initializeDb(db: Database.Database) {
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_ynab_categories_month_name ON ynab_categories(month, name);
 
+    CREATE TABLE IF NOT EXISTS ticker_cache (
+      symbol TEXT PRIMARY KEY,
+      name TEXT DEFAULT '',
+      price REAL NOT NULL DEFAULT 0,
+      previous_close REAL NOT NULL DEFAULT 0,
+      currency TEXT DEFAULT 'USD',
+      day_change_pct REAL NOT NULL DEFAULT 0,
+      week_52_high REAL NOT NULL DEFAULT 0,
+      week_52_low REAL NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS ynab_month_budget (
       month TEXT PRIMARY KEY,
       income REAL NOT NULL DEFAULT 0,
@@ -287,6 +299,13 @@ function initializeDb(db: Database.Database) {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  // Add ticker column to investment_overrides if missing
+  const investCols = db.prepare("PRAGMA table_info(investment_overrides)").all() as { name: string }[];
+  if (!investCols.some((c) => c.name === "ticker")) {
+    console.info("[db] Adding ticker column to investment_overrides");
+    db.exec("ALTER TABLE investment_overrides ADD COLUMN ticker TEXT DEFAULT ''");
+  }
 
   // Fix partial unique index on transactions — replace with proper unique index for upsert support
   try {
