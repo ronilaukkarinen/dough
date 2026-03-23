@@ -44,6 +44,7 @@ export default function DashboardPage() {
   const [debtMonthly, setDebtMonthly] = useState(0);
   const [debtItems, setDebtItems] = useState<{ amount: number; dueDay: number }[]>([]);
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
+  const [excludedAccountIds, setExcludedAccountIds] = useState<string[]>([]);
   const [householdSize, setHouseholdSize] = useState(1);
   const [personalBudgetShare, setPersonalBudgetShare] = useState(0);
   const [monthlyHistory, setMonthlyHistory] = useState<{ month: string; income: number; expenses: number }[]>([]);
@@ -66,6 +67,9 @@ export default function DashboardPage() {
       if (profileData.profile?.budget_share) setPersonalBudgetShare(profileData.profile.budget_share);
       if (householdData.settings?.last_ynab_sync) setLastYnabSync(householdData.settings.last_ynab_sync);
       if (householdData.settings?.household_size) setHouseholdSize(parseInt(householdData.settings.household_size, 10) || 1);
+      if (householdData.settings?.budget_excluded_accounts) {
+        try { setExcludedAccountIds(JSON.parse(householdData.settings.budget_excluded_accounts)); } catch {}
+      }
       if (incomeData.incomes) setIncomes(incomeData.incomes);
       // Merge subscriptions into bills for unified calculations
       const allBills = [...(billsData.bills || [])];
@@ -162,10 +166,10 @@ export default function DashboardPage() {
   // Real income from YNAB month budget (matches YNAB's own reports)
   const realIncome = data.monthBudget.income;
 
-  // Available = total checking + savings accounts
+  // Available = total checking + savings accounts (excluding budget-excluded accounts)
   const availableBalance = Math.round(
     data.summary.accounts
-      .filter((a) => a.type === "checking" || a.type === "savings")
+      .filter((a) => (a.type === "checking" || a.type === "savings") && !excludedAccountIds.includes(a.id))
       .reduce((s, a) => s + a.balance, 0) * 100
   ) / 100;
 
@@ -397,7 +401,7 @@ export default function DashboardPage() {
         dailyBudget={dailyBudget}
         availableBalance={availableBalance}
         upcomingBills={bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0)}
-        accountCount={data.summary.accounts.filter((a) => a.type === "checking" || a.type === "savings").length}
+        accountCount={data.summary.accounts.filter((a) => (a.type === "checking" || a.type === "savings") && !excludedAccountIds.includes(a.id)).length}
         billCount={bills.filter((b) => b.is_active && !b.is_paid).length}
         nextIncomeAmount={(() => {
           const next = incomes
