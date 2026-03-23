@@ -463,9 +463,8 @@
 }
 
 .chart-range-btn.is-active {
-  color: var(--foreground);
-  border-color: var(--foreground);
-  background: rgba(255, 255, 255, 0.04);
+  color: #b4b4b4;
+  border-color: #b4b4b4;
 }
 
 @media (hover: hover) {
