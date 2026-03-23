@@ -57,6 +57,7 @@ interface YnabContextValue {
   connected: boolean;
   savingRate: number;
   sync: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const YnabContext = createContext<YnabContextValue>({
@@ -66,6 +67,7 @@ const YnabContext = createContext<YnabContextValue>({
   connected: false,
   savingRate: 0,
   sync: async () => {},
+  refresh: async () => {},
 });
 
 export function YnabProvider({ children }: { children: ReactNode }) {
@@ -113,6 +115,20 @@ export function YnabProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Refresh from local SQLite cache (no YNAB API call)
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/ynab/sync");
+      const cached = await res.json();
+      if (cached.success && cached.data) {
+        console.info("[ynab-context] Refreshed from SQLite cache");
+        setData(cached.data);
+      }
+    } catch (err) {
+      console.warn("[ynab-context] Refresh error:", err);
+    }
+  }, []);
+
   useEffect(() => {
     console.debug("[ynab-context] Loading cached data + checking connection");
 
@@ -152,7 +168,7 @@ export function YnabProvider({ children }: { children: ReactNode }) {
   // Users should manually sync via the sync button
 
   return (
-    <YnabContext.Provider value={{ data, loading, error, connected, savingRate, sync }}>
+    <YnabContext.Provider value={{ data, loading, error, connected, savingRate, sync, refresh }}>
       {children}
     </YnabContext.Provider>
   );
