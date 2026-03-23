@@ -378,14 +378,32 @@ export default function InvestmentsPage() {
                 </div>
                 <div className="debt-edit-field">
                   <Label className="debt-edit-label">{locale === "fi" ? "Tuotto %" : "Return %"}</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={inv.expectedReturn || ""}
-                    onChange={(e) => updateInvestment(inv.id, "expectedReturn", parseFloat(e.target.value) || 0)}
-                    placeholder="7"
-                    className="debt-edit-input"
-                  />
+                  {(() => {
+                    const td = inv.ticker ? tickerData[inv.ticker.toUpperCase()] : null;
+                    if (td && td.sparkline && td.sparkline.length >= 2) {
+                      const first = td.sparkline[0];
+                      const last = td.sparkline[td.sparkline.length - 1];
+                      const yearReturn = first > 0 ? Math.round(((last - first) / first) * 1000) / 10 : 0;
+                      return (
+                        <Input
+                          type="text"
+                          value={`${yearReturn > 0 ? "+" : ""}${yearReturn}%`}
+                          readOnly
+                          className="debt-edit-input"
+                        />
+                      );
+                    }
+                    return (
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={inv.expectedReturn || ""}
+                        onChange={(e) => updateInvestment(inv.id, "expectedReturn", parseFloat(e.target.value) || 0)}
+                        placeholder="7"
+                        className="debt-edit-input"
+                      />
+                    );
+                  })()}
                 </div>
                 <div className="debt-edit-field">
                   <Label className="debt-edit-label">Ticker</Label>
