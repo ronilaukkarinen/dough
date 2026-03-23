@@ -281,6 +281,11 @@ export default function InvestmentsPage() {
                     <option value="^STOXX50E" label="Euro Stoxx 50" />
                     <option value="BTC-USD" label="Bitcoin" />
                     <option value="ETH-USD" label="Ethereum" />
+                    <option value="NVDA" label="NVIDIA" />
+                    <option value="AAPL" label="Apple" />
+                    <option value="MSFT" label="Microsoft" />
+                    <option value="TSLA" label="Tesla" />
+                    <option value="AMZN" label="Amazon" />
                   </datalist>
                 </div>
                 <Button

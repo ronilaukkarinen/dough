@@ -14,7 +14,9 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   ReferenceDot,
+  CartesianGrid,
 } from "recharts";
+import { ChartContainer } from "@/components/ui/chart-container";
 import { RefreshCw, TrendingUp, TrendingDown, Wallet, Loader2, LineChart } from "lucide-react";
 import { F } from "@/components/ui/f";
 
@@ -38,7 +40,7 @@ export default function NetWorthPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [snapshotting, setSnapshotting] = useState(false);
-  const [investmentSummary, setInvestmentSummary] = useState<{ totalValue: number; totalMonthly: number; weightedReturn: number } | null>(null);
+  const [investmentProjection, setInvestmentProjection] = useState<{ timeline: { year: string; value: number; invested: number }[]; finalValue: number; totalReturns: number } | null>(null);
 
   useEffect(() => {
     console.debug("[net-worth] Loading snapshots and investment data");
@@ -52,12 +54,19 @@ export default function NetWorthPage() {
       }
       if (investData.investments?.length > 0) {
         const invs = investData.investments;
-        const totalValue = invs.reduce((s: number, i: { balance: number }) => s + i.balance, 0);
-        const totalMonthly = invs.reduce((s: number, i: { monthlyContribution: number }) => s + i.monthlyContribution, 0);
-        const weightedReturn = totalMonthly > 0
-          ? invs.reduce((s: number, i: { expectedReturn: number; monthlyContribution: number }) => s + i.expectedReturn * i.monthlyContribution, 0) / totalMonthly
+        let tv = invs.reduce((s: number, i: { balance: number }) => s + i.balance, 0);
+        let ti = tv;
+        const tm = invs.reduce((s: number, i: { monthlyContribution: number }) => s + i.monthlyContribution, 0);
+        const wr = tm > 0
+          ? invs.reduce((s: number, i: { expectedReturn: number; monthlyContribution: number }) => s + i.expectedReturn * i.monthlyContribution, 0) / tm
           : invs.reduce((s: number, i: { expectedReturn: number }) => s + i.expectedReturn, 0) / invs.length;
-        setInvestmentSummary({ totalValue, totalMonthly, weightedReturn: Math.round(weightedReturn * 10) / 10 });
+        const mr = wr / 100 / 12;
+        const tl: { year: string; value: number; invested: number }[] = [{ year: "0", value: Math.round(tv), invested: Math.round(ti) }];
+        for (let y = 1; y <= 20; y++) {
+          for (let m = 0; m < 12; m++) { tv = tv * (1 + mr) + tm; ti += tm; }
+          tl.push({ year: String(y), value: Math.round(tv), invested: Math.round(ti) });
+        }
+        setInvestmentProjection({ timeline: tl, finalValue: Math.round(tv), totalReturns: Math.round(tv - ti) });
       }
     })
       .catch((err) => console.error("[net-worth] Load error:", err))
@@ -319,34 +328,52 @@ export default function NetWorthPage() {
             </div>
           )}
 
-          {/* Investment return summary */}
-          {investmentSummary && investmentSummary.totalValue > 0 && (
-            <div className="net-worth-grid">
-              <Card className="net-worth-card">
-                <div className="net-worth-card-row">
-                  <div className="net-worth-card-icon" data-color="positive">
-                    <TrendingUp />
-                  </div>
-                  <div>
-                    <p className="net-worth-card-label">{locale === "fi" ? "Tuottoennuste" : "Return forecast"}</p>
-                    <p className="net-worth-card-value text-positive">+{fmt(Math.round(investmentSummary.totalValue * investmentSummary.weightedReturn / 100))} €/{locale === "fi" ? "v" : "y"}</p>
-                    <p className="net-worth-card-note">{investmentSummary.weightedReturn}% {locale === "fi" ? "keskituotto" : "avg return"}</p>
-                  </div>
+          {/* Investment projection chart */}
+          {investmentProjection && investmentProjection.timeline.length > 1 && (
+            <Card className="metric-card" style={{ padding: "1rem" }}>
+              <div className="payoff-stats">
+                <div>
+                  <span className="payoff-stats-label">{locale === "fi" ? "Ennustettu arvo 20v" : "Projected value 20y"} </span>
+                  <span className="payoff-stats-value" data-color="positive"><F v={investmentProjection.finalValue} /></span>
                 </div>
-              </Card>
-              <Card className="net-worth-card">
-                <div className="net-worth-card-row">
-                  <div className="net-worth-card-icon" data-color="primary">
-                    <Wallet />
-                  </div>
-                  <div>
-                    <p className="net-worth-card-label">{locale === "fi" ? "Kk-sijoitukset" : "Monthly investments"}</p>
-                    <p className="net-worth-card-value"><F v={investmentSummary.totalMonthly} s=" €" /></p>
-                    <p className="net-worth-card-note">{fmt(investmentSummary.totalMonthly * 12)} €/{locale === "fi" ? "v" : "y"}</p>
-                  </div>
+                <div>
+                  <span className="payoff-stats-label">{locale === "fi" ? "Tuotto" : "Returns"} </span>
+                  <span className="payoff-stats-value" data-color="positive">+<F v={investmentProjection.totalReturns} /></span>
                 </div>
-              </Card>
-            </div>
+              </div>
+              <ChartContainer height={200}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={investmentProjection.timeline} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="nwInvestGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#4ade80" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#4ade80" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="nwInvestedGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#818cf8" stopOpacity={0.2} />
+                        <stop offset="100%" stopColor="#818cf8" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                    <XAxis dataKey="year" tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}${locale === "fi" ? "v" : "y"}`} />
+                    <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => mask(v >= 1000000 ? `${(v / 1000000).toFixed(1)}M €` : v >= 1000 ? `${(v / 1000).toFixed(0)}k €` : `${Math.round(v)} €`)} width={55} />
+                    <Tooltip
+                      content={({ active, payload, label }) =>
+                        active && payload?.length ? (
+                          <div className="chart-tooltip">
+                            <p className="chart-tooltip-label">{label} {locale === "fi" ? "vuotta" : "years"}</p>
+                            <p className="chart-tooltip-value text-positive">{fmt(Number(payload[0].value))} €</p>
+                            <p className="chart-tooltip-value text-foreground">{locale === "fi" ? "Sijoitettu" : "Invested"}: {fmt(Number(payload[1].value))} €</p>
+                          </div>
+                        ) : null
+                      }
+                    />
+                    <Area type="monotone" dataKey="value" stroke="#4ade80" strokeWidth={2} fill="url(#nwInvestGrad)" />
+                    <Area type="monotone" dataKey="invested" stroke="#818cf8" strokeWidth={1.5} fill="url(#nwInvestedGrad)" strokeDasharray="4 4" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </Card>
           )}
 
           {chartData.length <= 1 && (
