@@ -60,6 +60,13 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
               <span className="personal-greeting-exceeded"><F v={Math.abs(todayRemaining)} /></span>
               {locale === "fi" ? " verran. Huomenna parempi kulukuri sitten." : "."}
             </>
+          : todaySpentAll > 0 ? <>
+              {locale === "fi" ? "Jos et osta enää tänään mitään, säästöön jää " : "If you don't buy anything else today, you save "}
+              <span className="personal-greeting-value" data-status={valueStatus(todayRemaining, dailyBudget)}>
+                <F v={todayRemaining} />
+              </span>
+              {"."}
+            </>
           : <>
               {locale === "fi" ? "Käytä mielellään alle " : "Preferably spend under "}
               <span className="personal-greeting-value" data-status={valueStatus(suggestedForYou, dailyBudget)}>
