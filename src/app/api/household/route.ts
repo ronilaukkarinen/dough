@@ -23,7 +23,7 @@ export async function GET() {
         prompt_summary_instructions: settings.prompt_summary_instructions || "",
         prompt_debt_instructions: settings.prompt_debt_instructions || "",
         last_ynab_sync: settings.last_ynab_sync || null,
-        decimal_places: settings.decimal_places !== undefined ? parseInt(settings.decimal_places) : 0,
+        decimal_places: settings.decimal_places,
         budget_excluded_accounts: settings.budget_excluded_accounts || "[]",
       },
     });
