@@ -3,8 +3,10 @@
 .spending-flow {
   position: relative;
   border-radius: 0.75rem;
+  overflow: hidden;
 }
 
 .spending-flow-chart {
   width: 100%;
+  overflow: hidden;
 }

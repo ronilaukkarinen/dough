@@ -93,6 +93,8 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--muted-foreground);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .daily-allowance-hero-bg {
