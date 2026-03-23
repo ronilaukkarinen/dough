@@ -31,7 +31,7 @@ export async function GET() {
     const sinceDate = `${currentMonth}-01`;
 
     const transactions = db.prepare(
-      "SELECT ynab_id as id, date, amount, payee, category, memo, approved, cleared, account_id FROM transactions WHERE user_id = ? AND date >= ? ORDER BY date DESC"
+      "SELECT ynab_id as id, date, amount, payee, category, memo, approved, cleared, account_id FROM transactions WHERE user_id = ? AND date >= ? ORDER BY date DESC, id DESC"
     ).all(user.id, sinceDate) as { id: string; date: string; amount: number; payee: string; category: string; memo: string | null; approved: number; cleared: string; account_id: string }[];
 
     const monthBudgetRow = db.prepare("SELECT income, budgeted, activity, to_be_budgeted as toBeBudgeted FROM ynab_month_budget WHERE month = ?").get(currentMonth) as { income: number; budgeted: number; activity: number; toBeBudgeted: number } | undefined;
