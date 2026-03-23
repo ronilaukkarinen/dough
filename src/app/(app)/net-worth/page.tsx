@@ -40,7 +40,7 @@ export default function NetWorthPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [snapshotting, setSnapshotting] = useState(false);
-  const [projectionRange, setProjectionRange] = useState(5);
+  const [projectionRange, setProjectionRange] = useState(10);
   const [nwProjection, setNwProjection] = useState<{ timeline: { year: string; netWorth: number; baseline: number }[]; finalValue: number; totalGrowth: number } | null>(null);
 
   useEffect(() => {
