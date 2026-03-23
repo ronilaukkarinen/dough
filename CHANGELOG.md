@@ -1,9 +1,14 @@
 ### 1.6.3: 2026-03-23
 
-* Show bill coverage warning when daily budget is 0 due to bills exceeding available balance
-* Fix spending flow bubble showing total spent instead of over/under when dailyBudget is 0
+* Add bills inclusion toggle in settings under own daily budget card
+* Show bill impact on daily budget when bills excluded
+* Show total budget as first line in hero note
+* Fix spending flow bubble using targetPerDay for over/under when dailyBudget is 0
 * Fix daily budget double-counting overdue bills already reflected in account balance
+* Fix double dot in hero note, remove em-dashes from dashboard text
 * Fix decimal_places API passthrough
+* Fix hero card tooltip clipping with overflow visible
+* Link Dough logo to dashboard
 * Emit SSE event on settings change so dashboard updates without page reload
 
 ### 1.6.2: 2026-03-23
