@@ -159,10 +159,8 @@ export default function DashboardPage() {
   const monthActivity = Math.abs(data.monthBudget.activity);
   const toBeBudgeted = data.monthBudget.toBeBudgeted;
 
-  // Real income = positive transactions excluding transfers
-  const realIncome = data.transactions
-    .filter((t) => t.amount > 0 && !isTransfer(t.payee, t.category))
-    .reduce((s, t) => s + t.amount, 0);
+  // Real income from YNAB month budget (matches YNAB's own reports)
+  const realIncome = data.monthBudget.income;
 
   // Available = total checking + savings accounts
   const availableBalance = Math.round(

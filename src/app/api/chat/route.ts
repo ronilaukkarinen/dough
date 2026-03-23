@@ -193,7 +193,7 @@ export async function POST(request: Request) {
 
           context = {
             totalBalance: Math.round(checkingSavings * 100) / 100,
-            monthlyIncome: Math.round(realIncomeTx.reduce((s: number, t: any) => s + t.amount, 0) * 100) / 100,
+            monthlyIncome: Math.round(monthBudget.income * 100) / 100,
             monthlyExpenses: Math.round(realExpenseTx.reduce((s: number, t: any) => s + Math.abs(t.amount), 0) * 100) / 100,
             upcomingBills: enrichedBills,
             recentTransactions: recentTx,

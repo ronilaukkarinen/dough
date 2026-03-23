@@ -96,7 +96,7 @@ export async function GET(request: Request) {
     const realExpenses = transactions.filter((t: any) => t.amount < 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation") && t.category !== "Uncategorized");
     const realIncome = transactions.filter((t: any) => t.amount > 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation"));
     const monthActivity = realExpenses.reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
-    const monthIncomeTotal = realIncome.reduce((s: number, t: any) => s + t.amount, 0);
+    const monthIncomeTotal = monthBudget.income;
 
     const topExpenses = realExpenses
       .sort((a: any, b: any) => a.amount - b.amount)
