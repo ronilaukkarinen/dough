@@ -895,6 +895,7 @@
   padding: 0.3rem 0.5rem;
   border-radius: 0.25rem;
   white-space: nowrap;
+  max-width: calc(100vw - 2rem);
   z-index: 50;
   pointer-events: none;
   opacity: 0;
