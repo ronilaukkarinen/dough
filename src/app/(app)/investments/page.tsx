@@ -49,27 +49,34 @@ interface TickerData {
   sparkline: number[];
 }
 
-function TickerChart({ data, positive }: { data: number[]; positive: boolean }) {
+function TickerChart({ data, positive, currency, fmt: fmtFn }: { data: number[]; positive: boolean; currency: string; fmt: (v: number) => string }) {
   if (data.length < 2) return null;
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const w = 400;
-  const h = 60;
   const color = positive ? "#4ade80" : "#f87171";
-  const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * (h - 4) - 2}`).join(" ");
-  const fillPoints = `0,${h} ${points} ${w},${h}`;
+  const chartData = data.map((v, i) => ({ i, price: v }));
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="investment-chart" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id={`tcFill-${positive}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={0.15} />
-          <stop offset="100%" stopColor={color} stopOpacity={0} />
-        </linearGradient>
-      </defs>
-      <polygon points={fillPoints} fill={`url(#tcFill-${positive})`} />
-      <polyline points={points} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <ResponsiveContainer width="100%" height={100}>
+      <AreaChart data={chartData} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id={`tcFill-${positive}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity={0.15} />
+            <stop offset="100%" stopColor={color} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <YAxis hide />
+        <Tooltip
+          content={({ active, payload }) => {
+            if (!active || !payload?.length) return null;
+            const val = Number(payload[0].value);
+            return (
+              <div className="chart-tooltip">
+                <p className="chart-tooltip-value" style={{ color }}>{fmtFn(val)} {currency}</p>
+              </div>
+            );
+          }}
+        />
+        <Area type="monotone" dataKey="price" stroke={color} strokeWidth={2} fill={`url(#tcFill-${positive})`} dot={false} />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }
 
@@ -261,7 +268,7 @@ export default function InvestmentsPage() {
                             {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}%
                           </span>
                         </p>
-                        {td.sparkline?.length > 1 && <TickerChart data={td.sparkline} positive={td.dayChangePct >= 0} />}
+                        {td.sparkline?.length > 1 && <TickerChart data={td.sparkline} positive={td.dayChangePct >= 0} currency={td.currency} fmt={fmt} />}
                       </div>
                     );
                   })()}
