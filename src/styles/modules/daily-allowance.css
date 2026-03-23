@@ -14,7 +14,7 @@
 /* Hero card */
 .card.daily-allowance-hero {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border: none;
   background: transparent;
   backdrop-filter: none;

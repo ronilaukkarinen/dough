@@ -97,15 +97,17 @@ export function DailyAllowance({
             {budgetZero && billsDelayNeeded ? (
               <>
                 {locale === "fi"
-                  ? `Laskuja ${fmt(upcomingBills)} ${currency}, tilien kate ei riitä. `
-                  : `Bills ${fmt(upcomingBills)} ${currency}, balance not enough. `}
-                {budgetIfDelayed > 0 && (
-                  <>
-                    {locale === "fi" ? "Jos lykkäät laskuja, päiväbudjetti olisi " : "If you delay bills, daily budget would be "}
-                    <span className="text-positive"><F v={budgetIfDelayed} s={` ${currency}`} /></span>
-                    {". "}
-                  </>
-                )}
+                  ? "Jos maksaisit kaikki laskut, päiväbudjettisi olisi "
+                  : "If you paid all bills, your daily budget would be "}
+                {(() => {
+                  const afterBills = Math.round((availableBalance - upcomingBills) / Math.max(1, daysUntilIncome));
+                  const cls = afterBills >= 0 ? "text-positive" : "text-negative";
+                  return <span className={cls}><F v={afterBills} s={` ${currency}`} /></span>;
+                })()}
+                {". "}
+                {locale === "fi" ? "Laskuja " : "Bills "}
+                <span className="text-negative"><F v={upcomingBills} s={` ${currency}`} /></span>
+                {". "}
                 {daysUntilIncome > 0 && `${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}.`}
               </>
             ) : overspent ? (

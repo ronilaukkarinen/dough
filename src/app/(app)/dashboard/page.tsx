@@ -220,14 +220,6 @@ export default function DashboardPage() {
   let dailyBudget = Math.max(budgetResult.dailyBudget, minDailyBudget);
   const billsDelayNeeded = budgetResult.dailyBudget === 0 && budgetParams.unpaidBills.length > 0;
 
-  // If budget is 0 due to bills, calculate what it would be without bills
-  let budgetIfDelayed = 0;
-  if (billsDelayNeeded) {
-    const noBillsResult = calculateDailyBudget({ ...budgetParams, unpaidBills: [], debts: [] });
-    budgetIfDelayed = noBillsResult.dailyBudget;
-    dailyBudget = Math.max(dailyBudget, minDailyBudget);
-  }
-
   const todayRemaining = dailyBudget - todaySpentAll;
 
   // Burn rate = average daily real spending this month
@@ -417,7 +409,6 @@ export default function DashboardPage() {
         dailyBudget={dailyBudget}
         availableBalance={availableBalance}
         billsDelayNeeded={billsDelayNeeded}
-        budgetIfDelayed={budgetIfDelayed}
         upcomingBills={bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0)}
         accountCount={data.summary.accounts.filter((a) => (a.type === "checking" || a.type === "savings") && !excludedAccountIds.includes(a.id)).length}
         billCount={bills.filter((b) => b.is_active && !b.is_paid).length}
