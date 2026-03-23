@@ -361,19 +361,19 @@ export default function InvestmentsPage() {
           </div>
           <Card className="list-card">
             {investments.map((inv, idx) => (
-            <div key={inv.id} className="debt-item" draggable onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={handleDragEnd}>
-              <div className="debt-item-header">
+            <div key={inv.id} className="list-item" draggable onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={handleDragEnd}>
+              <div className="list-item-header">
                 <GripVertical className="drag-handle" />
                 <div>
-                  <p className="debt-item-name">{inv.name}</p>
+                  <p className="list-item-name">{inv.name}</p>
                   {inv.monthlyTransferred > 0 && (
-                    <p className="debt-item-meta">
+                    <p className="list-item-meta">
                       {locale === "fi" ? "Siirretty tässä kuussa" : "Transferred this month"}: <F v={inv.monthlyTransferred} />
                     </p>
                   )}
                 </div>
-                <div className="debt-item-right">
-                  <p className="debt-item-amount text-positive"><F v={inv.balance} /></p>
+                <div className="list-item-right">
+                  <p className="list-item-amount text-positive"><F v={inv.balance} /></p>
                 </div>
               </div>
               {inv.ticker && tickerData[inv.ticker.toUpperCase()] && (() => {
@@ -381,7 +381,7 @@ export default function InvestmentsPage() {
                 const isIndex = inv.ticker.startsWith("^") || inv.ticker.toUpperCase().startsWith("SELIGSON:");
                 return (
                   <div className="investment-ticker-info">
-                    <p className="debt-item-meta">
+                    <p className="list-item-meta">
                       {isIndex ? `${locale === "fi" ? "Indeksi" : "Index"}: ` : ""}{td.name}: {td.price.toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {td.currency}
                       {" "}
                       <span className={td.dayChangePct >= 0 ? "text-positive" : "text-negative"}>
@@ -392,20 +392,20 @@ export default function InvestmentsPage() {
                   </div>
                 );
               })()}
-              <div className="debt-edit-row">
-                <div className="debt-edit-field">
-                  <Label className="debt-edit-label">{locale === "fi" ? "Kk-sijoitus €" : "Monthly €"}</Label>
+              <div className="list-edit-row">
+                <div className="list-edit-field">
+                  <Label className="list-edit-label">{locale === "fi" ? "Kk-sijoitus €" : "Monthly €"}</Label>
                   <Input
                     type="number"
                     step="1"
                     value={inv.monthlyContribution || ""}
                     onChange={(e) => updateInvestment(inv.id, "monthlyContribution", parseFloat(e.target.value) || 0)}
                     placeholder="0"
-                    className="debt-edit-input"
+                    className="list-edit-input"
                   />
                 </div>
-                <div className="debt-edit-field">
-                  <Label className="debt-edit-label">{locale === "fi" ? "Tuotto %" : "Return %"}</Label>
+                <div className="list-edit-field">
+                  <Label className="list-edit-label">{locale === "fi" ? "Tuotto %" : "Return %"}</Label>
                   {(() => {
                     const td = inv.ticker ? tickerData[inv.ticker.toUpperCase()] : null;
                     if (td && td.sparkline && td.sparkline.length >= 2) {
@@ -417,7 +417,7 @@ export default function InvestmentsPage() {
                           type="text"
                           value={`${yearReturn > 0 ? "+" : ""}${yearReturn}%`}
                           readOnly
-                          className="debt-edit-input"
+                          className="list-edit-input"
                         />
                       );
                     }
@@ -428,19 +428,19 @@ export default function InvestmentsPage() {
                         value={inv.expectedReturn || ""}
                         onChange={(e) => updateInvestment(inv.id, "expectedReturn", parseFloat(e.target.value) || 0)}
                         placeholder="7"
-                        className="debt-edit-input"
+                        className="list-edit-input"
                       />
                     );
                   })()}
                 </div>
-                <div className="debt-edit-field">
-                  <Label className="debt-edit-label">Ticker</Label>
+                <div className="list-edit-field">
+                  <Label className="list-edit-label">Ticker</Label>
                   <Input
                     type="text"
                     value={inv.ticker || ""}
                     onChange={(e) => setInvestments((prev) => prev.map((i) => i.id === inv.id ? { ...i, ticker: e.target.value } : i))}
                     placeholder="NVDA"
-                    className="debt-edit-input"
+                    className="list-edit-input"
                     list={`ticker-suggest-${inv.id}`}
                   />
                   <datalist id={`ticker-suggest-${inv.id}`}>

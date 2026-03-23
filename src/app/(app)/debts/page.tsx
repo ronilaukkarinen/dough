@@ -18,6 +18,7 @@ import {
   RefreshCw,
   Save,
   Check,
+  GripVertical,
 } from "lucide-react";
 import {
   AreaChart,
@@ -87,6 +88,7 @@ export default function DebtsPage() {
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
 
   useEffect(() => {
     console.debug("[debts] Loading debts");
@@ -145,6 +147,23 @@ export default function DebtsPage() {
     } finally {
       setTimeout(() => setSaving(null), 1000);
     }
+  };
+
+  const handleDragStart = (idx: number) => { setDragIdx(idx); };
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (dragIdx === null || dragIdx === idx) return;
+    const reordered = [...debts];
+    const [moved] = reordered.splice(dragIdx, 1);
+    reordered.splice(idx, 0, moved);
+    setDebts(reordered);
+    setDragIdx(idx);
+  };
+  const handleDragEnd = () => {
+    setDragIdx(null);
+    const order = debts.map((d) => d.id);
+    fetch("/api/debts", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ order }) }).catch(() => {});
+    console.info("[debts] Saved new order");
   };
 
   const updateDebt = (id: string, field: keyof DebtData, value: number) => {
@@ -235,46 +254,47 @@ export default function DebtsPage() {
       {/* Debt list with editable fields */}
       {debts.length > 0 && (
         <Card className="list-card">
-          {debts.map((debt) => (
-            <div key={debt.id} className="debt-item">
-              <div className="debt-item-header">
+          {debts.map((debt, idx) => (
+            <div key={debt.id} className="list-item" draggable onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={handleDragEnd}>
+              <div className="list-item-header">
+                <GripVertical className="drag-handle" />
                 <div>
-                  <p className="debt-item-name">{debt.name}</p>
+                  <p className="list-item-name">{debt.name}</p>
                   {debt.monthlyPayment > 0 && (
-                    <p className="debt-item-meta">
+                    <p className="list-item-meta">
                       {locale === "fi" ? "Maksettu tässä kuussa" : "Paid this month"}: <F v={debt.monthlyPayment} />
                     </p>
                   )}
                 </div>
-                <div className="debt-item-right">
-                  <p className="debt-item-amount"><F v={debt.balance} /></p>
+                <div className="list-item-right">
+                  <p className="list-item-amount"><F v={debt.balance} /></p>
                 </div>
               </div>
-              <div className="debt-edit-row">
-                <div className="debt-edit-field">
-                  <Label className="debt-edit-label">{locale === "fi" ? "Korko %" : "Interest %"}</Label>
+              <div className="list-edit-row">
+                <div className="list-edit-field">
+                  <Label className="list-edit-label">{locale === "fi" ? "Korko %" : "Interest %"}</Label>
                   <Input
                     type="number"
                     step="0.1"
                     value={debt.interestRate || ""}
                     onChange={(e) => updateDebt(debt.id, "interestRate", parseFloat(e.target.value) || 0)}
                     placeholder="0"
-                    className="debt-edit-input"
+                    className="list-edit-input"
                   />
                 </div>
-                <div className="debt-edit-field">
-                  <Label className="debt-edit-label">{locale === "fi" ? "Kk-maksu €" : "Monthly €"}</Label>
+                <div className="list-edit-field">
+                  <Label className="list-edit-label">{locale === "fi" ? "Kk-maksu €" : "Monthly €"}</Label>
                   <Input
                     type="number"
                     step="1"
                     value={debt.minimumPayment || ""}
                     onChange={(e) => updateDebt(debt.id, "minimumPayment", parseFloat(e.target.value) || 0)}
                     placeholder={debt.monthlyTarget ? String(debt.monthlyTarget) : "0"}
-                    className="debt-edit-input"
+                    className="list-edit-input"
                   />
                 </div>
-                <div className="debt-edit-field">
-                  <Label className="debt-edit-label">{locale === "fi" ? "Eräpv" : "Due day"}</Label>
+                <div className="list-edit-field">
+                  <Label className="list-edit-label">{locale === "fi" ? "Eräpv" : "Due day"}</Label>
                   <Input
                     type="number"
                     step="1"
@@ -283,7 +303,7 @@ export default function DebtsPage() {
                     value={debt.dueDay || ""}
                     onChange={(e) => updateDebt(debt.id, "dueDay", parseInt(e.target.value) || 0)}
                     placeholder="0"
-                    className="debt-edit-input"
+                    className="list-edit-input"
                   />
                 </div>
                 <Button
