@@ -62,8 +62,7 @@ function TickerChart({ data, dataMax, positive, currency, fmt: fmtFn, range }: {
   const filtered = cutoff > 0 ? source.filter((p) => p.t >= cutoff) : source;
   if (filtered.length < 2) return null;
   const uid = `tc-${++tickerChartId}`;
-  const rangePositive = filtered[filtered.length - 1].c >= filtered[0].c;
-  const color = rangePositive ? "#4ade80" : "#f87171";
+  const color = positive ? "#4ade80" : "#f87171";
   const chartData = filtered.map((p) => {
     const d = new Date(p.t * 1000);
     return { date: `${d.getDate()}.${d.getMonth() + 1}.${range === "MAX" ? d.getFullYear() : ""}`, price: p.c };
