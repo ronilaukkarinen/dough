@@ -146,3 +146,57 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const user = await getSession();
+    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+    const token = getYnabToken();
+    const budgetId = getYnabBudgetId();
+    if (!token || !budgetId) return NextResponse.json({ error: "YNAB not connected" }, { status: 400 });
+
+    const body = await request.json();
+    const { transaction_id, amount, payee_name, memo, account_id, date } = body;
+    if (!transaction_id) return NextResponse.json({ error: "Transaction ID required" }, { status: 400 });
+
+    console.info("[ynab/transaction] Updating transaction:", transaction_id);
+
+    const milliunits = Math.round(parseFloat(amount) * -1000);
+    const update: Record<string, unknown> = { id: transaction_id };
+    if (amount !== undefined) update.amount = milliunits;
+    if (payee_name !== undefined) update.payee_name = payee_name;
+    if (memo !== undefined) update.memo = memo;
+    if (account_id) update.account_id = account_id;
+    if (date) update.date = date;
+
+    const res = await fetch(`https://api.ynab.com/v1/budgets/${budgetId}/transactions/${transaction_id}`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ transaction: update }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("[ynab/transaction] YNAB update error:", res.status, text);
+      return NextResponse.json({ error: "Failed to update transaction" }, { status: 500 });
+    }
+
+    // Update local SQLite
+    try {
+      const { getDb } = await import("@/lib/db");
+      getDb().prepare("UPDATE transactions SET amount = ?, payee = ?, memo = ?, account_id = ?, date = ? WHERE ynab_id = ?")
+        .run(parseFloat(amount) * -1, payee_name || "", memo || "", account_id || "", date || "", transaction_id);
+      console.info("[ynab/transaction] Local DB updated");
+    } catch (err) {
+      console.warn("[ynab/transaction] Local update failed:", err);
+    }
+
+    eventBus.emit("data:updated", { source: "transaction-added", userId: user.id });
+    console.info("[ynab/transaction] Transaction updated:", transaction_id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[ynab/transaction] PUT error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
