@@ -4,6 +4,69 @@ import { getDb } from "@/lib/db";
 
 const YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart";
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const SELIGSON_BASE = "https://www.seligson.fi/suomi/rahastot";
+
+// Seligson fund slug mapping — users set ticker to "SELIGSON:brands" etc.
+const SELIGSON_FUNDS: Record<string, { slug: string; name: string }> = {
+  brands: { slug: "rahes_brands", name: "Seligson Global Top 25 Brands" },
+  suomi: { slug: "rahes_suomi", name: "Seligson Finland Index" },
+  phoebus: { slug: "rahes_phoebus", name: "Seligson Phoebus" },
+  pharos: { slug: "rahes_pharos", name: "Seligson Pharos" },
+  eurooppa: { slug: "rahes_eurooppa", name: "Seligson Eurooppa" },
+  pohjoismaat: { slug: "rahes_pohjoismaat", name: "Seligson Pohjoismaat" },
+  pharma: { slug: "rahes_pharma", name: "Seligson Pharma" },
+  aasia: { slug: "rahes_aasia", name: "Seligson Aasia" },
+  perhe: { slug: "rahes_perhe", name: "Seligson Family Business" },
+};
+
+async function fetchSeligson(fundKey: string): Promise<TickerData | null> {
+  const fund = SELIGSON_FUNDS[fundKey.toLowerCase()];
+  if (!fund) {
+    console.warn("[ticker] Unknown Seligson fund:", fundKey);
+    return null;
+  }
+
+  console.info("[ticker] Scraping Seligson", fund.name);
+  try {
+    const res = await fetch(`${SELIGSON_BASE}/${fund.slug}.htm`, {
+      headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    // Parse NAV from: <td data-label="Kasvu (A)">18,059 €</td>
+    const navMatch = html.match(/data-label="Kasvu \(A\)">([\d,]+)\s*€/);
+    if (!navMatch) {
+      console.warn("[ticker] Could not parse Seligson NAV for", fund.name);
+      return null;
+    }
+    const price = parseFloat(navMatch[1].replace(",", "."));
+
+    // Parse daily change: <td data-label="1 pv"><span class="down">-1,26 %</span></td>
+    const changeMatch = html.match(/data-label="1 pv"><span class="(?:up|down)">([-\d,]+)\s*%/);
+    const dayChangePct = changeMatch ? parseFloat(changeMatch[1].replace(",", ".")) : 0;
+    const previousClose = dayChangePct !== 0 ? price / (1 + dayChangePct / 100) : price;
+
+    console.info("[ticker] Seligson", fund.name, "NAV:", price, "change:", dayChangePct + "%");
+
+    return {
+      symbol: `SELIGSON:${fundKey.toUpperCase()}`,
+      name: fund.name,
+      price,
+      previousClose: Math.round(previousClose * 1000) / 1000,
+      currency: "EUR",
+      dayChangePct,
+      week52High: 0,
+      week52Low: 0,
+      sparkline: [],
+    };
+  } catch (err) {
+    console.error("[ticker] Seligson scrape error:", err);
+    return null;
+  }
+}
 
 interface TickerData {
   symbol: string;
@@ -114,7 +177,10 @@ export async function GET(request: Request) {
     // Fetch missing/stale tickers
     if (toFetch.length > 0) {
       console.info("[ticker] Fetching", toFetch.length, "tickers:", toFetch.join(", "));
-      const fetched = await Promise.all(toFetch.map((sym) => fetchTicker(sym)));
+      const fetched = await Promise.all(toFetch.map((sym) => {
+        if (sym.startsWith("SELIGSON:")) return fetchSeligson(sym.split(":")[1].toLowerCase());
+        return fetchTicker(sym);
+      }));
 
       const upsert = db.prepare(`
         INSERT INTO ticker_cache (symbol, name, price, previous_close, currency, day_change_pct, week_52_high, week_52_low, sparkline_json, updated_at)
