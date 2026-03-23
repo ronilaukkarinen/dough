@@ -409,14 +409,15 @@ export default function NetWorthPage() {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                     <XAxis dataKey="year" tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}${locale === "fi" ? "v" : "y"}`} />
-                    <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => mask(v >= 1000000 ? `${(v / 1000000).toFixed(1)}M €` : v >= 1000 ? `${(v / 1000).toFixed(0)}k €` : `${Math.round(v)} €`)} width={55} />
+                    <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => mask(v >= 1000000 ? `${(v / 1000000).toFixed(1)}M €` : v >= 1000 || v <= -1000 ? `${(v / 1000).toFixed(0)}k €` : `${Math.round(v)} €`)} width={55} domain={[(dataMin: number) => Math.min(dataMin, 0), "auto"]} />
+                    <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeDasharray="3 3" />
                     <Tooltip
                       content={({ active, payload, label }) =>
                         active && payload?.length ? (
                           <div className="chart-tooltip">
                             <p className="chart-tooltip-label">{label} {locale === "fi" ? "vuotta" : "years"}</p>
-                            <p className="chart-tooltip-value text-positive">{locale === "fi" ? "Varallisuus" : "Net worth"}: {fmt(Number(payload[0].value))} €</p>
-                            <p className="chart-tooltip-value text-foreground">{locale === "fi" ? "Ilman tuottoa" : "Without returns"}: {fmt(Number(payload[1].value))} €</p>
+                            <p className="chart-tooltip-value" style={{ color: "#4ade80" }}>{locale === "fi" ? "Varallisuus" : "Net worth"}: {fmt(Number(payload[0].value))} €</p>
+                            <p className="chart-tooltip-value" style={{ color: "#818cf8" }}>{locale === "fi" ? "Ilman tuottoa" : "Without returns"}: {fmt(Number(payload[1].value))} €</p>
                           </div>
                         ) : null
                       }
