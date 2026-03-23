@@ -124,7 +124,7 @@ async function fetchTicker(symbol: string): Promise<TickerData | null> {
     // Fetch 1y daily for short ranges + 5y weekly for MAX in parallel
     const [daily, longTerm] = await Promise.all([
       fetchYahooChart(symbol, "1y", "1d"),
-      fetchYahooChart(symbol, "5y", "1wk"),
+      fetchYahooChart(symbol, "max", "1mo"),
     ]);
 
     if (!daily) {
