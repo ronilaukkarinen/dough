@@ -1,3 +1,9 @@
+### 1.5.5: 2026-03-23
+
+* Fix Finnish typing indicator from "Mietitään" to "kirjoittaa", separate typing and thinking translations
+* Add no em-dash rule to AI chat default guidelines
+* Show family spending in greeting even when personal spending is zero
+
 ### 1.5.4: 2026-03-23
 
 * Cap personal budget suggestion at family remaining so it never exceeds available
