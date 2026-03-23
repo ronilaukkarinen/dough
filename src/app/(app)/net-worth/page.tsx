@@ -120,6 +120,7 @@ export default function NetWorthPage() {
       }
 
       const finalNw = tl[tl.length - 1].netWorth;
+      console.info("[net-worth] Projection:", JSON.stringify({ currentNw, avgMonthlySavings: Math.round(avgMonthlySavings), monthlyDebtPayment, monthsToPayoff, monthlyInvestContrib, returnPct: Math.round(wr * 10) / 10, investValue: Math.round(investValue), debtRemaining: Math.round(debtRemaining), y1: tl[1], y5: tl[5], y20: tl[20] }));
       setNwProjection({ timeline: tl, finalValue: finalNw, totalGrowth: finalNw - currentNw });
     })
       .catch((err) => console.error("[net-worth] Load error:", err))
@@ -439,6 +440,8 @@ export default function NetWorthPage() {
           )}
         </>
       )}
+      {/* TEMP DEBUG */}
+      {nwProjection && <pre style={{ fontSize: "0.5rem", opacity: 0.4, whiteSpace: "pre-wrap" }}>{JSON.stringify(nwProjection.timeline.filter((_, i) => i <= 5 || i === 10 || i === 20), null, 1)}</pre>}
     </div>
   );
 }
