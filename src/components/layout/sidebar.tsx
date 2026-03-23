@@ -29,6 +29,7 @@ import { useEvent } from "@/lib/use-events";
 
 const navKeys = [
   { href: "/dashboard", icon: LayoutDashboard, key: "dashboard" },
+  { href: "/net-worth", icon: LineChart, key: "netWorth" },
   { href: "/chat", icon: MessageSquare, key: "chat" },
   { href: "/transactions", icon: Receipt, key: "transactions" },
   { href: "/bills", icon: CalendarClock, key: "bills" },
@@ -37,7 +38,6 @@ const navKeys = [
   { href: "/investments", icon: TrendingUp, key: "investments" },
   { href: "/subscriptions", icon: CreditCard, key: "subscriptions" },
   { href: "/savings-goals", icon: Crosshair, key: "savingsGoals" },
-  { href: "/net-worth", icon: LineChart, key: "netWorth" },
 ] as const;
 
 interface SidebarProps {
