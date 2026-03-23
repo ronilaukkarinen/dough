@@ -37,7 +37,7 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
     <div className="personal-greeting">
       <p className="personal-greeting-text">
         {locale === "fi" ? `Hei ${name}! ` : `Hi ${name}! `}
-        {todaySpentPersonal > 0 && (
+        {todaySpentPersonal > 0 ? (
           <>
             {locale === "fi" ? "Olet käyttänyt tänään " : "You spent "}
             <span className="personal-greeting-value" data-status={todaySpentPersonal > dailyBudget * 0.3 ? "danger" : todaySpentPersonal > dailyBudget * 0.15 ? "tight" : "good"}>
@@ -53,7 +53,15 @@ export function PersonalGreeting({ todaySpentPersonal, todaySpentAll, dailyBudge
             )}
             {". "}
           </>
-        )}
+        ) : todaySpentAll > 0 ? (
+          <>
+            {locale === "fi" ? "Perhe on käyttänyt tänään " : "Household spent "}
+            <span className="personal-greeting-value" data-status={todaySpentAll > dailyBudget * 0.8 ? "danger" : todaySpentAll > dailyBudget * 0.5 ? "tight" : "good"}>
+              <F v={todaySpentAll} />
+            </span>
+            {". "}
+          </>
+        ) : null}
         {exceeded
           ? <>
               {locale === "fi" ? "Päiväbudjetti ylittynyt " : "Daily budget exceeded by "}
