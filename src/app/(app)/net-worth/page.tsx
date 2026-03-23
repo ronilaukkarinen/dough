@@ -61,9 +61,7 @@ export default function NetWorthPage() {
       const currentNw = latestSnap?.net_worth || 0;
 
       // Current components
-      let cash = latestSnap ? latestSnap.checking + latestSnap.savings : 0;
-      let investValue = (investData.investments || []).reduce((s: number, i: { balance: number }) => s + i.balance, 0);
-      let debtRemaining = Math.abs((debtData.debts || []).reduce((s: number, d: { balance: number }) => s + d.balance, 0));
+      const investValue = (investData.investments || []).reduce((s: number, i: { balance: number }) => s + i.balance, 0);
 
       // Monthly flows
       const invs = investData.investments || [];
@@ -81,65 +79,68 @@ export default function NetWorthPage() {
         const now2 = new Date();
         return h.month !== `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, "0")}`;
       });
-      const avgMonthlySavings = history.length > 0
+      // rawAvg = income - ALL expenses (already includes debt payments and invest contributions as expenses)
+      // Debt reduction and investment growth are tracked separately in the simulation
+      // So cash change = rawAvg (the net after everything)
+      const rawAvg = history.length > 0
         ? history.reduce((s: number, h: { income: number; expenses: number }) => s + (h.income - h.expenses), 0) / history.length
         : 0;
 
-      const tl: { year: string; netWorth: number; baseline: number }[] = [{ year: "0", netWorth: Math.round(currentNw), baseline: Math.round(currentNw) }];
+      const currentYear = new Date().getFullYear();
+      const tl: { year: string; netWorth: number; baseline: number }[] = [{ year: String(currentYear), netWorth: Math.round(currentNw), baseline: Math.round(currentNw) }];
 
-      // Calculate actual months to payoff with snowball strategy (freed payments accelerate remaining debts)
-      const debts = debtData.debts || [];
-      let monthsToPayoff = 0;
-      if (debts.length > 0 && monthlyDebtPayment > 0) {
-        const simDebts = debts
-          .map((d: { balance: number; interestRate: number; minimumPayment: number }) => ({
-            balance: d.balance,
-            rate: (d.interestRate || 0) / 100 / 12,
-            payment: d.minimumPayment || 0,
-          }))
-          .sort((a: { balance: number }, b: { balance: number }) => a.balance - b.balance); // snowball: smallest first
-        for (let m = 0; m < 600; m++) {
-          let extraPayment = 0;
-          for (const d of simDebts) {
-            if (d.balance <= 0) { extraPayment += d.payment; continue; }
-            d.balance = d.balance * (1 + d.rate) - d.payment - extraPayment;
-            extraPayment = 0;
-            if (d.balance <= 0) { extraPayment = Math.abs(d.balance); d.balance = 0; }
-          }
-          if (simDebts.every((d: { balance: number }) => d.balance <= 0)) { monthsToPayoff = m + 1; break; }
-        }
-      }
+      // --- Component model: cash + investments - debts each month ---
+      // rawAvg = income - ALL_expenses (includes debt payments + invest contributions)
+      // Cash changes by rawAvg each month
+      // Investments: compound growth (contributions leave cash, enter investments)
+      // Debts: snowball payoff (payments leave cash, reduce debts)
+      // Net worth = cash + investments - debts (computed fresh each year)
 
-      let nw1 = currentNw; // with compound returns
-      let nw2 = currentNw; // without compound returns (baseline)
-      let inv1 = investValue;
-      let monthCount = 0;
+      const debts = (debtData.debts || []) as { balance: number; interestRate: number; minimumPayment: number; monthlyTarget: number }[];
+      const simDebts = debts
+        .map((d) => ({ bal: d.balance, rate: (d.interestRate || 0) / 100 / 12, pay: d.minimumPayment || d.monthlyTarget || 50 }))
+        .sort((a, b) => a.bal - b.bal);
+
+      const cash0 = latestSnap ? latestSnap.checking + latestSnap.savings : 0;
+      let cash = cash0;
+      let inv1 = investValue, inv2 = investValue;
 
       for (let y = 1; y <= 20; y++) {
         for (let m = 0; m < 12; m++) {
-          monthCount++;
-          // After debts paid off, monthly savings improves by the freed debt payments
-          const monthlySavings = monthCount > monthsToPayoff
-            ? avgMonthlySavings + monthlyDebtPayment
-            : avgMonthlySavings;
+          // Cash changes by rawAvg (net income - all expenses)
+          cash += rawAvg;
 
-          nw1 += monthlySavings;
-          nw2 += monthlySavings;
+          // After debts paid off, freed payments stay in cash (no longer leaving as debt payments)
+          if (simDebts.every((d) => d.bal <= 0)) {
+            cash += simDebts.reduce((s, d) => s + d.pay, 0);
+          } else {
+            // Snowball step (same as Velat tab)
+            let extra = 0;
+            for (const d of simDebts) {
+              if (d.bal <= 0) { extra += d.pay; continue; }
+              const interest = d.bal * d.rate;
+              let payment = d.pay + (d === simDebts.find((x) => x.bal > 0) ? extra : 0);
+              payment = Math.min(payment, d.bal + interest);
+              d.bal = d.bal + interest - payment;
+              if (d.bal < 1) d.bal = 0;
+              extra = 0;
+            }
+          }
 
-          // With returns: investments compound on top
-          const returns = inv1 * mr;
+          // Investments compound (same as Sijoitukset tab)
           inv1 = inv1 * (1 + mr) + monthlyInvestContrib;
-          nw1 += returns;
+          inv2 += monthlyInvestContrib;
         }
+
+        const debtLeft = simDebts.reduce((s, d) => s + Math.max(0, d.bal), 0);
         tl.push({
-          year: String(y),
-          netWorth: Math.round(nw1),
-          baseline: Math.round(nw2),
+          year: String(currentYear + y),
+          netWorth: Math.round(cash + inv1 - debtLeft),
+          baseline: Math.round(cash + inv2 - debtLeft),
         });
       }
 
       const finalNw = tl[tl.length - 1].netWorth;
-      console.info("[net-worth] Projection:", JSON.stringify({ currentNw, avgMonthlySavings: Math.round(avgMonthlySavings), monthlyDebtPayment, monthsToPayoff, monthlyInvestContrib, returnPct: Math.round(wr * 10) / 10, investValue: Math.round(investValue), debtRemaining: Math.round(debtRemaining), y1: tl[1], y5: tl[5], y20: tl[20] }));
       setNwProjection({ timeline: tl, finalValue: finalNw, totalGrowth: finalNw - currentNw });
     })
       .catch((err) => console.error("[net-worth] Load error:", err))
@@ -403,7 +404,8 @@ export default function NetWorthPage() {
 
           {/* Net worth growth projection */}
           {nwProjection && nwProjection.timeline.length > 1 && (() => {
-            const rangeData = nwProjection.timeline.filter((t) => parseInt(t.year) <= projectionRange);
+            const maxYear = new Date().getFullYear() + projectionRange;
+            const rangeData = nwProjection.timeline.filter((t) => parseInt(t.year) <= maxYear);
             const rangeEnd = rangeData[rangeData.length - 1];
             const rangeStart = rangeData[0];
             return (
@@ -441,14 +443,14 @@ export default function NetWorthPage() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                    <XAxis dataKey="year" tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}${locale === "fi" ? "v" : "y"}`} />
+                    <XAxis dataKey="year" tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} />
                     <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => mask(v >= 1000000 ? `${(v / 1000000).toFixed(1)}M €` : v >= 1000 || v <= -1000 ? `${(v / 1000).toFixed(0)}k €` : `${Math.round(v)} €`)} width={55} domain={["dataMin", "dataMax"]} />
                     <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeDasharray="3 3" />
                     <Tooltip
                       content={({ active, payload, label }) =>
                         active && payload?.length ? (
                           <div className="chart-tooltip">
-                            <p className="chart-tooltip-label">{label} {locale === "fi" ? "vuotta" : "years"}</p>
+                            <p className="chart-tooltip-label">{label}</p>
                             <p className="chart-tooltip-value" style={{ color: "#4ade80" }}>{locale === "fi" ? "Varallisuus" : "Net worth"}: {fmt(Number(payload[0].value))} €</p>
                             <p className="chart-tooltip-value" style={{ color: "#818cf8" }}>{locale === "fi" ? "Ilman tuottoa" : "Without returns"}: {fmt(Number(payload[1].value))} €</p>
                           </div>
