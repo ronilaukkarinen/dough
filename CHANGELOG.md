@@ -14,6 +14,10 @@
 * Show family spending in greeting even when personal spending is zero
 * Always show savings amount in green in greeting
 * Fix transaction unread indicator triggering from own transactions
+* Rename debt-item/debt-edit CSS to generic list-item/list-edit for DRY consistency
+* Add drag-and-drop reordering to debts list
+* Enforce no em-dash rule in AI system prompt, not just guidelines
+* Add weekday, day of month, and days remaining to AI chat and summary context
 * Always show savings amount in green in greeting
 
 ### 1.5.4: 2026-03-23
