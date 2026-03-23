@@ -37,6 +37,8 @@ interface InvestmentData {
   ticker: string;
 }
 
+interface SparkPoint { t: number; c: number }
+
 interface TickerData {
   symbol: string;
   name: string;
@@ -46,21 +48,25 @@ interface TickerData {
   dayChangePct: number;
   week52High: number;
   week52Low: number;
-  sparkline: number[];
-  sparklineMax: number[];
+  sparkline: SparkPoint[];
+  sparklineMax: SparkPoint[];
 }
 
 let tickerChartId = 0;
 
-function TickerChart({ data, dataMax, positive, currency, fmt: fmtFn, range }: { data: number[]; dataMax?: number[]; positive: boolean; currency: string; fmt: (v: number) => string; range: "1W" | "6M" | "MAX" }) {
+function TickerChart({ data, dataMax, positive, currency, fmt: fmtFn, range }: { data: SparkPoint[]; dataMax?: SparkPoint[]; positive: boolean; currency: string; fmt: (v: number) => string; range: "1W" | "6M" | "MAX" }) {
+  const now = Date.now() / 1000;
+  const cutoff = range === "1W" ? now - 7 * 86400 : range === "6M" ? now - 183 * 86400 : 0;
   const source = range === "MAX" && dataMax && dataMax.length > 1 ? dataMax : data;
-  if (source.length < 2) return null;
+  const filtered = cutoff > 0 ? source.filter((p) => p.t >= cutoff) : source;
+  if (filtered.length < 2) return null;
   const uid = `tc-${++tickerChartId}`;
-  const sliceCount = range === "1W" ? 5 : range === "6M" ? 130 : source.length;
-  const sliced = source.length > sliceCount ? source.slice(-sliceCount) : source;
-  const rangePositive = sliced.length >= 2 ? sliced[sliced.length - 1] >= sliced[0] : positive;
+  const rangePositive = filtered[filtered.length - 1].c >= filtered[0].c;
   const color = rangePositive ? "#4ade80" : "#f87171";
-  const chartData = sliced.map((v, i) => ({ i, price: v }));
+  const chartData = filtered.map((p) => {
+    const d = new Date(p.t * 1000);
+    return { date: `${d.getDate()}.${d.getMonth() + 1}.${range === "MAX" ? d.getFullYear() : ""}`, price: p.c };
+  });
   return (
     <ResponsiveContainer width="100%" height={100}>
       <AreaChart data={chartData} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
@@ -75,8 +81,10 @@ function TickerChart({ data, dataMax, positive, currency, fmt: fmtFn, range }: {
           content={({ active, payload }) => {
             if (!active || !payload?.length) return null;
             const val = Number(payload[0].value);
+            const label = String(payload[0].payload?.date || "");
             return (
               <div className="chart-tooltip">
+                <p className="chart-tooltip-label">{label}</p>
                 <p className="chart-tooltip-value" style={{ color, fontSize: "0.6875rem" }}>{fmtFn(val)} {currency}</p>
               </div>
             );
@@ -360,7 +368,7 @@ export default function InvestmentsPage() {
                         {td.dayChangePct >= 0 ? "+" : ""}{td.dayChangePct}% {locale === "fi" ? "tänään" : "today"}
                       </span>
                     </p>
-                    {(td.sparkline?.length > 1 || td.sparklineMax?.length > 1) && <TickerChart data={td.sparkline || []} dataMax={td.sparklineMax} positive={td.dayChangePct >= 0} currency={td.currency} fmt={fmt} range={chartRange} />}
+                    <TickerChart data={td.sparkline || []} dataMax={td.sparklineMax} positive={td.dayChangePct >= 0} currency={td.currency} fmt={fmt} range={chartRange} />
                   </div>
                 );
               })()}
@@ -381,8 +389,8 @@ export default function InvestmentsPage() {
                   {(() => {
                     const td = inv.ticker ? tickerData[inv.ticker.toUpperCase()] : null;
                     if (td && td.sparkline && td.sparkline.length >= 2) {
-                      const first = td.sparkline[0];
-                      const last = td.sparkline[td.sparkline.length - 1];
+                      const first = td.sparkline[0].c;
+                      const last = td.sparkline[td.sparkline.length - 1].c;
                       const yearReturn = first > 0 ? Math.round(((last - first) / first) * 1000) / 10 : 0;
                       return (
                         <Input

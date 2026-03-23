@@ -51,25 +51,24 @@ async function fetchSeligson(fundKey: string): Promise<TickerData | null> {
 
     console.info("[ticker] Seligson", fund.name, "NAV:", price, "change:", dayChangePct + "%");
 
-    // Fetch proxy chart data from a related index for sparkline
-    let sparkline: number[] = [];
+    // Fetch proxy chart data for sparklines
+    let sparkline: SparkPoint[] = [];
+    let sparklineMax: SparkPoint[] = [];
     const proxyTicker = fund.slug.includes("suomi") ? "^OMXH25" : "URTH";
     try {
-      const proxyRes = await fetch(`${YAHOO_CHART_URL}/${proxyTicker}?range=1y&interval=1d`, {
-        headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" },
-        signal: AbortSignal.timeout(10000),
-      });
-      if (proxyRes.ok) {
-        const proxyData = await proxyRes.json();
-        const closes: number[] = (proxyData?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? []).filter((v: number | null) => v != null);
-        if (closes.length > 1) {
-          // Normalize proxy data to match fund NAV scale
-          const proxyFirst = closes[0];
-          const scale = price / (closes[closes.length - 1] || proxyFirst);
-          sparkline = closes.map((c) => Math.round(c * scale * 1000) / 1000);
-          console.debug("[ticker] Seligson proxy sparkline from", proxyTicker, sparkline.length, "points");
-        }
-      }
+      const [proxyDaily, proxyMax] = await Promise.all([
+        fetchYahooChart(proxyTicker, "1y", "1d"),
+        fetchYahooChart(proxyTicker, "max", "1mo"),
+      ]);
+      const scaleProxy = (points: { t: number; c: number }[]) => {
+        if (points.length < 2) return [];
+        const lastProxy = points[points.length - 1].c || 1;
+        const scale = price / lastProxy;
+        return points.map((p) => ({ t: p.t, c: Math.round(p.c * scale * 1000) / 1000 }));
+      };
+      if (proxyDaily) sparkline = scaleProxy(proxyDaily.points);
+      if (proxyMax) sparklineMax = scaleProxy(proxyMax.points);
+      console.debug("[ticker] Seligson proxy from", proxyTicker, "daily:", sparkline.length, "max:", sparklineMax.length);
     } catch (proxyErr) {
       console.warn("[ticker] Seligson proxy chart error:", proxyErr);
     }
@@ -84,12 +83,17 @@ async function fetchSeligson(fundKey: string): Promise<TickerData | null> {
       week52High: 0,
       week52Low: 0,
       sparkline,
-      sparklineMax: sparkline,
+      sparklineMax,
     };
   } catch (err) {
     console.error("[ticker] Seligson scrape error:", err);
     return null;
   }
+}
+
+interface SparkPoint {
+  t: number; // unix timestamp
+  c: number; // close price
 }
 
 interface TickerData {
@@ -101,11 +105,11 @@ interface TickerData {
   dayChangePct: number;
   week52High: number;
   week52Low: number;
-  sparkline: number[];
-  sparklineMax: number[];
+  sparkline: SparkPoint[];
+  sparklineMax: SparkPoint[];
 }
 
-async function fetchYahooChart(symbol: string, range: string, interval: string): Promise<{ meta: Record<string, unknown>; closes: number[] } | null> {
+async function fetchYahooChart(symbol: string, range: string, interval: string): Promise<{ meta: Record<string, unknown>; points: { t: number; c: number }[] } | null> {
   const res = await fetch(`${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?range=${range}&interval=${interval}`, {
     headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" },
     signal: AbortSignal.timeout(10000),
@@ -114,8 +118,13 @@ async function fetchYahooChart(symbol: string, range: string, interval: string):
   const data = await res.json();
   const result0 = data?.chart?.result?.[0];
   if (!result0?.meta) return null;
-  const closes: number[] = (result0.indicators?.quote?.[0]?.close ?? []).filter((v: number | null) => v != null);
-  return { meta: result0.meta, closes };
+  const timestamps: number[] = result0.timestamp ?? [];
+  const closes: (number | null)[] = result0.indicators?.quote?.[0]?.close ?? [];
+  const points: { t: number; c: number }[] = [];
+  for (let i = 0; i < timestamps.length; i++) {
+    if (closes[i] != null) points.push({ t: timestamps[i], c: closes[i] as number });
+  }
+  return { meta: result0.meta, points };
 }
 
 async function fetchTicker(symbol: string): Promise<TickerData | null> {
@@ -132,12 +141,12 @@ async function fetchTicker(symbol: string): Promise<TickerData | null> {
       return null;
     }
 
-    const { meta, closes: sparkline } = daily;
-    const sparklineMax = longTerm?.closes ?? sparkline;
+    const { meta, points: sparkline } = daily;
+    const sparklineMax = longTerm?.points ?? sparkline;
     const price = (meta.regularMarketPrice as number) ?? 0;
 
     // Daily change from second-to-last close
-    const yesterdayClose = sparkline.length >= 2 ? sparkline[sparkline.length - 2] : price;
+    const yesterdayClose = sparkline.length >= 2 ? sparkline[sparkline.length - 2].c : price;
     const dayChangePct = yesterdayClose > 0 ? ((price - yesterdayClose) / yesterdayClose) * 100 : 0;
 
     const tickerResult: TickerData = {
@@ -153,7 +162,7 @@ async function fetchTicker(symbol: string): Promise<TickerData | null> {
       sparklineMax,
     };
 
-    console.info("[ticker] Fetched", symbol, "price:", price, "change:", tickerResult.dayChangePct + "%", "1y:", sparkline.length, "pts, 5y:", sparklineMax.length, "pts");
+    console.info("[ticker] Fetched", symbol, "price:", price, "change:", tickerResult.dayChangePct + "%", "1y:", sparkline.length, "pts, max:", sparklineMax.length, "pts");
     return tickerResult;
   } catch (err) {
     console.error("[ticker] Fetch error for", symbol, err);
