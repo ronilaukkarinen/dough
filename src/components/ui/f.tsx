@@ -10,7 +10,7 @@ import { useLocale } from "@/lib/locale-context";
 export function F({ v, s = " €" }: { v: number; s?: string }) {
   const { fmt, decimals, privacyMode } = useLocale();
   if (privacyMode || decimals >= 2) {
-    return <>{fmt(v)}{s}</>;
+    return <span className="amt-nowrap">{fmt(v)}{s}</span>;
   }
   return (
     <span className="amt-tip" data-exact={`${v.toFixed(2)}${s}`}>
