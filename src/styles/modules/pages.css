@@ -414,24 +414,25 @@
 }
 
 /* Debt page extras */
-.list-item {
+.edit-item {
   padding: 1rem 1.25rem;
 }
 
-.list-item-header {
+.edit-item-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
 }
 
-.list-item-name {
+.edit-item-name {
   font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 500;
   color: var(--foreground);
 }
 
-.list-item-meta {
+.edit-item-meta {
   font-size: 0.75rem;
   line-height: 1rem;
   color: var(--muted-foreground);
@@ -489,22 +490,17 @@
   }
 }
 
-.list-item-right {
+.edit-item-right {
   text-align: right;
 }
 
-.list-item-amount {
+.edit-item-amount {
   font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   color: var(--foreground);
-}
-
-.list-item-total {
-  font-size: 10px;
-  color: var(--muted-foreground);
 }
 
 .list-edit-row {

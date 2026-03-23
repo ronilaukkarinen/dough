@@ -361,19 +361,19 @@ export default function InvestmentsPage() {
           </div>
           <Card className="list-card">
             {investments.map((inv, idx) => (
-            <div key={inv.id} className="list-item" draggable onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={handleDragEnd}>
-              <div className="list-item-header">
+            <div key={inv.id} className="edit-item" draggable onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={handleDragEnd}>
+              <div className="edit-item-header">
                 <GripVertical className="drag-handle" />
                 <div>
-                  <p className="list-item-name">{inv.name}</p>
+                  <p className="edit-item-name">{inv.name}</p>
                   {inv.monthlyTransferred > 0 && (
-                    <p className="list-item-meta">
+                    <p className="edit-item-meta">
                       {locale === "fi" ? "Siirretty tässä kuussa" : "Transferred this month"}: <F v={inv.monthlyTransferred} />
                     </p>
                   )}
                 </div>
-                <div className="list-item-right">
-                  <p className="list-item-amount text-positive"><F v={inv.balance} /></p>
+                <div className="edit-item-right">
+                  <p className="edit-item-amount text-positive"><F v={inv.balance} /></p>
                 </div>
               </div>
               {inv.ticker && tickerData[inv.ticker.toUpperCase()] && (() => {
@@ -381,7 +381,7 @@ export default function InvestmentsPage() {
                 const isIndex = inv.ticker.startsWith("^") || inv.ticker.toUpperCase().startsWith("SELIGSON:");
                 return (
                   <div className="investment-ticker-info">
-                    <p className="list-item-meta">
+                    <p className="edit-item-meta">
                       {isIndex ? `${locale === "fi" ? "Indeksi" : "Index"}: ` : ""}{td.name}: {td.price.toLocaleString("fi-FI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {td.currency}
                       {" "}
                       <span className={td.dayChangePct >= 0 ? "text-positive" : "text-negative"}>

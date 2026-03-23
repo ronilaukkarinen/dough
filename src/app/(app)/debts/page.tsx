@@ -255,19 +255,19 @@ export default function DebtsPage() {
       {debts.length > 0 && (
         <Card className="list-card">
           {debts.map((debt, idx) => (
-            <div key={debt.id} className="list-item" draggable onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={handleDragEnd}>
-              <div className="list-item-header">
+            <div key={debt.id} className="edit-item" draggable onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={handleDragEnd}>
+              <div className="edit-item-header">
                 <GripVertical className="drag-handle" />
                 <div>
-                  <p className="list-item-name">{debt.name}</p>
+                  <p className="edit-item-name">{debt.name}</p>
                   {debt.monthlyPayment > 0 && (
-                    <p className="list-item-meta">
+                    <p className="edit-item-meta">
                       {locale === "fi" ? "Maksettu tässä kuussa" : "Paid this month"}: <F v={debt.monthlyPayment} />
                     </p>
                   )}
                 </div>
-                <div className="list-item-right">
-                  <p className="list-item-amount"><F v={debt.balance} /></p>
+                <div className="edit-item-right">
+                  <p className="edit-item-amount"><F v={debt.balance} /></p>
                 </div>
               </div>
               <div className="list-edit-row">
