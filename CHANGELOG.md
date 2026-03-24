@@ -1,6 +1,7 @@
 ### 1.8.2: 2026-03-24
 
-* Add floating action button to add expenses from any page
+* Add floating action button to add expenses from any page with full receipt/batch support
+* Extract add expense dialog into shared DRY component used by both FAB and transactions page
 * Hidden on transactions page which has its own add button
 
 ### 1.8.1: 2026-03-24
