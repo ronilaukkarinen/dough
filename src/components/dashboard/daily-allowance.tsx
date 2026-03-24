@@ -74,6 +74,11 @@ export function DailyAllowance({
   const status =
     effectiveBudget > thresholds.good ? "good" : effectiveBudget > thresholds.tight ? "tight" : "danger";
 
+  // Tomorrow's budget if we stop spending now
+  const daysAfterToday = Math.max(1, daysUntilIncome - 1);
+  const tomorrowBudget = Math.max(0, Math.round((dailyBudget * daysUntilIncome - todaySpentAll) / daysAfterToday));
+  const tomorrowStatus = tomorrowBudget > thresholds.good ? "text-positive" : tomorrowBudget > thresholds.tight ? "text-chart-3" : "text-negative";
+
   return (
     <div className="daily-allowance-grid">
       <Card className="daily-allowance-hero" data-status={status}>
@@ -119,40 +124,36 @@ export function DailyAllowance({
                 {locale === "fi" ? "Laskuja " : "Bills "}
                 <span className="text-negative"><F v={upcomingBills} s={` ${currency}`} /></span>
                 {". "}
-                {daysUntilIncome > 0 && `${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}.`}
+                {locale === "fi" ? "Huomenna " : "Tomorrow "}
+                <span className={tomorrowStatus}><F v={tomorrowBudget} s={` ${currency}`} /></span>
+                {daysUntilIncome > 0 && ` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}.`}
               </>
             ) : overspent ? (
               <>
                 {locale === "fi" ? "Ylitetty " : "Exceeded by "}
                 <span className="text-negative"><F v={Math.abs(todayRemaining)} s={` ${currency}`} /></span>
-                {locale === "fi" ? " verran. Päiväbudjetti " : ". Daily budget "}
-                <span className={status === "good" ? "text-positive" : status === "tight" ? "text-chart-3" : "text-negative"}><F v={dailyBudget} s={` ${currency}`} /></span>
-                {locale === "fi" ? ", käytetty " : ", spent "}
+                {locale === "fi" ? " verran. Käytetty " : ". Spent "}
                 <span className="text-negative"><F v={todaySpentAll} s={` ${currency}`} /></span>
-                {daysUntilIncome > 0 && (
-                  <>
-                    {". "}
-                    {locale === "fi" ? "Huomisen budjetti noin " : "Tomorrow's budget approx. "}
-                    {(() => {
-                      const tomorrowBudget = Math.max(0, Math.round(dailyBudget - Math.abs(todayRemaining) / daysUntilIncome));
-                      const tStatus = tomorrowBudget > thresholds.good ? "text-positive" : tomorrowBudget > thresholds.tight ? "text-chart-3" : "text-negative";
-                      return <span className={tStatus}><F v={tomorrowBudget} s={` ${currency}`} /></span>;
-                    })()}
-                    {` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}.`}
-                  </>
-                )}
+                {". "}
+                {locale === "fi" ? "Huomenna " : "Tomorrow "}
+                <span className={tomorrowStatus}><F v={tomorrowBudget} s={` ${currency}`} /></span>
+                {daysUntilIncome > 0 && ` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}.`}
               </>
             ) : todaySpentAll > 0 ? (
               <>
-                {locale === "fi" ? "Päiväbudjetti " : "Budget "}
-                <span className={status === "good" ? "text-positive" : status === "tight" ? "text-chart-3" : "text-negative"}><F v={dailyBudget} s={` ${currency}`} /></span>
-                {" \u00B7 "}
-                {locale === "fi" ? "käytetty " : "spent "}
+                {locale === "fi" ? "Käytetty " : "Spent "}
                 <span className="text-negative"><F v={todaySpentAll} s={` ${currency}`} /></span>
+                {". "}
+                {locale === "fi" ? "Huomenna " : "Tomorrow "}
+                <span className={tomorrowStatus}><F v={tomorrowBudget} s={` ${currency}`} /></span>
                 {daysUntilIncome > 0 && ` \u00B7 ${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`}
               </>
             ) : (
-              `${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}`
+              <>
+                {locale === "fi" ? "Huomenna " : "Tomorrow "}
+                <span className={tomorrowStatus}><F v={tomorrowBudget} s={` ${currency}`} /></span>
+                {daysUntilIncome > 0 && ` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}`}
+              </>
             )}
             {!billsDelayNeeded && !overspent && status === "danger" && `. ${t.dashboard.cutNonEssentials}`}
             {!billsDelayNeeded && !overspent && status === "tight" && `. ${t.dashboard.beCareful}`}

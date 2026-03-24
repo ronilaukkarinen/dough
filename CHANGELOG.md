@@ -1,3 +1,8 @@
+### 1.9.3: 2026-03-24
+
+* Always show tomorrow's budget in daily allowance hero note
+* Tomorrow's budget respects current bill inclusion setting
+
 ### 1.9.2: 2026-03-24
 
 * Remove green square logic and today border from heatmap
