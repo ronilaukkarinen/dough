@@ -1,3 +1,7 @@
+### 1.9.1: 2026-03-24
+
+* Replace app icon with donut chart icon, white on black with rounded corners
+
 ### 1.9.0: 2026-03-24
 
 * Add spending heatmap with 44 weeks of history, scrollable on mobile, green squares for under-budget days
