@@ -9,7 +9,7 @@ export async function GET() {
 
     const db = getDb();
     const snapshots = db
-      .prepare("SELECT month, income, expenses, categories_json, saving_goal FROM monthly_snapshots ORDER BY month DESC LIMIT 4")
+      .prepare("SELECT month, income, expenses, categories_json, saving_goal FROM monthly_snapshots ORDER BY month DESC LIMIT 6")
       .all() as { month: string; income: number; expenses: number; categories_json: string; saving_goal: number }[];
 
     console.debug("[monthly-history] Loaded", snapshots.length, "monthly snapshots");
