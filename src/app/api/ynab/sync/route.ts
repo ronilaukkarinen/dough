@@ -148,8 +148,8 @@ export async function POST() {
       `).run(snapMonth, snapIncome, snapExpenses, JSON.stringify(snapCategories), snapSavingGoal);
       console.info("[api/ynab/sync] Monthly snapshot saved for", snapMonth);
 
-      // Backfill up to 3 previous months if not already saved
-      for (let offset = 1; offset <= 3; offset++) {
+      // Backfill up to 5 previous months if not already saved
+      for (let offset = 1; offset <= 5; offset++) {
         const pastDate = new Date(now.getFullYear(), now.getMonth() - offset, 1);
         const pastMonth = `${pastDate.getFullYear()}-${String(pastDate.getMonth() + 1).padStart(2, "0")}`;
         const exists = snapDb.prepare("SELECT id FROM monthly_snapshots WHERE month = ?").get(pastMonth);

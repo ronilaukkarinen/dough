@@ -2,6 +2,9 @@
 
 * Show upcoming income as dashed striped bar on top of actual income in monthly cash flow chart
 * Show 5 months in cash flow chart instead of 4
+* Round top corners on income bars when no upcoming income is stacked
+* Backfill monthly snapshots up to 5 months instead of 3
+* Show 8 days in savings streak instead of 7
 * Fix dialog form-stack having stray box-shadow and font-size rules
 * Move account name closer to attach button in add expense dialog
 

@@ -14,8 +14,30 @@ import {
   ReferenceLine,
 } from "recharts";
 
+interface CashFlowData {
+  month: string;
+  income: number;
+  expenses: number;
+  net: number;
+  upcomingIncome?: number;
+}
+
 interface CashFlowProps {
-  data: { month: string; income: number; expenses: number; net: number; upcomingIncome?: number }[];
+  data: CashFlowData[];
+}
+
+/* Custom bar shape: rounds top corners only when no upcoming income is stacked above */
+function IncomeBarShape(props: { x?: number; y?: number; width?: number; height?: number; payload?: CashFlowData }) {
+  const { x = 0, y = 0, width = 0, height = 0, payload } = props;
+  if (height <= 0) return null;
+  const r = payload?.upcomingIncome && payload.upcomingIncome > 0 ? 0 : 4;
+  if (r === 0) return <rect x={x} y={y} width={width} height={height} fill="#4ade80" />;
+  return (
+    <path
+      d={`M${x},${y + r} Q${x},${y} ${x + r},${y} L${x + width - r},${y} Q${x + width},${y} ${x + width},${y + r} L${x + width},${y + height} L${x},${y + height} Z`}
+      fill="#4ade80"
+    />
+  );
 }
 
 export function CashFlowChart({ data }: CashFlowProps) {
@@ -74,7 +96,7 @@ export function CashFlowChart({ data }: CashFlowProps) {
             <YAxis tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => mask(v >= 1000 ? `${(v/1000).toFixed(0)}k €` : `${Math.round(v)} €`)} width={50} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" />
-            <Bar dataKey="income" stackId="income" fill="#4ade80" radius={[0, 0, 0, 0]} barSize={20} />
+            <Bar dataKey="income" stackId="income" shape={<IncomeBarShape />} barSize={20} />
             <Bar dataKey="upcomingIncome" stackId="income" fill="url(#upcoming-income-pattern)" radius={[4, 4, 0, 0]} barSize={20} />
             <Bar dataKey="expenses" fill="#f87171" radius={[4, 4, 0, 0]} barSize={20} />
           </BarChart>
