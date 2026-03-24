@@ -1,13 +1,17 @@
+### 1.9.2: 2026-03-24
+
+* Remove green square logic from heatmap, use red intensity only
+* Use 90th percentile scaling for heatmap so rent does not wash out other days
+
 ### 1.9.1: 2026-03-24
 
-* Replace app icon with donut chart icon, white on black with rounded corners
+* Replace app icon with donut chart icon, white on black with proper padding
 
 ### 1.9.0: 2026-03-24
 
-* Add spending heatmap with 44 weeks of history, scrollable on mobile, green squares for under-budget days
+* Add spending heatmap with 44 weeks of history, scrollable on mobile
 * Add spending trends component showing daily category trend fact with percentage change
 * Fetch and store 10 months of transaction history for heatmap
-* Green tooltip amount color when daily spending is under normal threshold
 * Fix font-weight inheritance on daily allowance hero note numbers
 
 ### 1.8.3: 2026-03-24

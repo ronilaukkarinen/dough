@@ -21,11 +21,7 @@ interface TooltipData {
   top: { payee: string; amount: number }[];
 }
 
-interface SpendingHeatmapProps {
-  goodThreshold?: number;
-}
-
-export function SpendingHeatmap({ goodThreshold = 30 }: SpendingHeatmapProps) {
+export function SpendingHeatmap() {
   const { locale, fmt, mask } = useLocale();
   const [transactions, setTransactions] = useState<HeatmapTransaction[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -108,9 +104,8 @@ export function SpendingHeatmap({ goodThreshold = 30 }: SpendingHeatmapProps) {
     ? ["", "ti", "", "to", "", "la", ""]
     : ["", "Tue", "", "Thu", "", "Sat", ""];
 
-  function getIntensity(total: number, dateStr: string): string {
+  function getIntensity(total: number): string {
     if (total === 0) return "heatmap-level-0";
-    if (dateStr <= today && total <= goodThreshold) return "heatmap-level-good";
     const ratio = total / maxSpend;
     if (ratio < 0.25) return "heatmap-level-1";
     if (ratio < 0.5) return "heatmap-level-2";
@@ -169,7 +164,7 @@ export function SpendingHeatmap({ goodThreshold = 30 }: SpendingHeatmapProps) {
                     return (
                       <span
                         key={ci}
-                        className={`spending-heatmap-cell ${isFuture ? "is-future" : getIntensity(total, cell.date)} ${isToday ? "is-today" : ""}`}
+                        className={`spending-heatmap-cell ${isFuture ? "is-future" : getIntensity(total)} ${isToday ? "is-today" : ""}`}
                         onMouseEnter={(e) => handleCellEnter(e, cell.date, isFuture, total, data?.top || [])}
                         onMouseLeave={handleCellLeave}
                       />
@@ -195,7 +190,7 @@ export function SpendingHeatmap({ goodThreshold = 30 }: SpendingHeatmapProps) {
             <span className="spending-heatmap-tooltip-none">{locale === "fi" ? "ei kuluja" : "no spending"}</span>
           ) : (
             <>
-              <span className={`spending-heatmap-tooltip-total ${tooltip.total <= goodThreshold ? "is-good" : ""}`}>{mask(fmt(tooltip.total))} €</span>
+              <span className="spending-heatmap-tooltip-total">{mask(fmt(tooltip.total))} €</span>
               {tooltip.top.slice(0, 3).map((t, ti) => (
                 <span key={ti} className="spending-heatmap-tooltip-tx">
                   {t.payee}: {mask(fmt(t.amount))} €

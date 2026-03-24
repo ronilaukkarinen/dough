@@ -496,7 +496,7 @@ export default function DashboardPage() {
       />
 
       <div className="page-grid-2">
-        <SpendingHeatmap goodThreshold={thresholds.normal} />
+        <SpendingHeatmap />
         <SpendingTrends trends={trendData} />
       </div>
 
