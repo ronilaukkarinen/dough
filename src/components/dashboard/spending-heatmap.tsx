@@ -64,8 +64,10 @@ export function SpendingHeatmap({ goodThreshold = 30 }: SpendingHeatmapProps) {
     dailyData[key].top.sort((a, b) => b.amount - a.amount);
   }
 
-  const values = Object.values(dailyData).map((d) => d.total);
-  const maxSpend = values.length > 0 ? Math.max(...values) : 1;
+  // Use 90th percentile for color scaling so outliers like rent don't wash everything out
+  const values = Object.values(dailyData).map((d) => d.total).sort((a, b) => a - b);
+  const p90Index = Math.floor(values.length * 0.9);
+  const maxSpend = values.length > 0 ? values[p90Index] || values[values.length - 1] : 1;
 
   const endDate = new Date(now);
   const startDate = new Date(now);
