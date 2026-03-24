@@ -369,7 +369,7 @@
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 40;
-  transition: transform 150ms, box-shadow 150ms;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .fab-add svg {
@@ -379,13 +379,8 @@
 
 @media (hover: hover) {
   .fab-add:hover {
-    transform: scale(1.08);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   }
-}
-
-.fab-add:active {
-  transform: scale(0.95);
 }
 
 .page-subtitle {
