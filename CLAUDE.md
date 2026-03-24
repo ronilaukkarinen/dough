@@ -47,11 +47,14 @@ All examples in code, docs, and comments must use generic placeholders. When in 
 - NEVER just patch the line you see. Before fixing, trace the full chain: check all related prompts, Python code, and callers. This is a large codebase with many interconnected prompt files and systems. Be comprehensive.
 - ALWAYS prefer CSS classes over inline `style=""` attributes. Only use inline styles for truly dynamic values (JS-computed colors, display:none toggled by JS). Static visual properties must be CSS classes.
 - Prefer DRY code - avoid repeating logic, extract shared patterns
+- After ANY CSS change, always clear the Next.js cache and rebuild before considering it done: `rm -rf .next && npm run build`. Turbopack hot-reload can silently break CSS loading. Never commit CSS changes without a clean rebuild passing first.
+- When editing CSS, always re-read the full file first to understand context and avoid breaking existing rules
 
 ## Common tasks
 
 Always work on tasks in order. Always use todo. Always show user the todo of tasks in progress.
 CRITICAL: Always update CHANGELOG, commit and restart after changes.
+CRITICAL: After every build, always restart the production service: `systemctl --user restart dough.service`. The app runs as a systemd user service and will serve stale/broken assets until restarted.
 
 ## Commits
 

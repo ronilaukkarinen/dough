@@ -364,12 +364,12 @@ export default function DashboardPage() {
       amount: tx.amount,
     }));
 
-  // Cash flow – current month + up to 3 historical months
+  // Cash flow – current month + up to 4 historical months (5 total)
   const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const historicalMonths = monthlyHistory
     .filter((s) => s.month !== currentMonthStr)
     .sort((a, b) => a.month.localeCompare(b.month))
-    .slice(-3);
+    .slice(-4);
 
   const cashFlowData = [
     ...historicalMonths.map((s) => {
@@ -379,6 +379,7 @@ export default function DashboardPage() {
         income: Math.round(s.income * 100) / 100,
         expenses: Math.round(s.expenses * 100) / 100,
         net: Math.round((s.income - s.expenses) * 100) / 100,
+        upcomingIncome: 0,
       };
     }),
     {
@@ -386,6 +387,7 @@ export default function DashboardPage() {
       income: Math.round(realIncome * 100) / 100,
       expenses: Math.round(monthActivity * 100) / 100,
       net: Math.round((realIncome - monthActivity) * 100) / 100,
+      upcomingIncome: Math.round(upcomingIncome * 100) / 100,
     },
   ];
 

@@ -1,3 +1,10 @@
+### 1.8.3: 2026-03-24
+
+* Show upcoming income as dashed striped bar on top of actual income in monthly cash flow chart
+* Show 5 months in cash flow chart instead of 4
+* Fix dialog form-stack having stray box-shadow and font-size rules
+* Move account name closer to attach button in add expense dialog
+
 ### 1.8.2: 2026-03-24
 
 * Add floating action button to add expenses from any page with full receipt/batch support

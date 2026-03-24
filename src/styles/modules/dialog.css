@@ -40,10 +40,14 @@
   border-radius: 0.75rem;
   background-color: var(--background);
   padding: 1rem;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent);
-  outline: none;
+}
+
+.dialog-content .form-stack {
+  gap: 1rem;
+}
+
+.dialog-content .form-stack > .settings-help {
+  margin-top: -0.5rem;
 }
 
 @media (min-width: 640px) {
