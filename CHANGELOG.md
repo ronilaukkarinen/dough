@@ -1,6 +1,6 @@
 ### 1.9.2: 2026-03-24
 
-* Remove green square logic from heatmap, use red intensity only
+* Remove green square logic and today border from heatmap
 * Use 90th percentile scaling for heatmap so rent does not wash out other days
 
 ### 1.9.1: 2026-03-24

@@ -160,11 +160,10 @@ export function SpendingHeatmap() {
                     const data = dailyData[cell.date];
                     const total = data?.total || 0;
                     const isFuture = cell.date > today;
-                    const isToday = cell.date === today;
                     return (
                       <span
                         key={ci}
-                        className={`spending-heatmap-cell ${isFuture ? "is-future" : getIntensity(total)} ${isToday ? "is-today" : ""}`}
+                        className={`spending-heatmap-cell ${isFuture ? "is-future" : getIntensity(total)}`}
                         onMouseEnter={(e) => handleCellEnter(e, cell.date, isFuture, total, data?.top || [])}
                         onMouseLeave={handleCellLeave}
                       />
