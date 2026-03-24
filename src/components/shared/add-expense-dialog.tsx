@@ -160,7 +160,6 @@ export function AddExpenseDialog({ open, onOpenChange }: AddExpenseDialogProps) 
 
   const handleClose = (v: boolean) => {
     onOpenChange(v);
-    if (!v) { setReceiptPreview(null); setBatchTransactions([]); }
   };
 
   return (
