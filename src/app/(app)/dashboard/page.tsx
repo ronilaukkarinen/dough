@@ -17,6 +17,8 @@ import { EntryReminder } from "@/components/dashboard/entry-reminder";
 import { PersonalGreeting } from "@/components/dashboard/personal-greeting";
 import { SpendingFlow } from "@/components/dashboard/spending-flow";
 import { SavingsStreak } from "@/components/dashboard/savings-streak";
+import { SpendingHeatmap } from "@/components/dashboard/spending-heatmap";
+import { SpendingTrends } from "@/components/dashboard/spending-trends";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -50,7 +52,7 @@ export default function DashboardPage() {
   const [thresholds, setThresholds] = useState({ tight: 20, normal: 30, good: 50 });
   const [householdSize, setHouseholdSize] = useState(1);
   const [personalBudgetShare, setPersonalBudgetShare] = useState(0);
-  const [monthlyHistory, setMonthlyHistory] = useState<{ month: string; income: number; expenses: number }[]>([]);
+  const [monthlyHistory, setMonthlyHistory] = useState<{ month: string; income: number; expenses: number; categories_json?: string }[]>([]);
   const [lastYnabSync, setLastYnabSync] = useState<string | null>(null);
   const [sideDataLoaded, setSideDataLoaded] = useState(false);
 
@@ -364,6 +366,28 @@ export default function DashboardPage() {
       amount: tx.amount,
     }));
 
+  // Spending trends — compare category spending this month vs last month
+  const lastMonthSnapshot = monthlyHistory
+    .filter((s) => s.month !== `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`)
+    .sort((a, b) => b.month.localeCompare(a.month))[0];
+
+  const lastMonthCategories: Record<string, number> = {};
+  if (lastMonthSnapshot?.categories_json) {
+    try {
+      const cats = JSON.parse(lastMonthSnapshot.categories_json) as { name: string; amount: number }[];
+      for (const c of cats) lastMonthCategories[c.name] = c.amount;
+    } catch { /* ignore */ }
+  }
+
+  const trendData = data.monthBudget.categories
+    .filter((c) => c.activity < 0 && c.name !== "Inflow: Ready to Assign")
+    .map((c) => ({
+      category: c.name,
+      thisMonth: Math.round(Math.abs(c.activity) * 100) / 100,
+      lastMonth: Math.round((lastMonthCategories[c.name] || 0) * 100) / 100,
+    }))
+    .filter((t) => t.thisMonth > 0 || t.lastMonth > 0);
+
   // Cash flow – current month + up to 4 historical months (5 total)
   const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const historicalMonths = monthlyHistory
@@ -470,6 +494,11 @@ export default function DashboardPage() {
         budgetBreakdown={budgetResult.tightestSegment}
         streakProps={{ dailyBudget, todaySpent: todaySpentAll }}
       />
+
+      <div className="page-grid-2">
+        <SpendingHeatmap goodThreshold={thresholds.normal} />
+        <SpendingTrends trends={trendData} />
+      </div>
 
       <div className="page-grid-2">
         <SpendingChart data={spendingData} />

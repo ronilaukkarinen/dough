@@ -90,13 +90,17 @@ export async function POST() {
 
     const now = new Date();
     const sinceDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+    // Fetch 10 months of transactions for heatmap history
+    const heatmapSince = new Date(now.getFullYear(), now.getMonth() - 9, 1);
+    const heatmapSinceDate = `${heatmapSince.getFullYear()}-${String(heatmapSince.getMonth() + 1).padStart(2, "0")}-01`;
 
-    console.info("[api/ynab/sync] Fetching YNAB data since", sinceDate);
+    console.info("[api/ynab/sync] Fetching YNAB data since", sinceDate, "heatmap since", heatmapSinceDate);
 
-    const [summary, transactions, monthBudget] = await Promise.all([
+    const [summary, transactions, monthBudget, heatmapTransactions] = await Promise.all([
       getBudgetSummary(budgetId, token),
       getTransactions(budgetId, sinceDate, token),
       getMonthBudget(budgetId, undefined, token),
+      getTransactions(budgetId, heatmapSinceDate, token),
     ]);
 
     // Update last sync time in household settings
@@ -218,12 +222,12 @@ export async function POST() {
         ON CONFLICT(user_id, ynab_id) DO UPDATE SET date=excluded.date, amount=excluded.amount, payee=excluded.payee, category=excluded.category, memo=excluded.memo, account_id=excluded.account_id, approved=excluded.approved, cleared=excluded.cleared
       `);
       const txBatch = pdb.transaction(() => {
-        for (const t of transactions) {
+        for (const t of heatmapTransactions) {
           upsertTx.run(user.id, t.id, t.date, t.amount, t.payee, t.category || "", t.memo || "", t.account_id || "", t.approved ? 1 : 0, t.cleared || "cleared");
         }
       });
       txBatch();
-      console.info("[api/ynab/sync] Persisted", transactions.length, "transactions");
+      console.info("[api/ynab/sync] Persisted", heatmapTransactions.length, "transactions (6 months)");
 
       // Upsert month budget + categories
       const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;

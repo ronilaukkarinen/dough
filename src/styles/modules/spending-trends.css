@@ -1,0 +1,92 @@
+/* Module: spending-trends — daily trend fact */
+
+.spending-trends-card {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.spending-trends-title {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  margin-bottom: 0.75rem;
+}
+
+.spending-trends-content {
+  display: flex;
+  gap: 0.75rem;
+  flex: 1;
+  align-items: flex-start;
+}
+
+.spending-trends-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  margin-top: 0.125rem;
+}
+
+.spending-trends-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.spending-trends-icon.is-up {
+  background: color-mix(in srgb, var(--negative) 15%, transparent);
+  color: var(--negative);
+}
+
+.spending-trends-icon.is-down {
+  background: color-mix(in srgb, var(--positive) 15%, transparent);
+  color: var(--positive);
+}
+
+.spending-trends-icon.is-flat {
+  background: color-mix(in srgb, var(--muted-foreground) 15%, transparent);
+  color: var(--muted-foreground);
+}
+
+.spending-trends-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.spending-trends-fact {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--foreground);
+  line-height: 1.3;
+}
+
+.spending-trends-category {
+  color: var(--primary);
+}
+
+.spending-trends-detail {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.spending-trends-amounts {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.spending-trends-empty {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+  flex: 1;
+  display: flex;
+  align-items: center;
+}

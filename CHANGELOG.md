@@ -1,3 +1,11 @@
+### 1.9.0: 2026-03-24
+
+* Add spending heatmap with 44 weeks of history, scrollable on mobile, green squares for under-budget days
+* Add spending trends component showing daily category trend fact with percentage change
+* Fetch and store 10 months of transaction history for heatmap
+* Green tooltip amount color when daily spending is under normal threshold
+* Fix font-weight inheritance on daily allowance hero note numbers
+
 ### 1.8.3: 2026-03-24
 
 * Show upcoming income as dashed striped bar on top of actual income in monthly cash flow chart

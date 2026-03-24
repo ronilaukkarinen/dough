@@ -98,6 +98,10 @@
   word-break: break-word;
 }
 
+.daily-allowance-hero-note span {
+  font-weight: inherit;
+}
+
 .daily-allowance-hero-bg {
   display: none;
 }

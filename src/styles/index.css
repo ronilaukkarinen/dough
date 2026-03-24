@@ -41,4 +41,6 @@
 @import "./modules/net-worth.css";
 @import "./modules/subscriptions.css";
 @import "./modules/savings-streak.css";
+@import "./modules/spending-heatmap.css";
+@import "./modules/spending-trends.css";
 @import "./modules/pages.css";
