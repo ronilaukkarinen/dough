@@ -1,3 +1,8 @@
+### 1.8.2: 2026-03-24
+
+* Add floating action button to add expenses from any page
+* Hidden on transactions page which has its own add button
+
 ### 1.8.1: 2026-03-24
 
 * Show current balance and days in daily budget tooltip alongside tightest segment

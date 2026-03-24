@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sidebar } from "./sidebar";
+import { FabAddExpense } from "./fab-add-expense";
 import { PanelLeft, Eye, EyeOff } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 
@@ -47,6 +48,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </main>
+
+      <FabAddExpense />
     </div>
   );
 }
