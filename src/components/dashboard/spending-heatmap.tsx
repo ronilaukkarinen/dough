@@ -73,7 +73,7 @@ export function SpendingHeatmap() {
 
   const weeks: { date: string; dateObj: Date }[][] = [];
   const cursor = new Date(startDate);
-  while (cursor <= endDate || weeks.length === 0 || (weeks[weeks.length - 1]?.length ?? 0) < 7) {
+  while (cursor <= endDate) {
     if (weeks.length === 0 || weeks[weeks.length - 1].length === 7) {
       weeks.push([]);
     }

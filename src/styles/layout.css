@@ -378,6 +378,10 @@
   height: 1.25rem;
 }
 
+.fab-add.is-hidden {
+  display: none;
+}
+
 @media (hover: hover) {
   .fab-add:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
