@@ -1,3 +1,8 @@
+### 1.9.4: 2026-03-25
+
+* Show "Huomenna tulee rahaa" when 1 day until income instead of "1 päivää tilipäivään"
+* Use period separator instead of center dot for income countdown
+
 ### 1.9.3: 2026-03-24
 
 * Always show tomorrow's budget in daily allowance hero note

@@ -78,6 +78,9 @@ export function DailyAllowance({
   const daysAfterToday = Math.max(1, daysUntilIncome - 1);
   const tomorrowBudget = Math.max(0, Math.round((dailyBudget * daysUntilIncome - todaySpentAll) / daysAfterToday));
   const tomorrowStatus = tomorrowBudget > thresholds.good ? "text-positive" : tomorrowBudget > thresholds.tight ? "text-chart-3" : "text-negative";
+  const incomeCountdown = daysUntilIncome === 1
+    ? (locale === "fi" ? "Huomenna tulee rahaa." : "Income arrives tomorrow.")
+    : `${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}.`;
 
   return (
     <div className="daily-allowance-grid">
@@ -124,9 +127,9 @@ export function DailyAllowance({
                 {locale === "fi" ? "Laskuja " : "Bills "}
                 <span className="text-negative"><F v={upcomingBills} s={` ${currency}`} /></span>
                 {". "}
-                {locale === "fi" ? "Huomenna " : "Tomorrow "}
+                {locale === "fi" ? "Jos et käytä rahaa enää tänään, huomenna voit käyttää max " : "If you stop spending today, tomorrow you can spend max "}
                 <span className={tomorrowStatus}><F v={tomorrowBudget} s={` ${currency}`} /></span>
-                {daysUntilIncome > 0 && ` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}.`}
+                {daysUntilIncome > 0 && `. ${incomeCountdown}`}
               </>
             ) : overspent ? (
               <>
@@ -135,24 +138,24 @@ export function DailyAllowance({
                 {locale === "fi" ? " verran. Käytetty " : ". Spent "}
                 <span className="text-negative"><F v={todaySpentAll} s={` ${currency}`} /></span>
                 {". "}
-                {locale === "fi" ? "Huomenna " : "Tomorrow "}
+                {locale === "fi" ? "Jos et käytä rahaa enää tänään, huomenna voit käyttää max " : "If you stop spending today, tomorrow you can spend max "}
                 <span className={tomorrowStatus}><F v={tomorrowBudget} s={` ${currency}`} /></span>
-                {daysUntilIncome > 0 && ` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}.`}
+                {daysUntilIncome > 0 && `. ${incomeCountdown}`}
               </>
             ) : todaySpentAll > 0 ? (
               <>
                 {locale === "fi" ? "Käytetty " : "Spent "}
                 <span className="text-negative"><F v={todaySpentAll} s={` ${currency}`} /></span>
                 {". "}
-                {locale === "fi" ? "Huomenna " : "Tomorrow "}
+                {locale === "fi" ? "Jos et käytä rahaa enää tänään, huomenna voit käyttää max " : "If you stop spending today, tomorrow you can spend max "}
                 <span className={tomorrowStatus}><F v={tomorrowBudget} s={` ${currency}`} /></span>
-                {daysUntilIncome > 0 && ` \u00B7 ${daysUntilIncome} ${t.dashboard.daysUntilNextIncome}`}
+                {daysUntilIncome > 0 && `. ${incomeCountdown}`}
               </>
             ) : (
               <>
-                {locale === "fi" ? "Huomenna " : "Tomorrow "}
+                {locale === "fi" ? "Jos et käytä rahaa enää tänään, huomenna voit käyttää max " : "If you stop spending today, tomorrow you can spend max "}
                 <span className={tomorrowStatus}><F v={tomorrowBudget} s={` ${currency}`} /></span>
-                {daysUntilIncome > 0 && ` \u00B7 ${mask(daysUntilIncome)} ${t.dashboard.daysUntilNextIncome}`}
+                {daysUntilIncome > 0 && `. ${incomeCountdown}`}
               </>
             )}
             {!billsDelayNeeded && !overspent && status === "danger" && `. ${t.dashboard.cutNonEssentials}`}
