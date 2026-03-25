@@ -11,7 +11,7 @@ export function FabAddExpense() {
 
   return (
     <>
-      <button type="button" className={`fab-add ${pathname === "/transactions" ? "is-hidden" : ""}`} onPointerUp={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}>
+      <button type="button" className={`fab-add ${pathname === "/transactions" || pathname === "/chat" ? "is-hidden" : ""}`} onPointerUp={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}>
         <Plus />
       </button>
       <AddExpenseDialog open={open} onOpenChange={setOpen} />

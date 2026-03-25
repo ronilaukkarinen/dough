@@ -2,6 +2,7 @@
 
 * Show "Huomenna tulee rahaa" when 1 day until income instead of "1 päivää tilipäivään"
 * Use period separator instead of center dot for income countdown
+* Hide FAB add expense button on AI advisor page to prevent overlap with send button
 
 ### 1.9.3: 2026-03-24
 
