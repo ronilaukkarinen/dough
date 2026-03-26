@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
     const body = JSON.parse(rawBody);
 
     console.info("[synci/webhook] Received event:", body.event_type, "id:", body.event_id);
+    console.debug("[synci/webhook] Full payload:", JSON.stringify(body, null, 2));
 
     // Verify webhook signature
     const secret = getHouseholdSetting("synci_webhook_secret");

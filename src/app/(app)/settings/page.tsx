@@ -952,8 +952,7 @@ export default function SettingsPage() {
             </div>
             {synciConnected && Object.keys(synciKnownAccounts).length > 0 && (
               <>
-                <hr className="settings-separator" />
-                <Label>{locale === "fi" ? "Tiliyhdistykset" : "Account mapping"}</Label>
+                <Label>{locale === "fi" ? "Tilien mäppäys" : "Account mapping"}</Label>
                 <p className="settings-help">
                   {locale === "fi"
                     ? "Yhdistä Synci-pankkitilit YNAB-tileihin. Tulojen siirto YNAB:iin toimii vain yhdistetyille tileille."
