@@ -1,12 +1,9 @@
 ### 1.10.0: 2026-03-26
 
-* Add Synci webhook integration for real-time bank income detection
-* Auto-create YNAB transactions from Synci income webhooks
-* Auto-detect Synci bank accounts from webhook payloads with IBAN labels
-* Synci bank account to YNAB account mapping in settings
-* Income matched via payee patterns is marked as received instantly
-* Webhook signature verification with HMAC-SHA256
-* Exempt Synci webhook endpoint from auth middleware
+* Add Synci API integration for automatic bank income sync to YNAB
+* Fetch bank accounts from Synci API with account-to-YNAB mapping in settings
+* Poll mapped accounts for income transactions and create YNAB entries
+* Income matched via payee patterns is marked as received in Dough
 * Redesign savings streak card with flame icon matching other metric cards
 * Show 7 days in savings streak
 

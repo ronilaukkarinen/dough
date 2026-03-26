@@ -65,12 +65,13 @@ export default function SettingsPage() {
   const [personalShareSaved, setPersonalShareSaved] = useState(false);
   const [decimalPlaces, setDecimalPlaces] = useState("0");
   const [decimalSaved, setDecimalSaved] = useState(false);
-  const [synciSecret, setSynciSecret] = useState("");
+  const [synciToken, setSynciToken] = useState("");
   const [synciSaved, setSynciSaved] = useState(false);
   const [synciConnected, setSynciConnected] = useState(false);
-  const [synciKnownAccounts, setSynciKnownAccounts] = useState<Record<string, string>>({});
+  const [synciAccounts, setSynciAccounts] = useState<{ id: string; iban: string; owner: string }[]>([]);
   const [synciMappings, setSynciMappings] = useState<Record<string, string>>({});
   const [synciMappingSaved, setSynciMappingSaved] = useState(false);
+  const [synciLoading, setSynciLoading] = useState(false);
   const { t, locale, setLocale, setDecimals } = useLocale();
 
   useEffect(() => {
@@ -124,12 +125,12 @@ export default function SettingsPage() {
           if (householdData.settings?.budget_threshold_tight) setThresholds((p) => ({ ...p, tight: householdData.settings.budget_threshold_tight }));
           if (householdData.settings?.budget_threshold_normal) setThresholds((p) => ({ ...p, normal: householdData.settings.budget_threshold_normal }));
           if (householdData.settings?.budget_threshold_good) setThresholds((p) => ({ ...p, good: householdData.settings.budget_threshold_good }));
-          if (householdData.settings?.synci_webhook_secret && householdData.settings.synci_webhook_secret !== null) {
+          if (householdData.settings?.synci_api_token) {
             setSynciConnected(true);
-            setSynciSecret("••••••••");
+            setSynciToken("••••••••");
           }
-          if (householdData.settings?.synci_known_accounts) {
-            try { setSynciKnownAccounts(JSON.parse(householdData.settings.synci_known_accounts)); } catch {}
+          if (householdData.settings?.synci_accounts) {
+            try { setSynciAccounts(JSON.parse(householdData.settings.synci_accounts)); } catch {}
           }
           if (householdData.settings?.synci_account_mapping) {
             try { setSynciMappings(JSON.parse(householdData.settings.synci_account_mapping)); } catch {}
@@ -892,43 +893,54 @@ export default function SettingsPage() {
           <CardContent className="form-stack">
             <p className="page-subtitle">
               {locale === "fi"
-                ? "Synci tunnistaa pankkitulot reaaliajassa webhookilla. Tulot kirjautuvat heti ilman YNAB-synkronointia."
-                : "Synci detects bank income in real-time via webhook. Income is recognized instantly without waiting for YNAB sync."}
+                ? "Synci hakee pankkitulot automaattisesti ja siirtää ne YNAB:iin. Ei tarvitse syöttää tuloja manuaalisesti."
+                : "Synci fetches bank income automatically and syncs it to YNAB. No need to enter income manually."}
             </p>
             <div className="form-field">
-              <Label>{locale === "fi" ? "Webhookin salainen avain" : "Webhook secret"}</Label>
+              <Label>{locale === "fi" ? "API-avain" : "API token"}</Label>
               <Input
                 type="password"
-                placeholder="whsec_..."
-                value={synciSecret}
-                onChange={(e) => { setSynciSecret(e.target.value); setSynciSaved(false); }}
+                placeholder={locale === "fi" ? "Synci API-avain" : "Synci API token"}
+                value={synciToken}
+                onChange={(e) => { setSynciToken(e.target.value); setSynciSaved(false); }}
                 className="settings-input"
               />
               <p className="settings-help">
                 {locale === "fi"
-                  ? "Synci dashboard: Developers > Webhooks. Osoite: "
-                  : "Synci dashboard: Developers > Webhooks. URL: "}
-                <code>https://your-domain/api/synci/webhook</code>
+                  ? "Synci dashboard: Developers > Tokens"
+                  : "Synci dashboard: Developers > Tokens"}
               </p>
-              {synciSaved && <p className="settings-success"><CheckCircle2 className="icon-sm" /> {locale === "fi" ? "Tallennettu" : "Saved"}</p>}
+              {synciSaved && <p className="settings-success"><CheckCircle2 className="icon-sm" /> {locale === "fi" ? "Yhdistetty" : "Connected"}</p>}
               <div className="settings-row">
                 <Button
                   size="sm"
+                  disabled={(!synciToken || synciToken.startsWith("••")) && !synciConnected || synciLoading}
                   onClick={async () => {
-                    const val = synciSecret.startsWith("••") ? undefined : synciSecret.trim();
-                    if (!val) return;
-                    await fetch("/api/household", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ synci_webhook_secret: val }),
-                    });
-                    setSynciSaved(true);
-                    setSynciConnected(true);
-                    setSynciSecret("••••••••");
+                    const val = synciToken.startsWith("••") ? undefined : synciToken.trim();
+                    if (!val && !synciConnected) return;
+                    setSynciLoading(true);
+                    try {
+                      if (val) {
+                        await fetch("/api/household", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ synci_api_token: val }),
+                        });
+                      }
+                      const res = await fetch("/api/synci/accounts");
+                      const data = await res.json();
+                      if (data.accounts) {
+                        setSynciAccounts(data.accounts);
+                        setSynciConnected(true);
+                        setSynciToken("••••••••");
+                        setSynciSaved(true);
+                      }
+                    } finally {
+                      setSynciLoading(false);
+                    }
                   }}
-                  disabled={!synciSecret || synciSecret.startsWith("••")}
                 >
-                  {locale === "fi" ? "Tallenna" : "Save"}
+                  {synciLoading ? (locale === "fi" ? "Yhdistetään..." : "Connecting...") : synciConnected ? (locale === "fi" ? "Päivitä tilit" : "Refresh accounts") : (locale === "fi" ? "Yhdistä" : "Connect")}
                 </Button>
                 {synciConnected && (
                   <Button
@@ -938,34 +950,36 @@ export default function SettingsPage() {
                       await fetch("/api/household", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ synci_webhook_secret: null }),
+                        body: JSON.stringify({ synci_api_token: null, synci_accounts: null, synci_account_mapping: null }),
                       });
-                      setSynciSecret("");
+                      setSynciToken("");
                       setSynciConnected(false);
+                      setSynciAccounts([]);
+                      setSynciMappings({});
                       setSynciSaved(false);
                     }}
                   >
-                    {locale === "fi" ? "Poista" : "Remove"}
+                    {locale === "fi" ? "Katkaise yhteys" : "Disconnect"}
                   </Button>
                 )}
               </div>
             </div>
-            {synciConnected && Object.keys(synciKnownAccounts).length > 0 && (
+            {synciAccounts.length > 0 && (
               <div className="form-field">
                 <Label>{locale === "fi" ? "Tilien mäppäys" : "Account mapping"}</Label>
                 <p className="settings-help">
                   {locale === "fi"
-                    ? "Yhdistä Synci-pankkitilit YNAB-tileihin. Tulojen siirto YNAB:iin toimii vain yhdistetyille tileille."
-                    : "Map Synci bank accounts to YNAB accounts. Income is only synced to YNAB for mapped accounts."}
+                    ? "Yhdistä Synci-pankkitilit YNAB-tileihin. Vain yhdistettyjen tilien tulot siirretään."
+                    : "Map Synci bank accounts to YNAB accounts. Only mapped accounts sync income."}
                 </p>
-                {Object.entries(synciKnownAccounts).map(([synciId, synciName]) => (
-                  <div key={synciId} className="form-field">
-                    <Label>{synciName}</Label>
+                {synciAccounts.map((acc) => (
+                  <div key={acc.id} className="form-field">
+                    <Label>{acc.owner} (****{acc.iban.slice(-4)})</Label>
                     <Select
-                      value={synciMappings[synciId] || ""}
+                      value={synciMappings[acc.id] || ""}
                       onValueChange={async (v) => {
                         if (!v) return;
-                        const next = { ...synciMappings, [synciId]: v };
+                        const next = { ...synciMappings, [acc.id]: v };
                         setSynciMappings(next);
                         await fetch("/api/household", {
                           method: "POST",
@@ -989,13 +1003,6 @@ export default function SettingsPage() {
                 ))}
                 {synciMappingSaved && <p className="settings-success"><CheckCircle2 className="icon-sm" /> {locale === "fi" ? "Tallennettu" : "Saved"}</p>}
               </div>
-            )}
-            {synciConnected && Object.keys(synciKnownAccounts).length === 0 && (
-              <p className="settings-help">
-                {locale === "fi"
-                  ? "Pankkitilit ilmestyvät tähän automaattisesti kun ensimmäinen webhook saapuu."
-                  : "Bank accounts will appear here automatically when the first webhook arrives."}
-              </p>
             )}
           </CardContent>
         </Card>
