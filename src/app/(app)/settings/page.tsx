@@ -951,7 +951,7 @@ export default function SettingsPage() {
               </div>
             </div>
             {synciConnected && Object.keys(synciKnownAccounts).length > 0 && (
-              <>
+              <div className="form-field">
                 <Label>{locale === "fi" ? "Tilien mäppäys" : "Account mapping"}</Label>
                 <p className="settings-help">
                   {locale === "fi"
@@ -988,7 +988,7 @@ export default function SettingsPage() {
                   </div>
                 ))}
                 {synciMappingSaved && <p className="settings-success"><CheckCircle2 className="icon-sm" /> {locale === "fi" ? "Tallennettu" : "Saved"}</p>}
-              </>
+              </div>
             )}
             {synciConnected && Object.keys(synciKnownAccounts).length === 0 && (
               <p className="settings-help">
