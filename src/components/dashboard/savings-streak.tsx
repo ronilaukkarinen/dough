@@ -44,11 +44,11 @@ export function SavingsStreak({ dailyBudget, todaySpent }: SavingsStreakProps) {
     }).catch(() => {});
   }, [dailyBudget, todaySpent]);
 
-  // Last 8 days from history
+  // Last 12 days from history
   const days: { day: number; month: number; status: "fire" | "fail" | "today" | "nodata"; budget: number; spent: number }[] = [];
   let currentStreak = 0;
 
-  for (let d = 7; d >= 0; d--) {
+  for (let d = 11; d >= 0; d--) {
     const date = new Date(now);
     date.setDate(today - d);
     const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
