@@ -124,7 +124,7 @@ export default function SettingsPage() {
           if (householdData.settings?.budget_threshold_tight) setThresholds((p) => ({ ...p, tight: householdData.settings.budget_threshold_tight }));
           if (householdData.settings?.budget_threshold_normal) setThresholds((p) => ({ ...p, normal: householdData.settings.budget_threshold_normal }));
           if (householdData.settings?.budget_threshold_good) setThresholds((p) => ({ ...p, good: householdData.settings.budget_threshold_good }));
-          if (householdData.settings?.synci_webhook_secret) {
+          if (householdData.settings?.synci_webhook_secret && householdData.settings.synci_webhook_secret !== null) {
             setSynciConnected(true);
             setSynciSecret("••••••••");
           }
@@ -910,45 +910,45 @@ export default function SettingsPage() {
                   : "Synci dashboard: Developers > Webhooks. URL: "}
                 <code>https://your-domain/api/synci/webhook</code>
               </p>
-            </div>
-            {synciSaved && <p className="settings-success"><CheckCircle2 className="icon-sm" /> {locale === "fi" ? "Tallennettu" : "Saved"}</p>}
-            <div className="settings-row">
-              <Button
-                size="sm"
-                onClick={async () => {
-                  const val = synciSecret.startsWith("••") ? undefined : synciSecret.trim();
-                  if (!val) return;
-                  await fetch("/api/household", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ synci_webhook_secret: val }),
-                  });
-                  setSynciSaved(true);
-                  setSynciConnected(true);
-                  setSynciSecret("••••••••");
-                }}
-                disabled={!synciSecret || synciSecret.startsWith("••")}
-              >
-                {locale === "fi" ? "Tallenna" : "Save"}
-              </Button>
-              {synciConnected && (
+              {synciSaved && <p className="settings-success"><CheckCircle2 className="icon-sm" /> {locale === "fi" ? "Tallennettu" : "Saved"}</p>}
+              <div className="settings-row">
                 <Button
-                  variant="destructive"
                   size="sm"
                   onClick={async () => {
+                    const val = synciSecret.startsWith("••") ? undefined : synciSecret.trim();
+                    if (!val) return;
                     await fetch("/api/household", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ synci_webhook_secret: null }),
+                      body: JSON.stringify({ synci_webhook_secret: val }),
                     });
-                    setSynciSecret("");
-                    setSynciConnected(false);
-                    setSynciSaved(false);
+                    setSynciSaved(true);
+                    setSynciConnected(true);
+                    setSynciSecret("••••••••");
                   }}
+                  disabled={!synciSecret || synciSecret.startsWith("••")}
                 >
-                  {locale === "fi" ? "Poista" : "Remove"}
+                  {locale === "fi" ? "Tallenna" : "Save"}
                 </Button>
-              )}
+                {synciConnected && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={async () => {
+                      await fetch("/api/household", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ synci_webhook_secret: null }),
+                      });
+                      setSynciSecret("");
+                      setSynciConnected(false);
+                      setSynciSaved(false);
+                    }}
+                  >
+                    {locale === "fi" ? "Poista" : "Remove"}
+                  </Button>
+                )}
+              </div>
             </div>
             {synciConnected && Object.keys(synciKnownAccounts).length > 0 && (
               <>
