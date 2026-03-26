@@ -121,6 +121,50 @@ export async function getMonthBudget(budgetId: string, month?: string, token?: s
   };
 }
 
+export async function createTransaction(
+  budgetId: string,
+  token: string,
+  transaction: {
+    account_id: string;
+    date: string;
+    amount: number; // in euros, will be converted to milliunits
+    payee_name: string;
+    memo?: string;
+    cleared?: "cleared" | "uncleared" | "reconciled";
+  }
+) {
+  console.info("[ynab] Creating transaction:", transaction.payee_name, transaction.amount, "on", transaction.date);
+
+  const res = await fetch(`${YNAB_BASE}/budgets/${budgetId}/transactions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      transaction: {
+        account_id: transaction.account_id,
+        date: transaction.date,
+        amount: Math.round(transaction.amount * 1000),
+        payee_name: transaction.payee_name,
+        memo: transaction.memo || "Auto-imported via Synci",
+        cleared: transaction.cleared || "cleared",
+        approved: true,
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("[ynab] Create transaction error:", res.status, text);
+    throw new Error(`YNAB create transaction error ${res.status}: ${text}`);
+  }
+
+  const json = await res.json();
+  console.info("[ynab] Transaction created:", json.data?.transaction?.id);
+  return json.data?.transaction;
+}
+
 // Keep for backwards compat with budgets route
 export function createYnabClient(token: string) {
   const { api } = require("ynab");

@@ -8,17 +8,30 @@ import crypto from "crypto";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Synci webhook receiver — processes bank transactions and auto-matches income.
+ * Synci webhook receiver — processes bank transactions for income.
  * Only positive amounts (income) are processed. Expenses are ignored.
  *
- * Webhook events: transactions.created, transactions.updated
- * Docs: https://docs.synci.io
+ * Flow: Bank → Synci → this webhook → match income → create YNAB transaction → mark received in Dough
+ *
+ * Synci payload format:
+ * {
+ *   event_type: "transactions.created",
+ *   event_id: "evt_123",
+ *   data: {
+ *     bank_account: { id: "acc_550", name: "S-tili", currency: "EUR" },
+ *     transactions: [{ id, amount, booking_date, generated: { payee, description }, remittance_information: { unstructured } }]
+ *   }
+ * }
  */
 
 function verifySignature(payload: string, signature: string, secret: string): boolean {
   if (!secret || !signature) return false;
-  const computed = crypto.createHmac("sha256", secret).update(payload).digest("hex");
-  return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
+  try {
+    const computed = crypto.createHmac("sha256", secret).update(payload).digest("hex");
+    return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
+  } catch {
+    return false;
+  }
 }
 
 function patternToMatcher(pattern: string): (payee: string) => boolean {
@@ -48,14 +61,14 @@ export async function POST(req: NextRequest) {
     // Verify webhook signature
     const secret = getHouseholdSetting("synci_webhook_secret");
     if (secret) {
-      const signature = req.headers.get("x-synci-signature") || req.headers.get("x-webhook-signature") || "";
+      const signature = req.headers.get("x-synci-signature") || "";
       if (!verifySignature(rawBody, signature, secret)) {
         console.warn("[synci/webhook] Invalid signature, rejecting");
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
       }
       console.debug("[synci/webhook] Signature verified");
     } else {
-      console.warn("[synci/webhook] No webhook secret configured, skipping signature verification");
+      console.warn("[synci/webhook] No webhook secret configured, skipping verification");
     }
 
     // Only process transaction events
@@ -64,21 +77,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
-    const transactions = Array.isArray(body.data) ? body.data : [body.data];
+    const bankAccount = body.data?.bank_account;
+    const transactions = body.data?.transactions || [];
     const db = getDb();
+
+    // Load account mapping: synci bank account ID → YNAB account ID
+    let accountMapping: Record<string, string> = {};
+    const mappingJson = getHouseholdSetting("synci_account_mapping");
+    if (mappingJson) {
+      try { accountMapping = JSON.parse(mappingJson); } catch {}
+    }
+
+    // YNAB credentials
+    const ynabToken = getHouseholdSetting("ynab_access_token");
+    const ynabBudgetId = getHouseholdSetting("ynab_budget_id");
+    const ynabAccountId = bankAccount?.id ? accountMapping[bankAccount.id] : null;
+
+    console.info("[synci/webhook] Bank account:", bankAccount?.name, bankAccount?.id, "→ YNAB account:", ynabAccountId || "not mapped");
+
     const patterns = getAllPatterns().filter((p) => p.source_type === "income");
     const now = new Date();
-    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     let matched = 0;
+    let ynabCreated = 0;
 
     for (const tx of transactions) {
-      // Extract transaction fields — Synci uses various field names
-      const amount = tx.amount ?? tx.transaction_amount?.amount ?? 0;
-      const payee = tx.remittance_information || tx.creditor_name || tx.debtor_name || tx.description || "";
-      const txId = tx.id || tx.transaction_id || tx.internal_transaction_id || "";
-      const txDate = tx.booking_date || tx.value_date || tx.date || "";
+      const amount = tx.amount ?? 0;
+      const payee = tx.generated?.payee || tx.generated?.description || tx.remittance_information?.unstructured || "";
+      const txId = tx.id || "";
+      const txDate = tx.booking_date || tx.generated?.date || "";
 
-      console.debug("[synci/webhook] Transaction:", { amount, payee, txId, date: txDate });
+      console.debug("[synci/webhook] Transaction:", { amount, payee, txId, date: txDate, booked: tx.booked });
 
       // Only process income (positive amounts)
       if (amount <= 0) {
@@ -86,25 +115,21 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
+      // Determine month from transaction date
+      let matchMonth = currentMonth;
+      if (txDate) {
+        const parts = txDate.split("-");
+        if (parts.length >= 2) matchMonth = `${parts[0]}-${parts[1]}`;
+      }
+
       // Try to match against income source patterns
+      let didMatch = false;
       for (const pattern of patterns) {
         const matcher = patternToMatcher(pattern.payee_pattern);
         if (!matcher(payee)) continue;
-
-        // Check amount range if configured
         if (pattern.min_amount > 0 && amount < pattern.min_amount) continue;
         if (pattern.max_amount > 0 && amount > pattern.max_amount) continue;
 
-        // Determine month from transaction date or use current
-        let matchMonth = month;
-        if (txDate) {
-          const parts = txDate.split("-");
-          if (parts.length >= 2) {
-            matchMonth = `${parts[0]}-${parts[1]}`;
-          }
-        }
-
-        // Insert match
         const synciTxId = `synci_${txId}`;
         try {
           db.prepare(`
@@ -112,7 +137,6 @@ export async function POST(req: NextRequest) {
             VALUES (?, ?, ?, ?, ?)
           `).run("income", pattern.source_id, matchMonth, synciTxId, amount);
 
-          // Also record in income amount history
           db.prepare(`
             INSERT INTO income_amount_history (income_id, amount, month)
             VALUES (?, ?, ?)
@@ -120,29 +144,49 @@ export async function POST(req: NextRequest) {
           `).run(pattern.source_id, amount, matchMonth);
 
           matched++;
-          console.info("[synci/webhook] Matched income:", payee, "->", pattern.source_type, pattern.source_id, "amount:", amount, "month:", matchMonth);
+          didMatch = true;
+          console.info("[synci/webhook] Matched income:", payee, "→ source", pattern.source_id, "amount:", amount, "month:", matchMonth);
         } catch (err) {
           console.warn("[synci/webhook] Match insert error:", err);
         }
+        break;
+      }
 
-        break; // One match per transaction
+      // Create transaction in YNAB if we have credentials and account mapping
+      if (ynabToken && ynabBudgetId && ynabAccountId) {
+        try {
+          const { createTransaction } = await import("@/lib/ynab/client");
+          await createTransaction(ynabBudgetId, ynabToken, {
+            account_id: ynabAccountId,
+            date: txDate || now.toISOString().slice(0, 10),
+            amount,
+            payee_name: payee,
+            memo: didMatch ? "Synci: income auto-matched" : "Synci: auto-imported",
+            cleared: "cleared",
+          });
+          ynabCreated++;
+          console.info("[synci/webhook] Created YNAB transaction:", payee, amount, "in account", ynabAccountId);
+        } catch (err) {
+          console.error("[synci/webhook] YNAB create error:", err);
+        }
+      } else if (!ynabAccountId && bankAccount?.id) {
+        console.warn("[synci/webhook] No YNAB account mapped for Synci account:", bankAccount.id, bankAccount.name);
       }
     }
 
-    if (matched > 0) {
-      // Notify clients to refresh
+    if (matched > 0 || ynabCreated > 0) {
       eventBus.emit("data:updated", { source: "synci-income" });
-      console.info("[synci/webhook] Matched", matched, "income transaction(s), notified clients");
+      console.info("[synci/webhook] Done: matched", matched, "income(s), created", ynabCreated, "YNAB transaction(s)");
     }
 
-    return NextResponse.json({ ok: true, matched });
+    return NextResponse.json({ ok: true, matched, ynabCreated });
   } catch (error) {
     console.error("[synci/webhook] Error:", error);
     return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }
 
-// Synci may send GET to verify endpoint
+// Synci may GET to verify endpoint availability
 export async function GET() {
   return NextResponse.json({ status: "ok", service: "dough-synci-webhook" });
 }
