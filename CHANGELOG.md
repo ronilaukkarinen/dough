@@ -1,11 +1,13 @@
-### 1.10.0: 2026-03-25
+### 1.10.0: 2026-03-26
 
 * Add Synci webhook integration for real-time bank income detection
 * Auto-create YNAB transactions from Synci income webhooks
+* Auto-detect Synci bank accounts from webhook payloads with IBAN labels
 * Synci bank account to YNAB account mapping in settings
 * Income matched via payee patterns is marked as received instantly
-* Add Synci webhook secret and account mapping settings
 * Webhook signature verification with HMAC-SHA256
+* Exempt Synci webhook endpoint from auth middleware
+* Show 12 days in savings streak
 
 ### 1.9.4: 2026-03-25
 
