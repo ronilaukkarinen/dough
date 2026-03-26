@@ -2,6 +2,7 @@
 
 import { useLocale } from "@/lib/locale-context";
 import { Card } from "@/components/ui/card";
+import { Flame } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 interface SavingsStreakProps {
@@ -13,25 +14,6 @@ interface HistoryEntry {
   date: string;
   budget: number;
   spent: number;
-}
-
-function FlameIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 2C12 2 6 8.5 6 14C6 17.31 8.69 20 12 20C15.31 20 18 17.31 18 14C18 8.5 12 2 12 2Z" fill="url(#flame-grad)" />
-      <path d="M12 20C10.34 20 9 18.66 9 17C9 14.5 12 11 12 11C12 11 15 14.5 15 17C15 18.66 13.66 20 12 20Z" fill="url(#flame-inner)" />
-      <defs>
-        <linearGradient id="flame-grad" x1="12" y1="2" x2="12" y2="20" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#fbbf24" />
-          <stop offset="1" stopColor="#f97316" />
-        </linearGradient>
-        <linearGradient id="flame-inner" x1="12" y1="11" x2="12" y2="20" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#fde68a" />
-          <stop offset="1" stopColor="#fbbf24" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
 }
 
 export function SavingsStreak({ dailyBudget, todaySpent }: SavingsStreakProps) {
@@ -104,8 +86,8 @@ export function SavingsStreak({ dailyBudget, todaySpent }: SavingsStreakProps) {
   return (
     <Card className="metric-card savings-streak-card">
       <div className="metric-card-row">
-        <div className="metric-card-icon savings-streak-flame">
-          <FlameIcon />
+        <div className="metric-card-icon" data-color="chart-3">
+          <Flame />
         </div>
         <div>
           <p className="metric-card-label">{locale === "fi" ? "Säästöputki" : "Savings streak"}</p>
