@@ -90,26 +90,30 @@ export async function POST(req: NextRequest) {
     }
 
     // Auto-register unknown Synci accounts so they appear in settings for mapping
-    if (bankAccount?.id) {
+    const synciAccountId = bankAccount?.id ? String(bankAccount.id) : null;
+    if (synciAccountId) {
       let knownAccounts: Record<string, string> = {};
       const knownJson = getHouseholdSetting("synci_known_accounts");
       if (knownJson) {
         try { knownAccounts = JSON.parse(knownJson); } catch {}
       }
-      if (!knownAccounts[bankAccount.id]) {
-        knownAccounts[bankAccount.id] = bankAccount.name || bankAccount.id;
-        const { setHouseholdSetting } = await import("@/lib/household");
-        setHouseholdSetting("synci_known_accounts", JSON.stringify(knownAccounts));
-        console.info("[synci/webhook] Auto-registered Synci account:", bankAccount.id, bankAccount.name);
+      if (!knownAccounts[synciAccountId]) {
+        // No name from Synci — use IBAN last 4 digits as label
+        const iban = bankAccount.iban || "";
+        const label = iban ? `****${iban.slice(-4)}` : synciAccountId;
+        knownAccounts[synciAccountId] = label;
+        const { setHouseholdSetting: setSetting } = await import("@/lib/household");
+        setSetting("synci_known_accounts", JSON.stringify(knownAccounts));
+        console.info("[synci/webhook] Auto-registered Synci account:", synciAccountId, label);
       }
     }
 
     // YNAB credentials
     const ynabToken = getHouseholdSetting("ynab_access_token");
     const ynabBudgetId = getHouseholdSetting("ynab_budget_id");
-    const ynabAccountId = bankAccount?.id ? accountMapping[bankAccount.id] : null;
+    const ynabAccountId = synciAccountId ? accountMapping[synciAccountId] : null;
 
-    console.info("[synci/webhook] Bank account:", bankAccount?.name, bankAccount?.id, "→ YNAB account:", ynabAccountId || "not mapped");
+    console.info("[synci/webhook] Bank account:", synciAccountId, "→ YNAB account:", ynabAccountId || "not mapped");
 
     const patterns = getAllPatterns().filter((p) => p.source_type === "income");
     const now = new Date();
@@ -118,10 +122,10 @@ export async function POST(req: NextRequest) {
     let ynabCreated = 0;
 
     for (const tx of transactions) {
-      const amount = tx.amount ?? 0;
-      const payee = tx.generated?.payee || tx.generated?.description || tx.remittance_information?.unstructured || "";
-      const txId = tx.id || "";
-      const txDate = tx.booking_date || tx.generated?.date || "";
+      const amount = parseFloat(tx.amount) || 0;
+      const payee = tx.mapped_fields?.payee || tx.creditor?.name || tx.remittance_information?.unstructured || tx.mapped_fields?.description || "";
+      const txId = tx.id ? String(tx.id) : `${synciAccountId}_${tx.booking_date}_${amount}`;
+      const txDate = tx.booking_date || tx.mapped_fields?.date || "";
 
       console.debug("[synci/webhook] Transaction:", { amount, payee, txId, date: txDate, booked: tx.booked });
 
@@ -185,8 +189,8 @@ export async function POST(req: NextRequest) {
         } catch (err) {
           console.error("[synci/webhook] YNAB create error:", err);
         }
-      } else if (!ynabAccountId && bankAccount?.id) {
-        console.warn("[synci/webhook] No YNAB account mapped for Synci account:", bankAccount.id, bankAccount.name);
+      } else if (!ynabAccountId && synciAccountId) {
+        console.warn("[synci/webhook] No YNAB account mapped for Synci account:", synciAccountId);
       }
     }
 
