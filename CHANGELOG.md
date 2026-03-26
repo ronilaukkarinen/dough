@@ -7,7 +7,8 @@
 * Income matched via payee patterns is marked as received instantly
 * Webhook signature verification with HMAC-SHA256
 * Exempt Synci webhook endpoint from auth middleware
-* Show 12 days in savings streak
+* Redesign savings streak card with flame icon matching other metric cards
+* Show 7 days in savings streak
 
 ### 1.9.4: 2026-03-25
 
