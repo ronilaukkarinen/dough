@@ -68,10 +68,8 @@ export default function SettingsPage() {
   const [synciSecret, setSynciSecret] = useState("");
   const [synciSaved, setSynciSaved] = useState(false);
   const [synciConnected, setSynciConnected] = useState(false);
-  const [synciMappings, setSynciMappings] = useState<{ synciId: string; synciName: string; ynabId: string }[]>([]);
-  const [synciNewId, setSynciNewId] = useState("");
-  const [synciNewName, setSynciNewName] = useState("");
-  const [synciNewYnab, setSynciNewYnab] = useState("");
+  const [synciKnownAccounts, setSynciKnownAccounts] = useState<Record<string, string>>({});
+  const [synciMappings, setSynciMappings] = useState<Record<string, string>>({});
   const [synciMappingSaved, setSynciMappingSaved] = useState(false);
   const { t, locale, setLocale, setDecimals } = useLocale();
 
@@ -130,17 +128,11 @@ export default function SettingsPage() {
             setSynciConnected(true);
             setSynciSecret("••••••••");
           }
+          if (householdData.settings?.synci_known_accounts) {
+            try { setSynciKnownAccounts(JSON.parse(householdData.settings.synci_known_accounts)); } catch {}
+          }
           if (householdData.settings?.synci_account_mapping) {
-            try {
-              const mapping = JSON.parse(householdData.settings.synci_account_mapping);
-              // mapping is { synciId: ynabId } but we also store names separately
-              const names = householdData.settings.synci_account_names ? JSON.parse(householdData.settings.synci_account_names) : {};
-              setSynciMappings(Object.entries(mapping).map(([synciId, ynabId]) => ({
-                synciId,
-                synciName: (names as Record<string, string>)[synciId] || synciId,
-                ynabId: ynabId as string,
-              })));
-            } catch {}
+            try { setSynciMappings(JSON.parse(householdData.settings.synci_account_mapping)); } catch {}
           }
           if (profileData.profile) {
             setDisplayName(profileData.profile.display_name || "");
@@ -904,7 +896,7 @@ export default function SettingsPage() {
                 : "Synci detects bank income in real-time via webhook. Income is recognized instantly without waiting for YNAB sync."}
             </p>
             <div className="form-field">
-              <Label>{locale === "fi" ? "Webhook-salaisuus" : "Webhook secret"}</Label>
+              <Label>{locale === "fi" ? "Webhookin salainen avain" : "Webhook secret"}</Label>
               <Input
                 type="password"
                 placeholder="whsec_..."
@@ -958,39 +950,33 @@ export default function SettingsPage() {
                 </Button>
               )}
             </div>
-            {synciConnected && (
+            {synciConnected && Object.keys(synciKnownAccounts).length > 0 && (
               <>
                 <hr className="settings-separator" />
                 <Label>{locale === "fi" ? "Tiliyhdistykset" : "Account mapping"}</Label>
                 <p className="settings-help">
                   {locale === "fi"
-                    ? "Yhdistä Synci-pankkitili YNAB-tiliin. Synci-tilin ID löytyy webhookin asetuksista."
-                    : "Map Synci bank accounts to YNAB accounts. Find the Synci account ID from webhook settings."}
+                    ? "Yhdistä Synci-pankkitilit YNAB-tileihin. Tulojen siirto YNAB:iin toimii vain yhdistetyille tileille."
+                    : "Map Synci bank accounts to YNAB accounts. Income is only synced to YNAB for mapped accounts."}
                 </p>
-                {synciMappings.map((m, i) => (
-                  <div key={i} className="settings-row">
-                    <span className="settings-help">{m.synciName} ({m.synciId}) → {allAccounts.find((a) => a.id === m.ynabId)?.name || m.ynabId}</span>
-                    <Button variant="destructive" size="sm" onClick={async () => {
-                      const next = synciMappings.filter((_, j) => j !== i);
-                      setSynciMappings(next);
-                      const mapping: Record<string, string> = {};
-                      const names: Record<string, string> = {};
-                      for (const n of next) { mapping[n.synciId] = n.ynabId; names[n.synciId] = n.synciName; }
-                      await fetch("/api/household", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ synci_account_mapping: JSON.stringify(mapping), synci_account_names: JSON.stringify(names) }),
-                      });
-                    }}>{locale === "fi" ? "Poista" : "Remove"}</Button>
-                  </div>
-                ))}
-                <div className="form-field">
-                  <div className="settings-row">
-                    <Input placeholder={locale === "fi" ? "Synci ID (esim. acc_550)" : "Synci ID (e.g. acc_550)"} value={synciNewId} onChange={(e) => setSynciNewId(e.target.value)} className="settings-input" />
-                    <Input placeholder={locale === "fi" ? "Nimi (esim. S-tili)" : "Name (e.g. Checking)"} value={synciNewName} onChange={(e) => setSynciNewName(e.target.value)} className="settings-input" />
-                  </div>
-                  {allAccounts.length > 0 && (
-                    <Select value={synciNewYnab} onValueChange={(v) => { if (v) setSynciNewYnab(v); }}>
+                {Object.entries(synciKnownAccounts).map(([synciId, synciName]) => (
+                  <div key={synciId} className="form-field">
+                    <Label>{synciName}</Label>
+                    <Select
+                      value={synciMappings[synciId] || ""}
+                      onValueChange={async (v) => {
+                        if (!v) return;
+                        const next = { ...synciMappings, [synciId]: v };
+                        setSynciMappings(next);
+                        await fetch("/api/household", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ synci_account_mapping: JSON.stringify(next) }),
+                        });
+                        setSynciMappingSaved(true);
+                        setTimeout(() => setSynciMappingSaved(false), 2000);
+                      }}
+                    >
                       <SelectTrigger className="settings-input">
                         <SelectValue placeholder={locale === "fi" ? "Valitse YNAB-tili" : "Select YNAB account"} />
                       </SelectTrigger>
@@ -1000,27 +986,17 @@ export default function SettingsPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                  )}
-                </div>
+                  </div>
+                ))}
                 {synciMappingSaved && <p className="settings-success"><CheckCircle2 className="icon-sm" /> {locale === "fi" ? "Tallennettu" : "Saved"}</p>}
-                <Button size="sm" disabled={!synciNewId || !synciNewYnab} onClick={async () => {
-                  const next = [...synciMappings, { synciId: synciNewId.trim(), synciName: synciNewName.trim() || synciNewId.trim(), ynabId: synciNewYnab }];
-                  setSynciMappings(next);
-                  const mapping: Record<string, string> = {};
-                  const names: Record<string, string> = {};
-                  for (const n of next) { mapping[n.synciId] = n.ynabId; names[n.synciId] = n.synciName; }
-                  await fetch("/api/household", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ synci_account_mapping: JSON.stringify(mapping), synci_account_names: JSON.stringify(names) }),
-                  });
-                  setSynciNewId("");
-                  setSynciNewName("");
-                  setSynciNewYnab("");
-                  setSynciMappingSaved(true);
-                  setTimeout(() => setSynciMappingSaved(false), 2000);
-                }}>{locale === "fi" ? "Lisää yhdistys" : "Add mapping"}</Button>
               </>
+            )}
+            {synciConnected && Object.keys(synciKnownAccounts).length === 0 && (
+              <p className="settings-help">
+                {locale === "fi"
+                  ? "Pankkitilit ilmestyvät tähän automaattisesti kun ensimmäinen webhook saapuu."
+                  : "Bank accounts will appear here automatically when the first webhook arrives."}
+              </p>
             )}
           </CardContent>
         </Card>

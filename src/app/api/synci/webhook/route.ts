@@ -88,6 +88,21 @@ export async function POST(req: NextRequest) {
       try { accountMapping = JSON.parse(mappingJson); } catch {}
     }
 
+    // Auto-register unknown Synci accounts so they appear in settings for mapping
+    if (bankAccount?.id) {
+      let knownAccounts: Record<string, string> = {};
+      const knownJson = getHouseholdSetting("synci_known_accounts");
+      if (knownJson) {
+        try { knownAccounts = JSON.parse(knownJson); } catch {}
+      }
+      if (!knownAccounts[bankAccount.id]) {
+        knownAccounts[bankAccount.id] = bankAccount.name || bankAccount.id;
+        const { setHouseholdSetting } = await import("@/lib/household");
+        setHouseholdSetting("synci_known_accounts", JSON.stringify(knownAccounts));
+        console.info("[synci/webhook] Auto-registered Synci account:", bankAccount.id, bankAccount.name);
+      }
+    }
+
     // YNAB credentials
     const ynabToken = getHouseholdSetting("ynab_access_token");
     const ynabBudgetId = getHouseholdSetting("ynab_budget_id");
