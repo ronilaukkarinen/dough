@@ -128,8 +128,8 @@ export function SavingsStreak({ dailyBudget, todaySpent }: SavingsStreakProps) {
           </div>
           <p className="metric-card-note">
             {currentStreak > 0
-              ? (locale === "fi" ? `${currentStreak} päivää putkeen alle budjetin` : `${currentStreak} days in a row under budget`)
-              : (locale === "fi" ? "Ei putkea vielä" : "No streak yet")}
+              ? (locale === "fi" ? `Olet onnistunut selviämään alle päiväbudjetin ${currentStreak} päivää putkeen.` : `You've stayed under budget ${currentStreak} days in a row.`)
+              : (locale === "fi" ? "Ei putkea vielä. Pysy budjetissa tänään!" : "No streak yet. Stay under budget today!")}
           </p>
         </div>
       </div>
