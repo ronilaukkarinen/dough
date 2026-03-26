@@ -65,6 +65,9 @@ export default function SettingsPage() {
   const [personalShareSaved, setPersonalShareSaved] = useState(false);
   const [decimalPlaces, setDecimalPlaces] = useState("0");
   const [decimalSaved, setDecimalSaved] = useState(false);
+  const [synciSecret, setSynciSecret] = useState("");
+  const [synciSaved, setSynciSaved] = useState(false);
+  const [synciConnected, setSynciConnected] = useState(false);
   const { t, locale, setLocale, setDecimals } = useLocale();
 
   useEffect(() => {
@@ -118,6 +121,10 @@ export default function SettingsPage() {
           if (householdData.settings?.budget_threshold_tight) setThresholds((p) => ({ ...p, tight: householdData.settings.budget_threshold_tight }));
           if (householdData.settings?.budget_threshold_normal) setThresholds((p) => ({ ...p, normal: householdData.settings.budget_threshold_normal }));
           if (householdData.settings?.budget_threshold_good) setThresholds((p) => ({ ...p, good: householdData.settings.budget_threshold_good }));
+          if (householdData.settings?.synci_webhook_secret) {
+            setSynciConnected(true);
+            setSynciSecret("••••••••");
+          }
           if (profileData.profile) {
             setDisplayName(profileData.profile.display_name || "");
             if (profileData.profile.budget_share) setPersonalBudgetShare(String(profileData.profile.budget_share));
@@ -862,6 +869,78 @@ export default function SettingsPage() {
                 </Button>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Synci bank sync */}
+        <Card className="settings-card">
+          <CardHeader>
+            <CardTitle className="settings-card-title">
+              <Link />
+              Synci
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="form-stack">
+            <p className="page-subtitle">
+              {locale === "fi"
+                ? "Synci tunnistaa pankkitulot reaaliajassa webhookilla. Tulot kirjautuvat heti ilman YNAB-synkronointia."
+                : "Synci detects bank income in real-time via webhook. Income is recognized instantly without waiting for YNAB sync."}
+            </p>
+            <div className="form-field">
+              <Label>{locale === "fi" ? "Webhook-salaisuus" : "Webhook secret"}</Label>
+              <Input
+                type="password"
+                placeholder="whsec_..."
+                value={synciSecret}
+                onChange={(e) => { setSynciSecret(e.target.value); setSynciSaved(false); }}
+                className="settings-input"
+              />
+              <p className="settings-help">
+                {locale === "fi"
+                  ? "Synci dashboard: Developers > Webhooks. Osoite: "
+                  : "Synci dashboard: Developers > Webhooks. URL: "}
+                <code>https://your-domain/api/synci/webhook</code>
+              </p>
+            </div>
+            {synciSaved && <p className="settings-success"><CheckCircle2 className="icon-sm" /> {locale === "fi" ? "Tallennettu" : "Saved"}</p>}
+            <div className="settings-row">
+              <Button
+                size="sm"
+                onClick={async () => {
+                  const val = synciSecret.startsWith("••") ? undefined : synciSecret.trim();
+                  if (!val) return;
+                  await fetch("/api/household", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ synci_webhook_secret: val }),
+                  });
+                  setSynciSaved(true);
+                  setSynciConnected(true);
+                  setSynciSecret("••••••••");
+                }}
+                disabled={!synciSecret || synciSecret.startsWith("••")}
+              >
+                {locale === "fi" ? "Tallenna" : "Save"}
+              </Button>
+              {synciConnected && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={async () => {
+                    await fetch("/api/household", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ synci_webhook_secret: null }),
+                    });
+                    setSynciSecret("");
+                    setSynciConnected(false);
+                    setSynciSaved(false);
+                  }}
+                >
+                  {locale === "fi" ? "Poista" : "Remove"}
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
 

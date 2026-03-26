@@ -1,3 +1,10 @@
+### 1.10.0: 2026-03-25
+
+* Add Synci webhook integration for real-time bank income detection
+* Income matched via payee patterns is marked as received instantly without YNAB sync
+* Add Synci webhook secret setting in settings page
+* Webhook signature verification with HMAC-SHA256
+
 ### 1.9.4: 2026-03-25
 
 * Show "Huomenna tulee rahaa" when 1 day until income instead of "1 päivää tilipäivään"
