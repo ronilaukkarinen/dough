@@ -17,6 +17,7 @@
 * Improve reaction badge styling and hover states
 * Add Slack-style tooltip showing who reacted with each emoji
 * Heatmap updates in real time when expenses are added or synced
+* Show all household transactions in heatmap, not just current user
 
 ### 1.9.4: 2026-03-25
 
