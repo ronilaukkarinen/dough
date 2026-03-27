@@ -1,4 +1,4 @@
-### 1.2.0: 2026-03-27
+### 1.11.0: 2026-03-27
 
 * Add Synci API integration for automatic bank income sync to YNAB
 * Fetch bank accounts from Synci API with account-to-YNAB mapping in settings
