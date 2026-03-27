@@ -577,7 +577,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.1875rem;
-  padding: 0.125rem 0.375rem;
+  padding: 0.1875rem 0.375rem;
   font-size: 0.8125rem;
   line-height: 1.25;
   border-radius: 1rem;
@@ -597,7 +597,11 @@
 }
 
 @media (hover: hover) {
-  .chat-reaction-badge:hover {
+  .chat-reaction-badge:not(.is-mine):hover {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .chat-reaction-badge.is-mine:hover {
     background: rgba(255, 255, 255, 0.2);
   }
 }

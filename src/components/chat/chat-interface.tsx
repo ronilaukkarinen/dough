@@ -370,7 +370,9 @@ export function ChatInterface() {
                         type="button"
                         className={`chat-reaction-badge ${r.mine ? "is-mine" : ""}`}
                         onClick={() => toggleReaction(message.id, r.emoji)}
-                        title={r.users.join(", ")}
+                        title={r.users.length === 1
+                          ? `${r.users[0]} reacted with ${r.emoji}`
+                          : `${r.users.join(" and ")} reacted with ${r.emoji}`}
                       >
                         {r.emoji} <span>{r.count}</span>
                       </button>

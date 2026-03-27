@@ -13,7 +13,9 @@
 * Add expand/collapse button for full-size chat input
 * Increase chat sender name font size
 * Add emoji reactions to chat messages with real-time sync
-* Position reaction picker at bottom left of message bubble
+* Position reaction picker at top right of message bubble
+* Improve reaction badge styling and hover states
+* Add Slack-style tooltip showing who reacted with each emoji
 
 ### 1.9.4: 2026-03-25
 
