@@ -581,10 +581,10 @@
   font-size: 0.75rem;
   line-height: 1.25;
   border-radius: 1rem;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  transition: border-color 150ms, background 150ms;
+  transition: background 150ms;
 }
 
 .chat-reaction-badge span {
@@ -593,12 +593,12 @@
 }
 
 .chat-reaction-badge.is-mine {
-  border-color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 @media (hover: hover) {
   .chat-reaction-badge:hover {
-    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.15);
   }
 }
