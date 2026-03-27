@@ -8,7 +8,7 @@
 * Show 7 days in savings streak
 * Name the AI advisor Dougie, show in menu and chat bubbles
 * Prevent amounts from breaking across lines in chat messages
-* Fix typing indicator showing "Rolle Dougie kirjoittaa"
+* Fix typing indicator prepending bot name to user name
 * Fix chat textarea scrollbar on mobile, auto-expand on input
 * Add expand/collapse button for full-size chat input
 * Increase chat sender name font size
