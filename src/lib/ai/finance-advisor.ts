@@ -7,6 +7,7 @@ interface FinancialContext {
   monthlyIncome: number;
   monthlyExpenses: number;
   todaySpent: number;
+  tomorrowBudget: number;
   upcomingBills: { name: string; amount: number; dueDay: number; status?: string }[];
   recentTransactions: { date: string; payee: string; amount: number; category: string }[];
   debts: { name: string; remaining: number; rate: number; minimumPayment?: number; dueDay?: number }[];
@@ -65,7 +66,8 @@ Current financial snapshot:
 - Income sources: ${ctx.incomeSources.map(i => `${i.name}: ${i.amount} euros (day ${i.expectedDay})`).join(", ") || "none configured"}
 - MONEY TIMELINE (this is critical for advice): The household has ${ctx.totalBalance} euros NOW. ${ctx.incomeSources.filter(i => i.expectedDay > dayOfMonth).map(i => `${i.name} (${i.amount} euros) arrives day ${i.expectedDay}`).join(". ") || "No more income this month"}. Until next income, they must cover daily expenses (food, transport) from current balance. ALWAYS calculate: can they afford a payment AND still eat until the next money comes?
 - Monthly expenses so far (excluding transfers): ${ctx.monthlyExpenses} euros
-- TODAY'S spending so far: ${ctx.todaySpent} euros. Use this exact number.
+- TODAY'S spending so far: ${ctx.todaySpent} euros. Remaining today: ${Math.max(0, ctx.dailyBudget - ctx.todaySpent).toFixed(2)} euros. Use these exact numbers.
+- Tomorrow's budget if no more spending today: ${ctx.tomorrowBudget} euros
 
 ${ctx.accounts.length > 0 ? `Accounts (ALWAYS consider ALL accounts when giving advice, even excluded ones have real money):
 ${ctx.accounts.map(a => `- ${a.name}: ${a.balance} euros (${a.type})${a.note ? `, ${a.note}` : ""}${(a as Record<string, unknown>).excludedFromBudget ? " [excluded from daily budget]" : ""}`).join("\n")}` : ""}

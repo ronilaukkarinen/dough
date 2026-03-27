@@ -1,6 +1,8 @@
 ### 1.11.1: 2026-03-27
 
-* Add today's spending total to Dougie system prompt
+* Add today's spending, remaining budget and tomorrow's budget to Dougie context
+* Calculate today's spending from all transactions, not just last 10
+* Reduce Dougie addressing user by name every message
 * Fix mobile chat textarea height to match buttons dynamically
 
 ### 1.11.0: 2026-03-27
