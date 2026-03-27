@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { useLocale } from "@/lib/locale-context";
+import { useEvent } from "@/lib/use-events";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { isTransfer } from "@/lib/transaction-utils";
 
@@ -28,7 +29,7 @@ export function SpendingHeatmap() {
   const cardRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
 
-  useEffect(() => {
+  const loadHeatmap = useCallback(() => {
     fetch("/api/heatmap")
       .then((r) => r.json())
       .then((data) => {
@@ -38,6 +39,9 @@ export function SpendingHeatmap() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => { loadHeatmap(); }, [loadHeatmap]);
+  useEvent("data:updated", loadHeatmap);
 
   useEffect(() => {
     requestAnimationFrame(() => {

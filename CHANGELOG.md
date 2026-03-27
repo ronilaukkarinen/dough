@@ -16,6 +16,7 @@
 * Position reaction picker at top right of message bubble
 * Improve reaction badge styling and hover states
 * Add Slack-style tooltip showing who reacted with each emoji
+* Heatmap updates in real time when expenses are added or synced
 
 ### 1.9.4: 2026-03-25
 
