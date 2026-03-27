@@ -231,7 +231,7 @@
 
 /* Sender name above other user's bubble */
 .chat-message-sender {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--chart-3);
   margin-bottom: 0.125rem;
