@@ -530,9 +530,8 @@
   display: flex;
   gap: 2px;
   position: absolute;
-  bottom: 0;
-  left: 0.5rem;
-  transform: translateY(50%);
+  top: -0.75rem;
+  right: 0.625rem;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 1rem;
