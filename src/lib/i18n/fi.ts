@@ -37,7 +37,7 @@ export const fi = {
   },
   nav: {
     dashboard: "Yhteenveto",
-    chat: "AI-neuvoja",
+    chat: "AI-neuvoja Dougie",
     transactions: "Tilitapahtumat",
     bills: "Laskut",
     income: "Tulot",
@@ -75,7 +75,7 @@ export const fi = {
     investments: "Sijoitukset",
   },
   chat: {
-    title: "AI-neuvoja",
+    title: "Dougie",
     placeholder: "Kysy taloudestasi...",
     greeting: `Hei! Tunnen taloustilanteenne, kulutustottumukset ja tilisaldot. Kysy mitä vain.
 
@@ -83,8 +83,8 @@ export const fi = {
 \u2022 "Paljonko ruokakauppaan on mennyt?"
 \u2022 "Mistä voisi säästää?"
 \u2022 "Milloin olemme velattomia?"`,
-    thinking: "miettii...",
-    typing: "kirjoittaa...",
+    thinking: "Dougie miettii...",
+    typing: "Dougie kirjoittaa...",
     errorProcess: "En pystynyt käsittelemään pyyntöä. Yritä uudelleen.",
     errorGeneral: "Jokin meni pieleen. Yritä uudelleen.",
     loadOlder: "Lataa vanhempia",

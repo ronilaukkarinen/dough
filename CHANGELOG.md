@@ -6,6 +6,8 @@
 * Income matched via payee patterns is marked as received in Dough
 * Redesign savings streak card with flame icon matching other metric cards
 * Show 7 days in savings streak
+* Name the AI advisor Dougie, show in menu and chat UI
+* Prevent amounts from breaking across lines in chat messages
 
 ### 1.9.4: 2026-03-25
 

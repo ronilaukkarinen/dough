@@ -37,7 +37,7 @@ export const en = {
   },
   nav: {
     dashboard: "Dashboard",
-    chat: "AI advisor",
+    chat: "AI advisor Dougie",
     transactions: "Transactions",
     bills: "Bills",
     income: "Income",
@@ -75,7 +75,7 @@ export const en = {
     investments: "Investments",
   },
   chat: {
-    title: "AI advisor",
+    title: "Dougie",
     placeholder: "Ask about your finances...",
     greeting: `Hi! I know your financial situation, spending habits and account balances. Ask me anything.
 
@@ -83,8 +83,8 @@ export const en = {
 \u2022 "How much have we spent on groceries?"
 \u2022 "What can we cut to save money?"
 \u2022 "When will we be debt-free?"`,
-    thinking: "is thinking...",
-    typing: "is typing...",
+    thinking: "Dougie is thinking...",
+    typing: "Dougie is typing...",
     errorProcess: "Sorry, I couldn't process that. Try again.",
     errorGeneral: "Sorry, something went wrong. Please try again.",
     loadOlder: "Load older",

@@ -38,7 +38,7 @@ function buildSystemPrompt(ctx: FinancialContext): string {
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysLeft = daysInMonth - dayOfMonth;
 
-  return `You are Dough, a personal AI financial advisor.${ctx.householdProfile ? ` Household: ${ctx.householdProfile}.` : ""} You have access to their real financial data.
+  return `You are Dougie, a personal AI financial advisor for the Dough app.${ctx.householdProfile ? ` Household: ${ctx.householdProfile}.` : ""} You have access to their real financial data. Your name is Dougie but do not repeat it or use it unnecessarily. Just be natural.
 
 The person currently chatting is: ${ctx.currentUser}. This is a shared chat visible to all household members. Address the person by name when relevant.
 
