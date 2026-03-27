@@ -4,6 +4,7 @@
 * Calculate today's spending from all transactions, not just last 10
 * Reduce Dougie addressing user by name every message
 * Fix mobile chat textarea height to match buttons dynamically
+* Dougie sees message reactions and who reacted
 
 ### 1.11.0: 2026-03-27
 

@@ -414,6 +414,35 @@ Reply with ONLY a valid JSON array: [{"amount":"...","payee":"...","date":"YYYY-
       }
     }
 
+    // Load recent reactions so Dougie knows what users liked/disliked
+    if (user) {
+      try {
+        const reactionRows = getDb().prepare(`
+          SELECT cm.content AS msg_preview, r.emoji, u.display_name AS reactor
+          FROM chat_reactions r
+          JOIN chat_messages cm ON cm.id = r.message_id
+          JOIN users u ON u.id = r.user_id
+          WHERE cm.role = 'assistant'
+          ORDER BY r.created_at DESC LIMIT 10
+        `).all() as { msg_preview: string; emoji: string; reactor: string }[];
+
+        if (reactionRows.length > 0) {
+          const reactionSummary = reactionRows.map((r) =>
+            `${r.reactor} reacted ${r.emoji} to "${r.msg_preview.slice(0, 50)}..."`
+          ).join("\n");
+          const last = messagesWithContext[messagesWithContext.length - 1];
+          if (last?.role === "user") {
+            messagesWithContext[messagesWithContext.length - 1] = {
+              ...last,
+              content: last.content + `\n\n[SYSTEM: Recent reactions from users on your messages:\n${reactionSummary}]`,
+            };
+          }
+        }
+      } catch (err) {
+        console.warn("[chat] Failed to load reactions context:", err);
+      }
+    }
+
     const fullResponse = await getFinancialAdvice(messagesWithContext, context, image, image_media_type);
 
     // Save assistant response to DB for persistence
