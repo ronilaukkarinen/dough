@@ -176,10 +176,10 @@ export function ChatInterface() {
         textarea.style.minHeight = "";
       }
     };
-    syncHeight();
+    requestAnimationFrame(syncHeight);
     window.addEventListener("resize", syncHeight);
     return () => window.removeEventListener("resize", syncHeight);
-  }, []);
+  }, [initialLoading]);
 
   // Broadcast typing status
   const broadcastTyping = useCallback(() => {

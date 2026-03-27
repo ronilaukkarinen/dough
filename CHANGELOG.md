@@ -1,3 +1,8 @@
+### 1.11.1: 2026-03-27
+
+* Add today's spending total to Dougie system prompt
+* Fix mobile chat textarea height to match buttons dynamically
+
 ### 1.11.0: 2026-03-27
 
 * Add Synci API integration for automatic bank income sync to YNAB
