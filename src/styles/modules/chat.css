@@ -140,7 +140,7 @@
   font-size: 0.875rem;
   line-height: 1.625;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   min-width: 0;
 }
 
