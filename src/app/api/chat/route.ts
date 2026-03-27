@@ -34,16 +34,32 @@ export async function POST(request: Request) {
           const now = new Date();
 
           // Use cached data instead of calling YNAB API directly
-          const cached = getDb().prepare("SELECT data FROM ynab_cache WHERE id = 1").get() as { data: string } | undefined;
+          const cached = getDb().prepare("SELECT data FROM ynab_cache WHERE id = 1").get() as { data: string; synced_at: string } | undefined;
           if (!cached) throw new Error("No cached YNAB data");
           const ynabData = JSON.parse(cached.data);
           const { summary, transactions, monthBudget } = ynabData;
+
+          // Trigger background sync if cache is older than 2 hours
+          const cacheAge = Date.now() - new Date(cached.synced_at).getTime();
+          if (cacheAge > 2 * 60 * 60 * 1000) {
+            console.info("[chat] YNAB cache is", Math.round(cacheAge / 60000), "min old, triggering background sync");
+            fetch(new URL("/api/ynab/sync", request.url).toString(), {
+              method: "POST",
+              headers: { cookie: request.headers.get("cookie") || "" },
+            }).catch((err) => console.warn("[chat] Background sync trigger failed:", err));
+          }
 
           // Load excluded accounts for budget calculation
           const excludedRaw = getHouseholdSetting("budget_excluded_accounts");
           const excludedIds: string[] = excludedRaw ? JSON.parse(excludedRaw) : [];
 
-          const checkingSavings = summary.accounts
+          // Use local ynab_accounts for freshest balances
+          const localAccounts = getDb().prepare(
+            "SELECT id, name, type, balance FROM ynab_accounts WHERE closed = 0"
+          ).all() as { id: string; name: string; type: string; balance: number }[];
+          const accountSource = localAccounts.length > 0 ? localAccounts : summary.accounts;
+
+          const checkingSavings = accountSource
             .filter((a: any) => (a.type === "checking" || a.type === "savings") && !excludedIds.includes(a.id))
             .reduce((s: number, a: any) => s + a.balance, 0);
 
@@ -54,7 +70,7 @@ export async function POST(request: Request) {
           const accountNotesMap: Record<string, string> = {};
           for (const r of accountNotesRows) accountNotesMap[r.ynab_account_id] = r.note;
 
-          const accountsWithNotes = summary.accounts
+          const accountsWithNotes = accountSource
             .filter((a: any) => a.type === "checking" || a.type === "savings" || a.type === "otherAsset")
             .map((a: any) => ({
               name: a.name,
@@ -239,13 +255,21 @@ export async function POST(request: Request) {
             "SELECT amount FROM transactions WHERE date = ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%'"
           ).all(todayStr) as { amount: number }[];
           const todaySpent = Math.round(todayTxRows.reduce((s, t) => s + Math.abs(t.amount), 0) * 100) / 100;
+
+          // Monthly expenses from local DB for freshness
+          const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+          const localMonthlyExpenses = Math.round(
+            (chatDb.prepare(
+              "SELECT COALESCE(SUM(ABS(amount)), 0) as total FROM transactions WHERE date >= ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' AND category != 'Uncategorized'"
+            ).get(monthStart) as { total: number }).total * 100
+          ) / 100;
           const daysAfterToday = Math.max(1, daysLeft - 1);
           const tomorrowBudget = Math.max(0, Math.round((dailyBudget * daysLeft - todaySpent) / daysAfterToday));
 
           context = {
             totalBalance: Math.round(checkingSavings * 100) / 100,
             monthlyIncome: Math.round(monthBudget.income * 100) / 100,
-            monthlyExpenses: Math.round(realExpenseTx.reduce((s: number, t: any) => s + Math.abs(t.amount), 0) * 100) / 100,
+            monthlyExpenses: localMonthlyExpenses,
             todaySpent,
             tomorrowBudget,
             upcomingBills: enrichedBills,

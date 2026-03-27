@@ -5,7 +5,8 @@
 * Reduce Dougie addressing user by name every message
 * Fix mobile chat textarea height to match buttons dynamically
 * Dougie sees message reactions and who reacted
-* Dougie reads today's spending and recent transactions from local DB for real-time data
+* Dougie reads all data from local DB for real-time accuracy
+* Auto-trigger YNAB sync if cache is older than 2 hours when chatting
 
 ### 1.11.0: 2026-03-27
 
