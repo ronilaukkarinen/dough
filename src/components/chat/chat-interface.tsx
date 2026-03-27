@@ -47,6 +47,7 @@ export function ChatInterface() {
   const chatFileRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const buttonsRef = useRef<HTMLDivElement>(null);
   const messageCountRef = useRef(0);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -162,6 +163,23 @@ export function ChatInterface() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // Match textarea min-height to buttons height on mobile
+  useEffect(() => {
+    const syncHeight = () => {
+      const textarea = inputRef.current as unknown as HTMLTextAreaElement | null;
+      const buttons = buttonsRef.current;
+      if (!textarea || !buttons) return;
+      if (window.innerWidth < 768) {
+        textarea.style.minHeight = buttons.offsetHeight + "px";
+      } else {
+        textarea.style.minHeight = "";
+      }
+    };
+    syncHeight();
+    window.addEventListener("resize", syncHeight);
+    return () => window.removeEventListener("resize", syncHeight);
+  }, []);
 
   // Broadcast typing status
   const broadcastTyping = useCallback(() => {
@@ -476,7 +494,7 @@ export function ChatInterface() {
             disabled={loading}
             rows={1}
           />
-          <div className="chat-action-buttons">
+          <div className="chat-action-buttons" ref={buttonsRef}>
             <button type="button" className="chat-expand-btn" onClick={() => setInputExpanded(!inputExpanded)}>
               {inputExpanded ? <Minimize2 /> : <Maximize2 />}
             </button>
