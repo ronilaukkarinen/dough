@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 
-type EventType = "chat:message" | "chat:typing" | "sync:complete" | "data:updated";
+type EventType = "chat:message" | "chat:typing" | "chat:reaction" | "sync:complete" | "data:updated";
 type EventHandler = (data: unknown) => void;
 
 const handlers = new Map<EventType, Set<EventHandler>>();
@@ -29,7 +29,7 @@ function connect() {
   };
 
   // Listen for all event types
-  const eventTypes: EventType[] = ["chat:message", "chat:typing", "sync:complete", "data:updated"];
+  const eventTypes: EventType[] = ["chat:message", "chat:typing", "chat:reaction", "sync:complete", "data:updated"];
   for (const type of eventTypes) {
     eventSource.addEventListener(type, (e: MessageEvent) => {
       try {

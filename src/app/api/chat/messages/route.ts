@@ -3,6 +3,37 @@ import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { eventBus } from "@/lib/event-bus";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+function loadReactions(db: any, messageIds: number[], userId: number) {
+  if (messageIds.length === 0) return {};
+  const placeholders = messageIds.map(() => "?").join(",");
+  const rows = db.prepare(`
+    SELECT r.message_id, r.emoji, COUNT(*) as count, GROUP_CONCAT(u.display_name) as users
+    FROM chat_reactions r
+    JOIN users u ON u.id = r.user_id
+    WHERE r.message_id IN (${placeholders})
+    GROUP BY r.message_id, r.emoji
+  `).all(...messageIds) as { message_id: number; emoji: string; count: number; users: string }[];
+
+  const myRows = db.prepare(`
+    SELECT message_id, emoji FROM chat_reactions WHERE message_id IN (${placeholders}) AND user_id = ?
+  `).all(...messageIds, userId) as { message_id: number; emoji: string }[];
+  const mySet = new Set(myRows.map((r) => `${r.message_id}_${r.emoji}`));
+
+  const result: Record<number, { emoji: string; count: number; users: string[]; mine: boolean }[]> = {};
+  for (const row of rows) {
+    if (!result[row.message_id]) result[row.message_id] = [];
+    result[row.message_id].push({
+      emoji: row.emoji,
+      count: row.count,
+      users: row.users.split(","),
+      mine: mySet.has(`${row.message_id}_${row.emoji}`),
+    });
+  }
+  return result;
+}
+
 export async function GET(request: Request) {
   try {
     const user = await getSession();
@@ -31,8 +62,9 @@ export async function GET(request: Request) {
       const dayMessages = latestDay ? messages.filter((m) => m.created_at.slice(0, 10) === latestDay) : [];
       const hasOlder = messages.length > dayMessages.length;
 
+      const olderReactions = loadReactions(db, dayMessages.map((m) => m.id), user.id);
       console.debug("[chat/messages] Loaded", dayMessages.length, "older messages for day", latestDay, "hasOlder:", hasOlder);
-      return NextResponse.json({ messages: dayMessages, hasOlder });
+      return NextResponse.json({ messages: dayMessages, hasOlder, reactions: olderReactions });
     }
 
     // Default: load today's messages. If none today, load the most recent day's messages.
@@ -60,8 +92,9 @@ export async function GET(request: Request) {
       ? !!(db.prepare("SELECT id FROM chat_messages WHERE id < ? LIMIT 1").get(oldestLoaded))
       : false;
 
+    const reactions = loadReactions(db, messages.map((m) => m.id), user.id);
     console.debug("[chat/messages] Loaded", messages.length, "messages, hasOlder:", hasOlder);
-    return NextResponse.json({ messages, hasOlder });
+    return NextResponse.json({ messages, hasOlder, reactions });
   } catch (error) {
     console.error("[chat/messages] GET error:", error);
     return NextResponse.json({ messages: [] }, { status: 500 });

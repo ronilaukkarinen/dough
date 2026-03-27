@@ -4,6 +4,7 @@
 type EventType =
   | "chat:message"
   | "chat:typing"
+  | "chat:reaction"
   | "sync:complete"
   | "data:updated";
 

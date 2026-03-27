@@ -19,10 +19,20 @@ interface Message {
   image_thumb?: string;
 }
 
+interface Reaction {
+  emoji: string;
+  count: number;
+  users: string[];
+  mine: boolean;
+}
+
+const REACTION_EMOJIS = ["\uD83D\uDC4D", "\uD83D\uDC4E", "\uD83D\uDE02", "\u2764\uFE0F", "\uD83D\uDE2E", "\uD83C\uDF89"];
+
 export function ChatInterface() {
   const { t } = useLocale();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState("");
@@ -70,6 +80,7 @@ export function ChatInterface() {
           }));
           setMessages(msgs);
           setHasOlder(!!data.hasOlder);
+          if (data.reactions) setReactions((prev) => ({ ...prev, ...data.reactions }));
           messageCountRef.current = msgs.length;
           // If last message is from user, AI is still thinking
           if (msgs.length > 0 && msgs[msgs.length - 1].role === "user") {
@@ -126,6 +137,28 @@ export function ChatInterface() {
     });
   }, []));
 
+  // SSE: receive reaction updates in real time
+  useEvent("chat:reaction", useCallback((data: unknown) => {
+    const { messageId, reactions: rxns } = data as { messageId: number; reactions: Reaction[] };
+    setReactions((prev) => ({ ...prev, [messageId]: rxns }));
+  }, []));
+
+  const toggleReaction = useCallback(async (messageId: string, emoji: string) => {
+    try {
+      const res = await fetch("/api/chat/reactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId: parseInt(messageId, 10), emoji }),
+      });
+      const data = await res.json();
+      if (data.reactions) {
+        setReactions((prev) => ({ ...prev, [messageId]: data.reactions }));
+      }
+    } catch (err) {
+      console.error("[chat] Failed to toggle reaction:", err);
+    }
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
@@ -167,6 +200,7 @@ export function ChatInterface() {
         }));
         setMessages((prev) => [...older, ...prev]);
         setHasOlder(!!data.hasOlder);
+        if (data.reactions) setReactions((prev) => ({ ...prev, ...data.reactions }));
         console.info("[chat] Loaded", older.length, "older messages, hasOlder:", data.hasOlder);
       } else {
         setHasOlder(false);
@@ -322,6 +356,26 @@ export function ChatInterface() {
                   >
                     {copiedId === message.id ? <Check /> : <Copy />}
                   </button>
+                )}
+                <div className="chat-reaction-picker">
+                  {REACTION_EMOJIS.map((emoji) => (
+                    <button key={emoji} type="button" className="chat-reaction-pick" onClick={() => toggleReaction(message.id, emoji)}>{emoji}</button>
+                  ))}
+                </div>
+                {reactions[message.id]?.length > 0 && (
+                  <div className="chat-reactions">
+                    {reactions[message.id].map((r) => (
+                      <button
+                        key={r.emoji}
+                        type="button"
+                        className={`chat-reaction-badge ${r.mine ? "is-mine" : ""}`}
+                        onClick={() => toggleReaction(message.id, r.emoji)}
+                        title={r.users.join(", ")}
+                      >
+                        {r.emoji} {r.count > 1 && <span>{r.count}</span>}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
               {bubbleType === "self" && (

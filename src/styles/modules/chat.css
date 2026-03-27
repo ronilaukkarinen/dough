@@ -524,3 +524,81 @@
   width: 0.625rem;
   height: 0.625rem;
 }
+
+/* Reaction picker — appears on hover */
+.chat-reaction-picker {
+  display: flex;
+  gap: 2px;
+  position: absolute;
+  top: -1.5rem;
+  right: 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 0.125rem 0.25rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms, visibility 150ms;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.chat-message-bubble:hover .chat-reaction-picker {
+  opacity: 1;
+  visibility: visible;
+}
+
+.chat-reaction-pick {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  transition: background 150ms;
+}
+
+@media (hover: hover) {
+  .chat-reaction-pick:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Reaction badges below messages */
+.chat-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.375rem;
+}
+
+.chat-reaction-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: border-color 150ms, background 150ms;
+}
+
+.chat-reaction-badge span {
+  font-size: 0.625rem;
+  color: var(--muted-foreground);
+}
+
+.chat-reaction-badge.is-mine {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+@media (hover: hover) {
+  .chat-reaction-badge:hover {
+    border-color: var(--primary);
+  }
+}
