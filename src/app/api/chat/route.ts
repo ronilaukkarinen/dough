@@ -99,11 +99,10 @@ export async function POST(request: Request) {
           const realIncomeTx = transactions.filter((t: any) => t.amount > 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation"));
           const realExpenseTx = transactions.filter((t: any) => t.amount < 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation") && t.category !== "Uncategorized");
 
-          const recentTx = [...transactions]
-            .filter((t: any) => !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation"))
-            .sort((a: any, b: any) => b.date.localeCompare(a.date))
-            .slice(0, 10)
-            .map((t: any) => ({ date: t.date, payee: t.payee, amount: t.amount, category: t.category }));
+          // Use local transactions table for recent transactions — always fresh
+          const recentTx = chatDb.prepare(
+            "SELECT date, payee, amount, category FROM transactions WHERE payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' ORDER BY date DESC, id DESC LIMIT 10"
+          ).all() as { date: string; payee: string; amount: number; category: string }[];
 
           // Load recurring bills with paid/overdue status
           const bills = chatDb
@@ -235,7 +234,11 @@ export async function POST(request: Request) {
           const dailySpendableBeforePayday = daysBeforePayday > 0 ? Math.round((Math.max(0, availableBeforePayday) / daysBeforePayday) * 100) / 100 : 0;
 
           const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-          const todaySpent = Math.round(realExpenseTx.filter((t: any) => t.date === todayStr).reduce((s: number, t: any) => s + Math.abs(t.amount), 0) * 100) / 100;
+          // Use local transactions table for today's spending — it has real-time data including manually added expenses
+          const todayTxRows = chatDb.prepare(
+            "SELECT amount FROM transactions WHERE date = ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%'"
+          ).all(todayStr) as { amount: number }[];
+          const todaySpent = Math.round(todayTxRows.reduce((s, t) => s + Math.abs(t.amount), 0) * 100) / 100;
           const daysAfterToday = Math.max(1, daysLeft - 1);
           const tomorrowBudget = Math.max(0, Math.round((dailyBudget * daysLeft - todaySpent) / daysAfterToday));
 
