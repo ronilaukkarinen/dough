@@ -1,4 +1,4 @@
-### 1.10.0: 2026-03-26
+### 1.10.0: 2026-03-27
 
 * Add Synci API integration for automatic bank income sync to YNAB
 * Fetch bank accounts from Synci API with account-to-YNAB mapping in settings
@@ -6,8 +6,11 @@
 * Income matched via payee patterns is marked as received in Dough
 * Redesign savings streak card with flame icon matching other metric cards
 * Show 7 days in savings streak
-* Name the AI advisor Dougie, show in menu and chat UI
+* Name the AI advisor Dougie, show in menu and chat bubbles
 * Prevent amounts from breaking across lines in chat messages
+* Fix typing indicator showing "Rolle Dougie kirjoittaa"
+* Fix chat textarea scrollbar on mobile, auto-expand on input
+* Add expand/collapse button for full-size chat input
 
 ### 1.9.4: 2026-03-25
 

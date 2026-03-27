@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, User, Copy, Check, Paperclip, X, ChevronUp } from "lucide-react";
+import { Send, Bot, User, Copy, Check, Paperclip, X, ChevronUp, Maximize2, Minimize2 } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 import { useEvent } from "@/lib/use-events";
 import ReactMarkdown from "react-markdown";
@@ -33,6 +33,7 @@ export function ChatInterface() {
   const [chatImageType, setChatImageType] = useState("");
   const [hasOlder, setHasOlder] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
+  const [inputExpanded, setInputExpanded] = useState(false);
   const chatFileRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -286,6 +287,9 @@ export function ChatInterface() {
                       ? <object data={message.image_thumb} type="application/pdf" className="chat-pdf-preview">{/* PDF */}</object>
                       : <img src={message.image_thumb} alt="" className="chat-bubble-image" />
                 )}
+                {message.role === "assistant" && (
+                  <div className="chat-message-sender" data-type="assistant">Dougie</div>
+                )}
                 {isOtherUser && message.sender && (
                   <div className="chat-message-sender">{message.sender}</div>
                 )}
@@ -394,8 +398,10 @@ export function ChatInterface() {
             value={input}
             onChange={(e) => {
               setInput(e.target.value);
-              e.target.style.height = "auto";
-              e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
+              if (!inputExpanded) {
+                e.target.style.height = "auto";
+                e.target.style.height = Math.min(e.target.scrollHeight, 200) + "px";
+              }
               if (e.target.value.length > 0) broadcastTyping();
             }}
             onKeyDown={(e) => {
@@ -403,13 +409,19 @@ export function ChatInterface() {
                 e.preventDefault();
                 handleSubmit(e);
               }
+              if (e.key === "Escape" && inputExpanded) {
+                setInputExpanded(false);
+              }
             }}
             placeholder={t.chat.placeholder}
-            className="chat-textarea"
+            className={`chat-textarea ${inputExpanded ? "is-expanded" : ""}`}
             disabled={loading}
             rows={1}
           />
           <div className="chat-action-buttons">
+            <button type="button" className="chat-expand-btn" onClick={() => setInputExpanded(!inputExpanded)}>
+              {inputExpanded ? <Minimize2 /> : <Maximize2 />}
+            </button>
             <button type="button" className="chat-attach-btn" onClick={() => chatFileRef.current?.click()} disabled={loading}>
               <Paperclip />
             </button>

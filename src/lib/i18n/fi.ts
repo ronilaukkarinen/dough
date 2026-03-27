@@ -83,8 +83,8 @@ export const fi = {
 \u2022 "Paljonko ruokakauppaan on mennyt?"
 \u2022 "Mistä voisi säästää?"
 \u2022 "Milloin olemme velattomia?"`,
-    thinking: "Dougie miettii...",
-    typing: "Dougie kirjoittaa...",
+    thinking: "miettii...",
+    typing: "kirjoittaa...",
     errorProcess: "En pystynyt käsittelemään pyyntöä. Yritä uudelleen.",
     errorGeneral: "Jokin meni pieleen. Yritä uudelleen.",
     loadOlder: "Lataa vanhempia",

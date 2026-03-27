@@ -83,8 +83,8 @@ export const en = {
 \u2022 "How much have we spent on groceries?"
 \u2022 "What can we cut to save money?"
 \u2022 "When will we be debt-free?"`,
-    thinking: "Dougie is thinking...",
-    typing: "Dougie is typing...",
+    thinking: "is thinking...",
+    typing: "is typing...",
     errorProcess: "Sorry, I couldn't process that. Try again.",
     errorGeneral: "Sorry, something went wrong. Please try again.",
     loadOlder: "Load older",
