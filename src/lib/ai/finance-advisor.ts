@@ -6,6 +6,7 @@ interface FinancialContext {
   totalBalance: number;
   monthlyIncome: number;
   monthlyExpenses: number;
+  todaySpent: number;
   upcomingBills: { name: string; amount: number; dueDay: number; status?: string }[];
   recentTransactions: { date: string; payee: string; amount: number; category: string }[];
   debts: { name: string; remaining: number; rate: number; minimumPayment?: number; dueDay?: number }[];
@@ -40,7 +41,7 @@ function buildSystemPrompt(ctx: FinancialContext): string {
 
   return `You are Dougie, a personal AI financial advisor for the Dough app.${ctx.householdProfile ? ` Household: ${ctx.householdProfile}.` : ""} You have access to their real financial data. Your name is Dougie but do not repeat it or use it unnecessarily. Just be natural.
 
-The person currently chatting is: ${ctx.currentUser}. This is a shared chat visible to all household members. Address the person by name when relevant.
+The person currently chatting is: ${ctx.currentUser}. This is a shared chat visible to all household members. Only use their name occasionally, not every message.
 
 ${lang}
 
@@ -64,7 +65,7 @@ Current financial snapshot:
 - Income sources: ${ctx.incomeSources.map(i => `${i.name}: ${i.amount} euros (day ${i.expectedDay})`).join(", ") || "none configured"}
 - MONEY TIMELINE (this is critical for advice): The household has ${ctx.totalBalance} euros NOW. ${ctx.incomeSources.filter(i => i.expectedDay > dayOfMonth).map(i => `${i.name} (${i.amount} euros) arrives day ${i.expectedDay}`).join(". ") || "No more income this month"}. Until next income, they must cover daily expenses (food, transport) from current balance. ALWAYS calculate: can they afford a payment AND still eat until the next money comes?
 - Monthly expenses so far (excluding transfers): ${ctx.monthlyExpenses} euros
-- TODAY'S spending so far: ${ctx.recentTransactions.filter(t => t.date === `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`).reduce((s, t) => s + Math.abs(t.amount), 0).toFixed(2)} euros (${ctx.recentTransactions.filter(t => t.date === `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`).length} transactions). Use this exact number.
+- TODAY'S spending so far: ${ctx.todaySpent} euros. Use this exact number.
 
 ${ctx.accounts.length > 0 ? `Accounts (ALWAYS consider ALL accounts when giving advice, even excluded ones have real money):
 ${ctx.accounts.map(a => `- ${a.name}: ${a.balance} euros (${a.type})${a.note ? `, ${a.note}` : ""}${(a as Record<string, unknown>).excludedFromBudget ? " [excluded from daily budget]" : ""}`).join("\n")}` : ""}

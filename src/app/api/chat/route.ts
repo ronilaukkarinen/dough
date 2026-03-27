@@ -234,10 +234,14 @@ export async function POST(request: Request) {
           const daysBeforePayday = daysInMonth - today;
           const dailySpendableBeforePayday = daysBeforePayday > 0 ? Math.round((Math.max(0, availableBeforePayday) / daysBeforePayday) * 100) / 100 : 0;
 
+          const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+          const todaySpent = Math.round(realExpenseTx.filter((t: any) => t.date === todayStr).reduce((s: number, t: any) => s + Math.abs(t.amount), 0) * 100) / 100;
+
           context = {
             totalBalance: Math.round(checkingSavings * 100) / 100,
             monthlyIncome: Math.round(monthBudget.income * 100) / 100,
             monthlyExpenses: Math.round(realExpenseTx.reduce((s: number, t: any) => s + Math.abs(t.amount), 0) * 100) / 100,
+            todaySpent,
             upcomingBills: enrichedBills,
             recentTransactions: recentTx,
             debts,
@@ -270,6 +274,7 @@ export async function POST(request: Request) {
         totalBalance: 0,
         monthlyIncome: 0,
         monthlyExpenses: 0,
+        todaySpent: 0,
         upcomingBills: [],
         recentTransactions: [],
         debts: [],
