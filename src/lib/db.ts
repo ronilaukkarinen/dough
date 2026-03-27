@@ -427,6 +427,23 @@ function initializeDb(db: Database.Database) {
     console.info("[db] Migration complete");
   }
 
+  // Create chat_reactions table if missing
+  const hasReactions = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='chat_reactions'").get();
+  if (!hasReactions) {
+    console.info("[db] Creating chat_reactions table");
+    db.exec(`
+      CREATE TABLE chat_reactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        message_id INTEGER NOT NULL REFERENCES chat_messages(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        emoji TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE(message_id, user_id, emoji)
+      );
+      CREATE INDEX idx_chat_reactions_message ON chat_reactions(message_id);
+    `);
+  }
+
   // Migrate YNAB settings from users to household_settings
   const existingYnab = db.prepare("SELECT ynab_access_token, ynab_budget_id FROM users WHERE ynab_access_token IS NOT NULL LIMIT 1").get() as { ynab_access_token: string; ynab_budget_id: string | null } | undefined;
   if (existingYnab) {

@@ -11,6 +11,7 @@
 * Fix typing indicator showing "Rolle Dougie kirjoittaa"
 * Fix chat textarea scrollbar on mobile, auto-expand on input
 * Add expand/collapse button for full-size chat input
+* Increase chat sender name font size
 
 ### 1.9.4: 2026-03-25
 
