@@ -372,7 +372,7 @@ export function ChatInterface() {
                         onClick={() => toggleReaction(message.id, r.emoji)}
                         title={r.users.join(", ")}
                       >
-                        {r.emoji} {r.count > 1 && <span>{r.count}</span>}
+                        {r.emoji} <span>{r.count}</span>
                       </button>
                     ))}
                   </div>
