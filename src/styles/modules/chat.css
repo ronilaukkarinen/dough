@@ -581,7 +581,7 @@
   font-size: 0.8125rem;
   line-height: 1.25;
   border-radius: 1rem;
-  border: none;
+  border: 1px solid transparent;
   background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
   transition: background 150ms;
