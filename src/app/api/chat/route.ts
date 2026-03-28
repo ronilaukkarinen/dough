@@ -383,8 +383,7 @@ Reply with ONLY a valid JSON array: [{"amount":"...","payee":"...","date":"YYYY-
               // Resolve account: if receipt shows an account name, match it to YNAB accounts
               let accountId = defaultAcc.ynab_account_id;
               if (tx.account) {
-                const accLower = tx.account.toLowerCase();
-                const matched = allYnabAccounts.find((a: { id: string; name: string }) => a.name.toLowerCase().includes(accLower) || accLower.includes(a.name.toLowerCase()));
+                const matched = allYnabAccounts.find((a: { id: string; name: string }) => a.name === tx.account);
                 if (matched) {
                   accountId = matched.id;
                   console.info("[chat] Routed to account:", matched.name, "from receipt:", tx.account);

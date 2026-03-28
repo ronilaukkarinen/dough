@@ -90,7 +90,7 @@ export function AddExpenseDialog({ open, onOpenChange }: AddExpenseDialogProps) 
             let accId = linkedAccountId;
             let accName = linkedAccountName;
             if (tx.account) {
-              const matched = allAccounts.find((a) => a.name.toLowerCase().includes(tx.account!.toLowerCase()) || tx.account!.toLowerCase().includes(a.name.toLowerCase()));
+              const matched = allAccounts.find((a) => a.name === tx.account);
               if (matched) { accId = matched.id; accName = matched.name; }
             }
             return { payee, amount: tx.amount, date: tx.date || new Date().toISOString().slice(0, 10), account_id: accId, account_name: accName };
@@ -99,7 +99,10 @@ export function AddExpenseDialog({ open, onOpenChange }: AddExpenseDialogProps) 
         } else {
           if (data.payee) setAddPayee(titleCasePayee(data.payee));
           if (data.amount) setAddAmount(data.amount);
-          if (data.account) resolveAccountFromMemo(data.account);
+          if (data.account) {
+            const matched = allAccounts.find((a) => a.name === data.account);
+            if (matched) { setLinkedAccountId(matched.id); setLinkedAccountName(matched.name); }
+          }
         }
       } catch (err) {
         console.error("[add-expense] Receipt parse error:", err);
