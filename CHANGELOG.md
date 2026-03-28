@@ -1,8 +1,6 @@
 ### 1.11.3: 2026-03-28
 
 * Fix chat loading indicator stuck forever when returning to chat
-* Add 10s timeout on initial message load, 120s timeout on AI response
-* Gracefully handle aborted/failed message fetches
 
 ### 1.11.2: 2026-03-28
 
