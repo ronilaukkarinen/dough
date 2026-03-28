@@ -442,8 +442,9 @@
 /* Inline action buttons inside textarea */
 .chat-inline-actions {
   position: absolute;
-  right: 0.375rem;
-  bottom: 0.5rem;
+  right: 0.5rem;
+  bottom: 0;
+  height: 2.5rem;
   display: flex;
   gap: 0.125rem;
 }
