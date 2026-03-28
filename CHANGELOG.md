@@ -1,9 +1,14 @@
+### 1.11.2: 2026-03-28
+
+* Redesign chat input: compact textarea with inline attach/expand buttons
+* Fix textarea and send button vertical alignment
+* Inline buttons stay pinned to top when textarea grows
+
 ### 1.11.1: 2026-03-27
 
 * Add today's spending, remaining budget and tomorrow's budget to Dougie context
 * Calculate today's spending from all transactions, not just last 10
 * Reduce Dougie addressing user by name every message
-* Fix mobile chat textarea height to match buttons dynamically
 * Dougie sees message reactions and who reacted
 * Dougie reads all data from local DB for real-time accuracy
 * Auto-trigger YNAB sync if cache is older than 2 hours when chatting

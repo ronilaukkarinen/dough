@@ -396,7 +396,7 @@
 .chat-input-form {
   display: flex;
   gap: 0.5rem;
-  align-items: flex-end;
+  align-items: flex-start;
 }
 
 .chat-input-wrap {
@@ -419,6 +419,7 @@
   background: transparent;
   color: var(--foreground);
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 .chat-input-wrap.is-expanded .chat-textarea {
@@ -443,13 +444,16 @@
 .chat-inline-actions {
   position: absolute;
   right: 0.5rem;
-  bottom: 0;
+  top: 0;
   height: 2.5rem;
   display: flex;
+  align-items: center;
   gap: 0.125rem;
+  pointer-events: none;
 }
 
 .chat-inline-btn {
+  pointer-events: auto;
   background: none;
   border: none;
   cursor: pointer;
