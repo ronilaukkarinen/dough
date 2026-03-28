@@ -333,9 +333,14 @@ export async function POST(request: Request) {
         const { queryClaudeWithImage } = await import("@/lib/ai/claude-image");
         const chatToday = new Date().toISOString().slice(0, 10);
         const chatYesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+        // Load YNAB account names for smart account detection
+        const expAccounts = getDb().prepare("SELECT name FROM ynab_accounts WHERE closed = 0").all() as { name: string }[];
+        const accountNames = expAccounts.map((a) => a.name).join(", ");
+
         const parseResult = await queryClaudeWithImage(
           `Extract ALL transactions/expenses from this image. For each: amount (number only), payee/store name, date (YYYY-MM-DD), and account/card name if visible.
 Today is ${chatToday}. "Tänään"/"Today" = ${chatToday}. "Eilen"/"Yesterday" = ${chatYesterday}. Convert dates like "19.3." to YYYY-MM-DD. Transactions under date headings inherit that date. If no date visible, use ${chatToday}.
+For "account": look for card brand, bank name, or app name (Revolut, Visa, Mastercard, S-Pankki, Nordea, OP, etc). Match to one of these YNAB accounts if possible: ${accountNames}. Use the exact YNAB account name. If unclear, leave empty.
 If single receipt, return one item. If bank statement or multiple items, return ALL.
 Reply with ONLY a valid JSON array: [{"amount":"...","payee":"...","date":"YYYY-MM-DD","account":"..."}]`,
           image,

@@ -20,6 +20,11 @@ export async function POST(request: Request) {
     const today = new Date().toISOString().slice(0, 10);
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 
+    // Load YNAB account names for smart account detection
+    const { getDb } = await import("@/lib/db");
+    const receiptAccounts = getDb().prepare("SELECT name FROM ynab_accounts WHERE closed = 0").all() as { name: string }[];
+    const accountNames = receiptAccounts.map((a) => a.name).join(", ");
+
     const prompt = `Extract ALL transactions/expenses from this receipt, invoice, or bank statement image.
 For each transaction, extract:
 - amount: the amount (number only, no currency symbol)
@@ -31,7 +36,7 @@ For each transaction, extract:
   - If you see a specific date like "19.3." or "19.3.2026", convert to YYYY-MM-DD format (${today.slice(0, 4)} is the current year)
   - Transactions may be grouped under date headings — apply that heading's date to ALL transactions below it until the next heading
   - If absolutely no date is visible anywhere, use ${today}
-- account: the bank account or card name if visible (e.g. "Lotan tili", "Nordea Visa", "Revolut"). Leave empty if not shown.
+- account: look for card brand, bank name, or app name (Revolut, Visa, Mastercard, S-Pankki, etc). Match to one of these YNAB accounts if possible: ${accountNames}. Use the exact YNAB account name. Leave empty if unclear.
 
 If there is only ONE transaction, return a single-element array.
 If there are MULTIPLE transactions (e.g. bank statement, multi-item list), return ALL of them with their correct dates.

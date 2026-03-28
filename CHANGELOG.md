@@ -1,5 +1,7 @@
-### 1.11.3: 2026-03-28
+### 1.12.0: 2026-03-28
 
+* Chat attachments are read-only by default, expense adding requires "lisää kulu" or "add expense"
+* Smart account detection from receipts using YNAB account names
 * Fix chat loading indicator stuck forever when returning to chat
 
 ### 1.11.2: 2026-03-28

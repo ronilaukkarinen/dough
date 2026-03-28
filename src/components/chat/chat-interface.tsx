@@ -250,7 +250,8 @@ export function ChatInterface() {
     if (chatImage) {
       chatBody.image = chatImage;
       chatBody.image_media_type = chatImageType;
-      chatBody.add_expense = true;
+      const lc = userContent.toLowerCase();
+      chatBody.add_expense = lc.includes("lisää") || lc.includes("add expense") || lc.includes("add cost") || lc.includes("lisää kulu") || lc.includes("kirjaa");
       setChatImage(null);
       setChatImagePreview(null);
       setChatImageType("");
