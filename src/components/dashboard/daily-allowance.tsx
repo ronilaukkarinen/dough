@@ -109,10 +109,14 @@ export function DailyAllowance({
             <span className="daily-allowance-hero-unit">{todaySpentAll > 0 ? "" : t.dashboard.perDay}</span>
           </div>
           <p className="daily-allowance-hero-note">
-            {locale === "fi" ? "Tämän päivän kokonaisbudjetti on " : "Today's total budget is "}
+            {locale === "fi" ? (todaySpentAll > 0 ? "Tämän päivän kokonaisbudjetti oli " : "Tämän päivän kokonaisbudjetti on ") : (todaySpentAll > 0 ? "Today's total budget was " : "Today's total budget is ")}
             <span className={dailyBudget > thresholds.good ? "text-positive" : dailyBudget > thresholds.tight ? "text-chart-3" : "text-negative"}><F v={dailyBudget} s={` ${currency}`} /></span>
-            {dailyBudget > thresholds.good
+            {effectiveBudget > thresholds.good
               ? (locale === "fi" ? ". Rahaa on, mutta älä tuhlaa, säästä. " : ". You have money, but save, don't splurge. ")
+              : effectiveBudget > thresholds.tight
+              ? (locale === "fi" ? ". Vähän liikkumavaraa jäljellä. " : ". Some room left. ")
+              : effectiveBudget > 0 && todaySpentAll > 0
+              ? (locale === "fi" ? ". Budjetti on lähes käytetty. " : ". Budget is nearly used up. ")
               : ". "}
             {billsDelayNeeded ? (
               <>

@@ -3,6 +3,8 @@
 * Chat attachments are read-only by default, expense adding requires "lisää kulu" or "add expense"
 * Smart account detection from receipts via AI matching to exact YNAB account names
 * Fix chat loading indicator stuck forever when returning to chat
+* Hero note reacts to remaining budget: different message when nearly used up vs plenty left
+* Use past tense "oli" for today's budget when spending has occurred
 
 ### 1.11.2: 2026-03-28
 
