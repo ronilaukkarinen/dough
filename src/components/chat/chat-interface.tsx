@@ -66,9 +66,13 @@ export function ChatInterface() {
       if (d.user) setCurrentUser(d.user.display_name || d.user.email);
     }).catch(() => {});
 
-    fetch("/api/chat/messages")
+    const controller = new AbortController();
+    const loadTimeout = setTimeout(() => { controller.abort(); setInitialLoading(false); }, 10000);
+
+    fetch("/api/chat/messages", { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
+        clearTimeout(loadTimeout);
         if (data.messages?.length > 0) {
           console.info("[chat] Loaded", data.messages.length, "messages, hasOlder:", data.hasOlder);
           const msgs = data.messages.map((m: { id: number; role: string; content: string; sender?: string; image_thumb?: string }) => ({
@@ -98,6 +102,7 @@ export function ChatInterface() {
         }
       })
       .catch(() => {
+        clearTimeout(loadTimeout);
         setMessages([{ id: "greeting", role: "assistant", content: t.chat.greeting }]);
       })
       .finally(() => {
@@ -256,6 +261,11 @@ export function ChatInterface() {
       setChatImageType("");
     }
 
+    const aiTimeout = setTimeout(() => {
+      console.warn("[chat] AI request timed out after 120s");
+      setLoading(false);
+    }, 120000);
+
     fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -263,6 +273,7 @@ export function ChatInterface() {
     })
       .then((r) => r.json())
       .then((data) => {
+        clearTimeout(aiTimeout);
         // Add from fetch response if SSE hasn't delivered it yet (dedup prevents doubles)
         if (data.message) {
           setMessages((prev) => {
@@ -274,6 +285,7 @@ export function ChatInterface() {
         }
       })
       .catch(() => {
+        clearTimeout(aiTimeout);
         console.warn("[chat] AI request failed");
         setLoading(false);
       });
