@@ -443,7 +443,7 @@
 .chat-inline-actions {
   position: absolute;
   right: 0.375rem;
-  bottom: 0.375rem;
+  bottom: 0.5rem;
   display: flex;
   gap: 0.125rem;
 }
