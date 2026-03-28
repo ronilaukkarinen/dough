@@ -47,7 +47,6 @@ export function ChatInterface() {
   const chatFileRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const buttonsRef = useRef<HTMLDivElement>(null);
   const messageCountRef = useRef(0);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -163,23 +162,6 @@ export function ChatInterface() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
-
-  // Match textarea min-height to buttons height on mobile
-  useEffect(() => {
-    const syncHeight = () => {
-      const textarea = inputRef.current as unknown as HTMLTextAreaElement | null;
-      const buttons = buttonsRef.current;
-      if (!textarea || !buttons) return;
-      if (window.innerWidth < 768) {
-        textarea.style.minHeight = buttons.offsetHeight + "px";
-      } else {
-        textarea.style.minHeight = "";
-      }
-    };
-    requestAnimationFrame(syncHeight);
-    window.addEventListener("resize", syncHeight);
-    return () => window.removeEventListener("resize", syncHeight);
-  }, [initialLoading]);
 
   // Broadcast typing status
   const broadcastTyping = useCallback(() => {
@@ -469,42 +451,44 @@ export function ChatInterface() {
               e.target.value = "";
             }}
           />
-          <textarea
-            ref={inputRef as unknown as React.RefObject<HTMLTextAreaElement>}
-            value={input}
-            onChange={(e) => {
-              setInput(e.target.value);
-              if (!inputExpanded) {
-                e.target.style.height = "auto";
-                e.target.style.height = Math.min(e.target.scrollHeight, 200) + "px";
-              }
-              if (e.target.value.length > 0) broadcastTyping();
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit(e);
-              }
-              if (e.key === "Escape" && inputExpanded) {
-                setInputExpanded(false);
-              }
-            }}
-            placeholder={t.chat.placeholder}
-            className={`chat-textarea ${inputExpanded ? "is-expanded" : ""}`}
-            disabled={loading}
-            rows={1}
-          />
-          <div className="chat-action-buttons" ref={buttonsRef}>
-            <button type="button" className="chat-expand-btn" onClick={() => setInputExpanded(!inputExpanded)}>
-              {inputExpanded ? <Minimize2 /> : <Maximize2 />}
-            </button>
-            <button type="button" className="chat-attach-btn" onClick={() => chatFileRef.current?.click()} disabled={loading}>
-              <Paperclip />
-            </button>
-            <Button type="submit" size="icon" className="chat-send-button" disabled={!input.trim() || loading}>
-              <Send />
-            </Button>
+          <div className={`chat-input-wrap ${inputExpanded ? "is-expanded" : ""}`}>
+            <textarea
+              ref={inputRef as unknown as React.RefObject<HTMLTextAreaElement>}
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                if (!inputExpanded) {
+                  e.target.style.height = "auto";
+                  e.target.style.height = Math.min(e.target.scrollHeight, 200) + "px";
+                }
+                if (e.target.value.length > 0) broadcastTyping();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+                if (e.key === "Escape" && inputExpanded) {
+                  setInputExpanded(false);
+                }
+              }}
+              placeholder={t.chat.placeholder}
+              className="chat-textarea"
+              disabled={loading}
+              rows={1}
+            />
+            <div className="chat-inline-actions">
+              <button type="button" className="chat-inline-btn" onClick={() => chatFileRef.current?.click()} disabled={loading}>
+                <Paperclip />
+              </button>
+              <button type="button" className="chat-inline-btn" onClick={() => setInputExpanded(!inputExpanded)}>
+                {inputExpanded ? <Minimize2 /> : <Maximize2 />}
+              </button>
+            </div>
           </div>
+          <Button type="submit" size="icon" className="chat-send-button" disabled={!input.trim() || loading}>
+            <Send />
+          </Button>
         </form>
       </div>
     </div>
