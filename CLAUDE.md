@@ -54,7 +54,7 @@ All examples in code, docs, and comments must use generic placeholders. When in 
 
 Always work on tasks in order. Always use todo. Always show user the todo of tasks in progress.
 CRITICAL: Always update CHANGELOG, commit and restart after changes.
-CRITICAL: After every build, always restart the production service: `systemctl --user restart dough.service`. The app runs as a systemd user service and will serve stale/broken assets until restarted.
+CRITICAL: Production runs on a remote server. After pushing, deploy by SSH: git pull, npm install, npm run build, restart dough.service. For DB migrations, stop the service first and use `sqlite3 .backup` for safe copies.
 
 ## Commits
 
