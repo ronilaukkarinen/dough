@@ -24,9 +24,8 @@ export async function getBudgetSummary(budgetId: string, token: string) {
     ynabFetch(`/budgets/${budgetId}/categories`, token),
   ]);
 
-  const accounts = (accountsData.accounts ?? []).filter(
-    (a: any) => !a.closed && !a.deleted
-  );
+  const allAccounts = (accountsData.accounts ?? []).filter((a: any) => !a.deleted);
+  const accounts = allAccounts.filter((a: any) => !a.closed);
 
   const totalBalance = accounts.reduce(
     (sum: number, a: any) => sum + (a.cleared_balance ?? 0) + (a.uncleared_balance ?? 0),
@@ -60,6 +59,7 @@ export async function getBudgetSummary(budgetId: string, token: string) {
       balance: ((a.cleared_balance ?? 0) + (a.uncleared_balance ?? 0)) / 1000,
       clearedBalance: (a.cleared_balance ?? 0) / 1000,
     })),
+    closedAccountIds: allAccounts.filter((a: any) => a.closed).map((a: any) => a.id) as string[],
     categories,
   };
 }

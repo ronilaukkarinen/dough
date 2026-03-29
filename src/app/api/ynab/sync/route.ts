@@ -205,7 +205,7 @@ export async function POST() {
       const upsertAccount = pdb.prepare(`
         INSERT INTO ynab_accounts (id, name, type, balance, cleared_balance, on_budget, closed, updated_at)
         VALUES (?, ?, ?, ?, ?, 1, 0, datetime('now'))
-        ON CONFLICT(id) DO UPDATE SET name=excluded.name, type=excluded.type, balance=excluded.balance, cleared_balance=excluded.cleared_balance, updated_at=datetime('now')
+        ON CONFLICT(id) DO UPDATE SET name=excluded.name, type=excluded.type, balance=excluded.balance, cleared_balance=excluded.cleared_balance, closed=0, updated_at=datetime('now')
       `);
       const accountTx = pdb.transaction(() => {
         for (const a of summary.accounts) {
@@ -213,6 +213,13 @@ export async function POST() {
         }
       });
       accountTx();
+
+      // Mark closed accounts
+      if (summary.closedAccountIds?.length > 0) {
+        const markClosed = pdb.prepare("UPDATE ynab_accounts SET closed = 1, updated_at = datetime('now') WHERE id = ?");
+        for (const id of summary.closedAccountIds) markClosed.run(id);
+        console.info("[api/ynab/sync] Marked", summary.closedAccountIds.length, "accounts as closed");
+      }
       console.info("[api/ynab/sync] Persisted", summary.accounts.length, "accounts");
 
       // Upsert transactions

@@ -1,3 +1,7 @@
+### 1.12.1: 2026-03-29
+
+* Sync closed account status from YNAB, hide closed accounts from settings and AI
+
 ### 1.12.0: 2026-03-28
 
 * Chat attachments are read-only by default, expense adding requires "lisää kulu" or "add expense"
