@@ -1,6 +1,7 @@
 ### 1.12.1: 2026-03-29
 
 * Sync closed account status from YNAB, hide closed accounts from settings and AI
+* Fix duplicate transactions in heatmap and AI context when multiple users sync same YNAB budget
 
 ### 1.12.0: 2026-03-28
 

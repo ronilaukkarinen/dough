@@ -117,7 +117,7 @@ export async function POST(request: Request) {
 
           // Use local transactions table for recent transactions — always fresh
           const recentTx = chatDb.prepare(
-            "SELECT date, payee, amount, category FROM transactions WHERE payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' ORDER BY date DESC, id DESC LIMIT 10"
+            "SELECT date, payee, amount, category FROM transactions WHERE payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' GROUP BY ynab_id ORDER BY date DESC LIMIT 10"
           ).all() as { date: string; payee: string; amount: number; category: string }[];
 
           // Load recurring bills with paid/overdue status
@@ -252,7 +252,7 @@ export async function POST(request: Request) {
           const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
           // Use local transactions table for today's spending — it has real-time data including manually added expenses
           const todayTxRows = chatDb.prepare(
-            "SELECT amount FROM transactions WHERE date = ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%'"
+            "SELECT amount FROM transactions WHERE date = ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' GROUP BY ynab_id"
           ).all(todayStr) as { amount: number }[];
           const todaySpent = Math.round(todayTxRows.reduce((s, t) => s + Math.abs(t.amount), 0) * 100) / 100;
 
@@ -260,7 +260,7 @@ export async function POST(request: Request) {
           const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
           const localMonthlyExpenses = Math.round(
             (chatDb.prepare(
-              "SELECT COALESCE(SUM(ABS(amount)), 0) as total FROM transactions WHERE date >= ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' AND category != 'Uncategorized'"
+              "SELECT COALESCE(SUM(ABS(amount)), 0) as total FROM (SELECT amount FROM transactions WHERE date >= ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' AND category != 'Uncategorized' GROUP BY ynab_id)"
             ).get(monthStart) as { total: number }).total * 100
           ) / 100;
           const daysAfterToday = Math.max(1, daysLeft - 1);
