@@ -9,7 +9,7 @@ interface FinancialContext {
   todaySpent: number;
   tomorrowBudget: number;
   upcomingBills: { name: string; amount: number; dueDay: number; status?: string }[];
-  recentTransactions: { date: string; payee: string; amount: number; category: string }[];
+  recentTransactions: { date: string; payee: string; amount: number; category: string; spender?: string | null }[];
   debts: { name: string; remaining: number; rate: number; minimumPayment?: number; dueDay?: number }[];
   investments: { name: string; balance: number; monthlyContribution: number; expectedReturn: number }[];
   savingGoal: number;
@@ -77,7 +77,7 @@ ${ctx.upcomingBills.length > 0 ? ctx.upcomingBills.map(b => `- ${b.name}: ${b.am
 Note: Subscriptions are auto-charged from card, no action needed. Bills need manual payment or bank transfer.
 
 Recent transactions (last 10, with dates):
-${ctx.recentTransactions.slice(0, 10).map(t => `- ${t.date}: ${t.payee} - ${Math.abs(t.amount)} euros (${t.category})`).join("\n")}
+${ctx.recentTransactions.slice(0, 10).map(t => `- ${t.date}: ${t.payee} - ${Math.abs(t.amount)} euros (${t.category})${t.spender ? ` [${t.spender}]` : ""}`).join("\n")}
 
 Debts:
 ${ctx.debts.length > 0 ? ctx.debts.map(d => `- ${d.name}: ${d.remaining} euros remaining${d.rate > 0 ? ` (${d.rate}% APR)` : ""}${d.minimumPayment ? `, ${d.minimumPayment} euros/month` : ""}${d.dueDay ? ` (due ${d.dueDay}th)` : ""}`).join("\n") : "- None"}

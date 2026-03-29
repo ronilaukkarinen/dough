@@ -2,6 +2,7 @@
 
 * Sync closed account status from YNAB, hide closed accounts from settings and AI
 * Fix duplicate transactions in heatmap and AI context when multiple users sync same YNAB budget
+* Show who spent each transaction in Dougie's context
 
 ### 1.12.0: 2026-03-28
 

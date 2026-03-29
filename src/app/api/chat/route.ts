@@ -117,8 +117,8 @@ export async function POST(request: Request) {
 
           // Use local transactions table for recent transactions — always fresh
           const recentTx = chatDb.prepare(
-            "SELECT date, payee, amount, category FROM transactions WHERE payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' GROUP BY ynab_id ORDER BY date DESC LIMIT 10"
-          ).all() as { date: string; payee: string; amount: number; category: string }[];
+            "SELECT t.date, t.payee, t.amount, t.category, u.display_name as spender FROM transactions t LEFT JOIN users u ON t.user_id = u.id WHERE t.payee NOT LIKE 'Transfer%' AND t.payee NOT LIKE 'Starting Balance%' AND t.payee NOT LIKE 'Reconciliation%' GROUP BY t.ynab_id ORDER BY t.date DESC LIMIT 10"
+          ).all() as { date: string; payee: string; amount: number; category: string; spender: string | null }[];
 
           // Load recurring bills with paid/overdue status
           const bills = chatDb
