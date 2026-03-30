@@ -3,6 +3,10 @@
 * Flip spending flow tooltip bubble to left side on mobile when near end of month
 * Fix spending flow bubble clipping on desktop by allowing SVG overflow
 * Fix mobile PWA topbar overlapping with iOS safe area
+* Add grinning face emoji to chat reactions
+* Show relative time since AI summary was fetched next to icon
+* Fix Safari mobile auto-zoom on chat textarea focus
+* Show who spent each transaction in Dougie context
 
 ### 1.12.1: 2026-03-29
 
