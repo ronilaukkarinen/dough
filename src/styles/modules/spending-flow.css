@@ -6,7 +6,19 @@
   overflow: hidden;
 }
 
+@media (min-width: 768px) {
+  .spending-flow {
+    overflow: visible;
+  }
+}
+
 .spending-flow-chart {
   width: 100%;
   overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .spending-flow-chart {
+    overflow: visible;
+  }
 }
