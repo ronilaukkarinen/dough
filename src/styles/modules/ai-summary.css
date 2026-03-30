@@ -82,9 +82,9 @@
 
 .ai-summary-age {
   font-size: 0.7rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--primary);
-  opacity: 0.7;
+  opacity: 0.6;
   white-space: nowrap;
 }
 
