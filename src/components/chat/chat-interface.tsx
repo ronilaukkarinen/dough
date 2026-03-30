@@ -26,7 +26,7 @@ interface Reaction {
   mine: boolean;
 }
 
-const REACTION_EMOJIS = ["\uD83D\uDC4D", "\uD83D\uDC4E", "\uD83D\uDE02", "\u2764\uFE0F", "\uD83D\uDE2E", "\uD83C\uDF89"];
+const REACTION_EMOJIS = ["\uD83D\uDC4D", "\uD83D\uDC4E", "\uD83D\uDE00", "\uD83D\uDE02", "\u2764\uFE0F", "\uD83D\uDE2E", "\uD83C\uDF89"];
 
 export function ChatInterface() {
   const { t } = useLocale();
