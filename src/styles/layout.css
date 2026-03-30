@@ -14,10 +14,12 @@
   left: 0;
   right: 0;
   z-index: 30;
-  height: 3.5rem;
+  height: calc(3.5rem + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
   align-items: center;
   justify-content: space-between;
-  padding: 0 0.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
   background-color: color-mix(in srgb, var(--sidebar) 75%, transparent);
   backdrop-filter: blur(16px) saturate(1.5);
   -webkit-backdrop-filter: blur(16px) saturate(1.5);
@@ -88,7 +90,7 @@
 
 /* Main content */
 .l-main {
-  padding-top: 3.5rem;
+  padding-top: calc(3.5rem + env(safe-area-inset-top, 0px));
   transition: padding-left 300ms ease;
 }
 
