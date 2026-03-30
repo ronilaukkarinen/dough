@@ -1,3 +1,7 @@
+### 1.12.2: 2026-03-30
+
+* Flip spending flow tooltip bubble to left side on mobile when near end of month
+
 ### 1.12.1: 2026-03-29
 
 * Sync closed account status from YNAB, hide closed accounts from settings and AI

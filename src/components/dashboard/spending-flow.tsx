@@ -108,6 +108,8 @@ export function SpendingFlow({
     : `${fmt(lastActual)} € ${locale === "fi" ? "käytetty" : "spent"}`;
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
+  const isEndOfMonth = daysInMonth - daysPassed < 4;
+
   const renderDotLabel = (props: any) => {
     const { viewBox } = props;
     if (!viewBox) return null;
@@ -115,14 +117,17 @@ export function SpendingFlow({
 
     const bw = bubbleLabel.length * 5.8 + 6;
     const bh = 20;
-    const bx = x + 8;
+    const flipLeft = isEndOfMonth && typeof window !== "undefined" && window.innerWidth < 768;
+    const bx = flipLeft ? x - bw - 8 : x + 8;
     const by = y - bh - 5;
+
+    const tipPath = flipLeft
+      ? `M${bx + bw - 2},${by + bh - 2} L${bx + bw - 9},${by + bh - 2} L${bx + bw - 2},${by + bh + 5} Z`
+      : `M${bx + 2},${by + bh - 2} L${bx + 9},${by + bh - 2} L${bx + 2},${by + bh + 5} Z`;
 
     return (
       <g>
-        {/* Short tip from bubble bottom-left toward dot */}
-        <path d={`M${bx + 2},${by + bh - 2} L${bx + 9},${by + bh - 2} L${bx + 2},${by + bh + 5} Z`} fill={ballColor} />
-        {/* Solid background bubble */}
+        <path d={tipPath} fill={ballColor} />
         <rect x={bx} y={by} width={bw} height={bh} rx={5} fill={ballColor} />
         <text
           x={bx + bw / 2}
