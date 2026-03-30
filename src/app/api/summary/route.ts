@@ -40,7 +40,7 @@ export async function GET(request: Request) {
 
       if (cached) {
         console.debug("[summary] Returning cached", requestLocale, "summary from", cached.created_at);
-        return NextResponse.json({ summary: cached.content, cached: true });
+        return NextResponse.json({ summary: cached.content, cached: true, created_at: cached.created_at });
       }
     }
 
@@ -342,7 +342,7 @@ ${(() => { const goals = db.prepare("SELECT name, target_amount, saved_amount, t
       console.info("[summary] Summary generated and cached, length:", summaryText.length);
     }
 
-    return NextResponse.json({ summary: summaryText, cached: false });
+    return NextResponse.json({ summary: summaryText, cached: false, created_at: new Date().toISOString() });
   } catch (error) {
     console.error("[summary] Error:", error);
     return NextResponse.json({ summary: null, error: "Failed to generate summary" }, { status: 500 });

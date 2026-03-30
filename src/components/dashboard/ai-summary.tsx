@@ -8,11 +8,27 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { copyToClipboard } from "@/lib/clipboard";
 
+function relativeTime(dateStr: string, locale: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffH = Math.floor(diffMs / 3600000);
+  const diffD = Math.floor(diffMs / 86400000);
+
+  if (diffMin < 1) return locale === "fi" ? "juuri nyt" : "just now";
+  if (diffMin < 60) return locale === "fi" ? `${diffMin} min sitten` : `${diffMin} min ago`;
+  if (diffH < 24) return locale === "fi" ? `${diffH} h sitten` : `${diffH}h ago`;
+  if (diffD === 1) return locale === "fi" ? "eilen" : "yesterday";
+  return locale === "fi" ? `${diffD} pv sitten` : `${diffD}d ago`;
+}
+
 export function AiSummary() {
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
   const { locale } = useLocale();
 
   const fetchSummary = (refresh = false) => {
@@ -33,6 +49,7 @@ export function AiSummary() {
         if (data.summary) {
           console.info("[ai-summary] Got summary, cached:", data.cached);
           setSummary(data.summary);
+          if (data.created_at) setCreatedAt(data.created_at);
         }
       })
       .catch((err) => console.error("[ai-summary] Failed:", err))
@@ -70,6 +87,7 @@ export function AiSummary() {
       <div className="ai-summary-header">
         <div className="ai-summary-icon">
           <Sparkles />
+          {createdAt && <span className="ai-summary-age">{locale === "fi" ? "AI-yhteenveto haettu " : "AI summary fetched "}{relativeTime(createdAt, locale)}</span>}
         </div>
         <div className="ai-summary-actions">
           {summary && (

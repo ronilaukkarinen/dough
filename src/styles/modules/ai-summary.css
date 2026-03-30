@@ -69,11 +69,22 @@
 
 .ai-summary-icon {
   color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
 }
 
 .ai-summary-icon svg {
   width: 0.875rem;
   height: 0.875rem;
+  flex-shrink: 0;
+}
+
+.ai-summary-age {
+  font-size: 0.7rem;
+  color: var(--primary);
+  opacity: 0.7;
+  white-space: nowrap;
 }
 
 .ai-summary-actions {
