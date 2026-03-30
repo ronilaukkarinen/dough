@@ -21,4 +21,8 @@
   .spending-flow-chart {
     overflow: visible;
   }
+
+  .spending-flow-chart .recharts-surface {
+    overflow: visible;
+  }
 }
