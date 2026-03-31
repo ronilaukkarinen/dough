@@ -16,9 +16,10 @@ function relativeTime(dateStr: string, locale: string): string {
   const diffH = Math.floor(diffMs / 3600000);
   const diffD = Math.floor(diffMs / 86400000);
 
-  if (diffMin < 1) return locale === "fi" ? "juuri nyt" : "just now";
+  if (diffMin < 1) return locale === "fi" ? "hetki sitten" : "just now";
   if (diffMin < 60) return locale === "fi" ? `${diffMin} min sitten` : `${diffMin} min ago`;
-  if (diffH < 24) return locale === "fi" ? `${diffH} h sitten` : `${diffH}h ago`;
+  if (diffH === 1) return locale === "fi" ? "1 tunti sitten" : "1 hour ago";
+  if (diffH < 24) return locale === "fi" ? `${diffH} tuntia sitten` : `${diffH} hours ago`;
   if (diffD === 1) return locale === "fi" ? "eilen" : "yesterday";
   return locale === "fi" ? `${diffD} pv sitten` : `${diffD}d ago`;
 }
