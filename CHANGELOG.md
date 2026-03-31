@@ -1,6 +1,7 @@
 ### 2.0.1: 2026-03-31
 
 * AI summary reads from local transactions DB for consistency with dashboard
+* Use actual received income when higher than expected in AI summary
 
 ### 2.0.0: 2026-03-31
 
