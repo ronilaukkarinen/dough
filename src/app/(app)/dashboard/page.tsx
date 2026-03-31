@@ -200,15 +200,30 @@ export default function DashboardPage() {
   // Must be calculated BEFORE dailyBudget so we can restore start-of-day balance
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const billNames = new Set(bills.map((b) => b.name?.toLowerCase()).filter(Boolean));
-  const isBillPayment = (payee: string) => {
+  // Build set of debt account names and investment-related categories for exclusion
+  const debtAccountNames = new Set(
+    data.summary.accounts
+      .filter((a) => a.type === "otherDebt")
+      .map((a) => a.name.toLowerCase())
+  );
+  const isFixedCost = (payee: string, category: string) => {
     const p = payee.toLowerCase();
-    return billNames.has(p) || [...billNames].some((bn) => p.includes(bn) || bn.includes(p));
+    const c = category.toLowerCase();
+    // Bill or subscription payment (check both payee and category against bill names)
+    if (billNames.has(p) || [...billNames].some((bn) => p.includes(bn) || bn.includes(p))) return true;
+    if ([...billNames].some((bn) => c.includes(bn) || bn.includes(c))) return true;
+    // Debt payment (check both payee and category against debt account names)
+    if (debtAccountNames.has(p) || [...debtAccountNames].some((dn) => p.includes(dn) || dn.includes(p))) return true;
+    if (debtAccountNames.has(c) || [...debtAccountNames].some((dn) => c.includes(dn) || dn.includes(c))) return true;
+    // Investment payment
+    if (c.includes("sijoittaminen") || c.includes("investing") || c.includes("investment")) return true;
+    return false;
   };
   const todaySpentAll = data.transactions
-    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category) && !isBillPayment(t.payee))
+    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category) && !isFixedCost(t.payee, t.category))
     .reduce((s, t) => s + Math.abs(t.amount), 0);
   const todaySpentPersonal = data.transactions
-    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category) && !isBillPayment(t.payee)
+    .filter((t) => t.date === todayStr && t.amount < 0 && !isTransfer(t.payee, t.category) && !isFixedCost(t.payee, t.category)
       && (linkedAccountIds.length === 0 || linkedAccountIds.includes(t.account_id || "")))
     .reduce((s, t) => s + Math.abs(t.amount), 0);
 
@@ -225,6 +240,9 @@ export default function DashboardPage() {
     unreceivedIncomes: incomes
       .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
       .map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
+    allIncomes: incomes.filter((i) => i.is_active).map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
+    allBills: bills.filter((b) => b.is_active).map((b) => ({ amount: b.amount, dueDay: b.due_day })),
+    allDebts: debtItems,
     resolveDay,
   };
   // Calculate with and without bills
@@ -482,7 +500,10 @@ export default function DashboardPage() {
           const next = incomes
             .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
             .sort((a, b) => a.expected_day - b.expected_day)[0];
-          return next ? next.expected_day - today : daysLeft;
+          if (next) return next.expected_day - today;
+          // No more income this month — find earliest income in next month
+          const allDays = incomes.filter((i) => i.is_active).map((i) => resolveDay(i.expected_day)).sort((a, b) => a - b);
+          return allDays.length > 0 ? (daysInMonth - today) + allDays[0] : daysLeft;
         })()}
         burnRate={dailyBurnRate}
         projectedMonthEnd={projectedMonthEnd}
