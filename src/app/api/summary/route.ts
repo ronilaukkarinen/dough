@@ -215,7 +215,7 @@ export async function GET(request: Request) {
     const summaryInstructions = getHouseholdSetting("prompt_summary_instructions") || DEFAULT_SUMMARY_INSTRUCTIONS;
 
     const projectedRemainingExpenses = Math.round(unpaidBillsAmount + (dailyDiscretionary * daysLeft));
-    const projectedTotalExpenses = Math.round(monthActivity + projectedRemainingExpenses + totalInvestmentContributions + totalDebtPayments);
+    const projectedTotalExpenses = Math.round(monthActivity + projectedRemainingExpenses);
 
     // Daily budget via shared cash flow simulation
     const resolveDay = (day: number) => day === 0 ? daysInMonth : day;
@@ -295,11 +295,18 @@ Pre-calculated analysis:
 - Daily budget (balance minus saving goal minus unpaid bills minus debts minus investments, divided by days left): ${dailyBudget} euros/day
 - Spending by category: ${categoryBreakdown}
 - Top individual expenses: ${topExpenses}
-- Bills: ${recurringBills.length > 0 ? recurringBills.map((b) => {
+- Bills this month: ${recurringBills.length > 0 ? recurringBills.map((b) => {
       const isPaid = matchedBillIds.has(b.id);
       const isOverdue = !isPaid && b.due_day < now.getDate();
       return `${b.name}: ${b.amount} euros (due ${b.due_day}th${isPaid ? " - PAID" : isOverdue ? " - OVERDUE" : " - upcoming"})`;
     }).join(", ") : "none configured"}
+- Upcoming next month obligations (before next income): ${(() => {
+      const nextIncDay = incomeSources.length > 0 ? Math.min(...incomeSources.map((i) => i.expected_day || 31)) : 31;
+      const nextBills = recurringBills.filter((b) => b.due_day <= nextIncDay);
+      const nextDebts = debtAccounts.filter((d) => d.dueDay <= nextIncDay && d.payment > 0);
+      const items = [...nextBills.map((b) => `${b.name}: ${b.amount} euros (day ${b.due_day})`), ...nextDebts.map((d) => `${d.name}: ${d.payment} euros (day ${d.dueDay})`)];
+      return items.length > 0 ? items.join(", ") + ` — total ${Math.round(nextBills.reduce((s, b) => s + b.amount, 0) + nextDebts.reduce((s, d) => s + d.payment, 0))} euros before next income on day ${nextIncDay}` : "none";
+    })()}
 - Total monthly bills: ${recurringBills.reduce((s, b) => s + b.amount, 0)} euros
 - Income sources: ${incomeList}
 - Debts: ${debtAccounts.length > 0 ? debtAccounts.map((d) => `${d.name}: ${d.balance} euros${d.rate > 0 ? ` (${d.rate}% APR)` : ""}${d.payment > 0 ? `, ${d.payment} euros/month` : ""}${d.dueDay > 0 ? ` (due ${d.dueDay}th)` : ""}`).join(", ") : "none"}
