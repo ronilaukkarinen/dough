@@ -18,8 +18,8 @@ export async function GET(request: Request) {
     // Check for cached suggestion
     if (!refresh) {
       const cachedSuggestion = db
-        .prepare("SELECT content, created_at FROM ai_summaries WHERE user_id = ? AND locale = 'debt' ORDER BY created_at DESC LIMIT 1")
-        .get(user.id) as { content: string; created_at: string } | undefined;
+        .prepare("SELECT content, created_at FROM ai_summaries WHERE locale = 'debt' ORDER BY created_at DESC LIMIT 1")
+        .get() as { content: string; created_at: string } | undefined;
       if (cachedSuggestion) {
         console.debug("[debts/suggestion] Returning cached suggestion from", cachedSuggestion.created_at);
         return NextResponse.json({ suggestion: cachedSuggestion.content });
