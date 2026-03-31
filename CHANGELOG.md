@@ -1,3 +1,10 @@
+### 1.13.0: 2026-03-31
+
+* Synci sync only marks matched income as received in Dough, no direct YNAB creation
+* Add synci_processed table to prevent duplicate transaction processing
+* Add cron-based Synci polling every 30 minutes on server
+* Add cron secret auth for Synci sync endpoint
+
 ### 1.12.2: 2026-03-30
 
 * Flip spending flow tooltip bubble to left side on mobile when near end of month
