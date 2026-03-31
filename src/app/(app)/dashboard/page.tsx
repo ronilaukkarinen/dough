@@ -317,10 +317,10 @@ export default function DashboardPage() {
   const personalBudgetRaw = Math.round((dailyBudget * personalShare - todaySpentPersonal) * 100) / 100;
   const suggestedForYou = Math.max(0, Math.min(personalBudgetRaw, todayRemaining));
 
-  // Build spending chart data from transactions (exclude transfers)
+  // Build spending chart data from transactions (exclude transfers and fixed costs)
   const spendingByDay: Record<string, number> = {};
   const sortedTx = [...data.transactions]
-    .filter((t) => t.amount < 0 && !isTransfer(t.payee, t.category))
+    .filter((t) => t.amount < 0 && !isTransfer(t.payee, t.category) && !isFixedCost(t.payee, t.category))
     .sort((a, b) => a.date.localeCompare(b.date));
 
   let cumulative = 0;
