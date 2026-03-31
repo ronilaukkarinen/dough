@@ -92,10 +92,14 @@ export async function GET(request: Request) {
 
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const daysLeft = daysInMonth - now.getDate();
-    // Filter out transfers for accurate income/expense
-    const realExpenses = transactions.filter((t: any) => t.amount < 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation") && t.category !== "Uncategorized");
-    const realIncome = transactions.filter((t: any) => t.amount > 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation"));
-    const monthActivity = realExpenses.reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
+    // Use local transactions table for fresh data (same as dashboard)
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+    const localTx = db.prepare(
+      "SELECT date, payee, amount, category FROM transactions WHERE date >= ? GROUP BY ynab_id ORDER BY date DESC"
+    ).all(monthStart) as { date: string; payee: string; amount: number; category: string }[];
+    const realExpenses = localTx.filter((t) => t.amount < 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation") && t.category !== "Uncategorized");
+    const realIncome = localTx.filter((t) => t.amount > 0 && !t.payee.startsWith("Transfer") && !t.payee.startsWith("Starting Balance") && !t.payee.startsWith("Reconciliation"));
+    const monthActivity = realExpenses.reduce((s: number, t) => s + Math.abs(t.amount), 0);
     const monthIncomeTotal = monthBudget.income;
 
     const topExpenses = realExpenses

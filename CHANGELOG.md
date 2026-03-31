@@ -1,3 +1,7 @@
+### 2.0.1: 2026-03-31
+
+* AI summary reads from local transactions DB for consistency with dashboard
+
 ### 2.0.0: 2026-03-31
 
 * Budget calculation spans to next income across month boundary
