@@ -138,8 +138,8 @@ export async function POST(request: Request) {
           break;
         }
 
-        // Create YNAB transaction
-        if (ynabToken && ynabBudgetId && ynabAccountId) {
+        // Only create YNAB transaction for matched income (household income sources)
+        if (didMatch && ynabToken && ynabBudgetId && ynabAccountId) {
           try {
             const { createTransaction } = await import("@/lib/ynab/client");
             await createTransaction(ynabBudgetId, ynabToken, {
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
               date: txDate || now.toISOString().slice(0, 10),
               amount,
               payee_name: payee,
-              memo: didMatch ? "Synci: income" : "Synci: income (unmatched)",
+              memo: "Synci: income",
               cleared: "cleared",
             });
             totalYnabCreated++;
@@ -155,6 +155,8 @@ export async function POST(request: Request) {
           } catch (err) {
             console.error("[synci/sync] YNAB create error:", err);
           }
+        } else if (!didMatch) {
+          console.debug("[synci/sync] Skipping unmatched income:", payee, amount);
         }
 
         // Mark as processed regardless of YNAB creation
