@@ -2,6 +2,7 @@
 
 * AI summary reads from local transactions DB for consistency with dashboard
 * Use actual received income when higher than expected in AI summary
+* Convert cross-month segment days to real dates in budget tooltip
 
 ### 2.0.0: 2026-03-31
 
