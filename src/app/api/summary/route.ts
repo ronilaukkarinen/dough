@@ -230,16 +230,20 @@ export async function GET(request: Request) {
       .prepare("SELECT id, amount, expected_day FROM income_sources WHERE is_active = 1")
       .all() as { id: number; amount: number; expected_day: number }[];
 
+    const allDebtItems = debtAccounts.map((d) => ({ amount: d.payment, dueDay: d.dueDay }));
     const budgetParams = {
       balance: checkingSavings,
       savingGoal,
       today: daysPassed,
       daysInMonth,
       unpaidBills: recurringBills.filter((b) => !matchedBillIds.has(b.id)).map((b) => ({ amount: b.amount, dueDay: b.due_day })),
-      debts: debtAccounts.map((d) => ({ amount: d.payment, dueDay: d.dueDay })),
+      debts: allDebtItems,
       unreceivedIncomes: incomeWithIds
         .filter((i) => resolveDay(i.expected_day) > daysPassed && !matchedIncomeIds.has(i.id))
         .map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
+      allIncomes: incomeWithIds.map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
+      allBills: recurringBills.map((b) => ({ amount: b.amount, dueDay: b.due_day })),
+      allDebts: allDebtItems,
       resolveDay,
     };
     const billsSetting = getExcludedSetting("budget_include_bills") || "auto";
