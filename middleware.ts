@@ -11,9 +11,10 @@ export async function middleware(request: NextRequest) {
   const isLoginPage = request.nextUrl.pathname.startsWith("/login");
   const isApiAuth = request.nextUrl.pathname.startsWith("/api/auth");
   const isEvents = request.nextUrl.pathname === "/api/events";
+  const isSynciSync = request.nextUrl.pathname === "/api/synci/sync";
 
-  // Allow auth API, SSE events, and static assets
-  if (isApiAuth || isEvents) {
+  // Allow auth API, SSE events, cron endpoints, and static assets
+  if (isApiAuth || isEvents || isSynciSync) {
     return NextResponse.next();
   }
 
