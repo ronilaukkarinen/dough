@@ -162,7 +162,7 @@ export async function GET(request: Request) {
       .filter((i) => i.expected_day > now.getDate())
       .reduce((s, i) => s + i.amount, 0);
 
-    const totalExpectedMonthlyIncome = incomeSources.reduce((s, i) => s + i.amount, 0);
+    const totalExpectedMonthlyIncome = Math.max(monthIncomeTotal, incomeSources.reduce((s, i) => s + i.amount, 0));
 
     // Better projection: separate bills from discretionary spending
     const totalBillsAmount = recurringBills.reduce((s, b) => s + b.amount, 0);
