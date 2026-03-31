@@ -32,11 +32,11 @@ export async function GET(request: Request) {
 
     const requestLocale = url.searchParams.get("locale") || "en";
 
-    // Check for cached summary (valid for 24 hours)
+    // Check for cached summary — shared across all users
     if (!forceRefresh) {
       const cached = db
-        .prepare("SELECT content, created_at FROM ai_summaries WHERE user_id = ? AND locale = ? ORDER BY created_at DESC LIMIT 1")
-        .get(user.id, requestLocale) as { content: string; created_at: string } | undefined;
+        .prepare("SELECT content, created_at FROM ai_summaries WHERE locale = ? ORDER BY created_at DESC LIMIT 1")
+        .get(requestLocale) as { content: string; created_at: string } | undefined;
 
       if (cached) {
         console.debug("[summary] Returning cached", requestLocale, "summary from", cached.created_at);
