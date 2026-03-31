@@ -480,21 +480,59 @@ export default function DashboardPage() {
         billsDelayNeeded={billsDelayNeeded}
         budgetWithBills={budgetWithBills.dailyBudget}
         thresholds={thresholds}
-        upcomingBills={bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0)}
+        upcomingBills={(() => {
+          const thisMonth = bills.filter((b) => b.is_active && !b.is_paid).reduce((s, b) => s + b.amount, 0);
+          if (thisMonth > 0) return thisMonth;
+          // All paid this month — show next month's bills before next income
+          const nextIncDay = incomes.filter((i) => i.is_active).map((i) => resolveDay(i.expected_day)).sort((a, b) => a - b)[0] || 31;
+          return bills.filter((b) => b.is_active && b.due_day <= nextIncDay).reduce((s, b) => s + b.amount, 0);
+        })()}
+        upcomingObligations={(() => {
+          const items: { name: string; amount: number; dueDay: number; absDay: number }[] = [];
+          // This month's unpaid bills
+          for (const b of bills.filter((b) => b.is_active && !b.is_paid)) {
+            if (b.due_day > today) items.push({ name: b.name, amount: b.amount, dueDay: b.due_day, absDay: b.due_day });
+          }
+          // Next month's bills within 14 days
+          for (const b of bills.filter((b) => b.is_active)) {
+            const absDay = daysInMonth + b.due_day;
+            if (absDay - today <= 14 && absDay > daysInMonth) items.push({ name: b.name, amount: b.amount, dueDay: b.due_day, absDay });
+          }
+          // Debts within 14 days
+          for (const d of data.summary.accounts.filter((a) => a.type === "otherDebt")) {
+            const override = debtItems.find((di) => di.dueDay > 0);
+            if (override && override.dueDay > today && override.dueDay - today <= 14) {
+              items.push({ name: d.name, amount: override.amount, dueDay: override.dueDay, absDay: override.dueDay });
+            }
+          }
+          return items.sort((a, b) => a.absDay - b.absDay);
+        })()}
         accountCount={data.summary.accounts.filter((a) => (a.type === "checking" || a.type === "savings") && !excludedAccountIds.includes(a.id)).length}
-        billCount={bills.filter((b) => b.is_active && !b.is_paid).length}
+        billCount={(() => {
+          const thisMonth = bills.filter((b) => b.is_active && !b.is_paid).length;
+          if (thisMonth > 0) return thisMonth;
+          const nextIncDay = incomes.filter((i) => i.is_active).map((i) => resolveDay(i.expected_day)).sort((a, b) => a - b)[0] || 31;
+          return bills.filter((b) => b.is_active && b.due_day <= nextIncDay).length;
+        })()}
         nextIncomeAmount={(() => {
           const next = incomes
             .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
             .sort((a, b) => a.expected_day - b.expected_day)[0];
-          return next?.amount ?? 0;
+          if (next) return next.amount;
+          // Wrap to next month
+          const nextMonth = incomes.filter((i) => i.is_active).sort((a, b) => resolveDay(a.expected_day) - resolveDay(b.expected_day))[0];
+          return nextMonth?.amount ?? 0;
         })()}
         nextIncomeDate={(() => {
           const next = incomes
             .filter((i) => i.is_active && resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
             .sort((a, b) => a.expected_day - b.expected_day)[0];
-          if (!next) return "";
-          return `${next.expected_day}.${now.getMonth() + 1}. – ${next.name}`;
+          if (next) return `${next.expected_day}.${now.getMonth() + 1}. – ${next.name}`;
+          // Wrap to next month
+          const nextMonth = incomes.filter((i) => i.is_active).sort((a, b) => resolveDay(a.expected_day) - resolveDay(b.expected_day))[0];
+          if (!nextMonth) return "";
+          const nextMonthNum = now.getMonth() + 2 > 12 ? 1 : now.getMonth() + 2;
+          return `${resolveDay(nextMonth.expected_day)}.${nextMonthNum}. – ${nextMonth.name}`;
         })()}
         daysUntilIncome={(() => {
           const next = incomes
