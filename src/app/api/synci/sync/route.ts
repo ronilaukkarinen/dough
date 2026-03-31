@@ -57,26 +57,18 @@ export async function POST(request: Request) {
 
     const mappedAccountIds = Object.keys(accountMapping).filter((k) => accountMapping[k]);
     if (mappedAccountIds.length === 0) {
-      return NextResponse.json({ error: "No accounts mapped", matched: 0, ynabCreated: 0 });
+      return NextResponse.json({ error: "No accounts mapped", matched: 0 });
     }
 
-    const ynabToken = getHouseholdSetting("ynab_access_token");
-    const ynabBudgetId = getHouseholdSetting("ynab_budget_id");
     const db = getDb();
     const patterns = getAllPatterns().filter((p) => p.source_type === "income");
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
-    // Track last sync time to only fetch new transactions
-    const lastSyncTime = getHouseholdSetting("synci_last_sync") || "";
-
     let totalMatched = 0;
-    let totalYnabCreated = 0;
 
     for (const synciAccountId of mappedAccountIds) {
-      const ynabAccountId = accountMapping[synciAccountId];
-
-      console.info("[synci/sync] Polling account", synciAccountId, "→ YNAB", ynabAccountId);
+      console.info("[synci/sync] Polling account", synciAccountId);
 
       const res = await fetch(`https://api.synci.io/api/v1/banks/transactions?bank_account_id=${synciAccountId}`, {
         headers: { Authorization: `Bearer ${synciToken}` },
@@ -138,24 +130,7 @@ export async function POST(request: Request) {
           break;
         }
 
-        // Only create YNAB transaction for matched income (household income sources)
-        if (didMatch && ynabToken && ynabBudgetId && ynabAccountId) {
-          try {
-            const { createTransaction } = await import("@/lib/ynab/client");
-            await createTransaction(ynabBudgetId, ynabToken, {
-              account_id: ynabAccountId,
-              date: txDate || now.toISOString().slice(0, 10),
-              amount,
-              payee_name: payee,
-              memo: "Synci: income",
-              cleared: "cleared",
-            });
-            totalYnabCreated++;
-            console.info("[synci/sync] Created YNAB transaction:", payee, amount);
-          } catch (err) {
-            console.error("[synci/sync] YNAB create error:", err);
-          }
-        } else if (!didMatch) {
+        if (!didMatch) {
           console.debug("[synci/sync] Skipping unmatched income:", payee, amount);
         }
 
@@ -167,12 +142,12 @@ export async function POST(request: Request) {
     // Update last sync time
     setHouseholdSetting("synci_last_sync", new Date().toISOString());
 
-    if (totalMatched > 0 || totalYnabCreated > 0) {
+    if (totalMatched > 0) {
       eventBus.emit("data:updated", { source: "synci-income" });
     }
 
-    console.info("[synci/sync] Done: matched", totalMatched, "income(s), created", totalYnabCreated, "YNAB transaction(s)");
-    return NextResponse.json({ ok: true, matched: totalMatched, ynabCreated: totalYnabCreated });
+    console.info("[synci/sync] Done: matched", totalMatched, "income(s)");
+    return NextResponse.json({ ok: true, matched: totalMatched });
   } catch (error) {
     console.error("[synci/sync] Error:", error);
     return NextResponse.json({ error: "Sync failed" }, { status: 500 });
