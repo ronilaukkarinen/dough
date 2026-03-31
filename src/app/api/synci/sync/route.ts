@@ -110,16 +110,54 @@ export async function POST(request: Request) {
           if (pattern.max_amount > 0 && amount > pattern.max_amount) continue;
 
           try {
+            const ynabAccountId = accountMapping[synciAccountId] || "";
+            const ynabToken = getHouseholdSetting("ynab_access_token");
+            const ynabBudgetId = getHouseholdSetting("ynab_budget_id");
+            let realYnabId = synciTxId;
+
+            // Create in YNAB first to get real ID
+            if (ynabToken && ynabBudgetId && ynabAccountId) {
+              try {
+                const { createTransaction } = await import("@/lib/ynab/client");
+                const ynabTx = await createTransaction(ynabBudgetId, ynabToken, {
+                  account_id: ynabAccountId,
+                  date: txDate || now.toISOString().slice(0, 10),
+                  amount,
+                  payee_name: payee,
+                  memo: "Synci",
+                  cleared: "cleared",
+                });
+                if (ynabTx?.id) realYnabId = ynabTx.id;
+                console.info("[synci/sync] Created YNAB transaction:", payee, amount, "id:", realYnabId);
+              } catch (err) {
+                console.error("[synci/sync] YNAB create error:", err);
+              }
+            }
+
             db.prepare(`
               INSERT OR IGNORE INTO monthly_matches (source_type, source_id, month, ynab_transaction_id, amount)
               VALUES (?, ?, ?, ?, ?)
-            `).run("income", pattern.source_id, matchMonth, synciTxId, amount);
+            `).run("income", pattern.source_id, matchMonth, realYnabId, amount);
 
             db.prepare(`
               INSERT INTO income_amount_history (income_id, amount, month)
               VALUES (?, ?, ?)
               ON CONFLICT(income_id, month) DO UPDATE SET amount = excluded.amount
             `).run(pattern.source_id, amount, matchMonth);
+
+            // Insert as transaction in Dough with the real YNAB ID
+            const firstUser = db.prepare("SELECT id FROM users LIMIT 1").get() as { id: number } | undefined;
+            if (firstUser && ynabAccountId) {
+              db.prepare(`
+                INSERT OR IGNORE INTO transactions (user_id, ynab_id, date, amount, payee, category, memo, account_id, approved, cleared)
+                VALUES (?, ?, ?, ?, ?, '', 'Synci', ?, 1, 'cleared')
+              `).run(firstUser.id, realYnabId, txDate || now.toISOString().slice(0, 10), amount, payee, ynabAccountId);
+
+              db.prepare("UPDATE ynab_accounts SET balance = balance + ?, updated_at = datetime('now') WHERE id = ?")
+                .run(amount, ynabAccountId);
+
+              console.info("[synci/sync] Inserted transaction:", payee, amount, "into account", ynabAccountId);
+            }
 
             totalMatched++;
             didMatch = true;
