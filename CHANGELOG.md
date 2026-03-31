@@ -1,3 +1,17 @@
+### 1.14.0: 2026-03-31
+
+* Budget calculation spans to next income across month boundary
+* Exclude bill, debt and investment payments from daily budget spending
+* Show upcoming obligations total with tooltip in daily budget note
+* Bills, next income and bill count wrap to next month when current month is done
+* Fix month estimate double-counting debt and investment payments
+* AI summary includes next month obligations and fixes double-counting
+* Share AI summary and debt suggestion cache across all household users
+* Fix Finnish relative time in AI summary age display
+* Synci income creates real YNAB transaction with proper ID and updates account balance
+* Change "tilipäivään" to "seuraavaan rahapäivään"
+* Fix Dougie daysUntilIncome and tomorrowBudget to span across months
+
 ### 1.13.0: 2026-03-31
 
 * Synci sync only marks matched income as received in Dough, no direct YNAB creation
