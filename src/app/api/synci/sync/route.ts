@@ -31,10 +31,17 @@ function patternToMatcher(pattern: string): (payee: string) => boolean {
   return (payee) => payee.toLowerCase() === trimmed.toLowerCase();
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    const user = await getSession();
-    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    // Allow cron calls with X-Cron-Secret header matching household setting
+    const cronSecret = request.headers.get("x-cron-secret");
+    const expectedSecret = getHouseholdSetting("cron_secret");
+    const isCron = cronSecret && expectedSecret && cronSecret === expectedSecret;
+
+    if (!isCron) {
+      const user = await getSession();
+      if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
     const synciToken = getHouseholdSetting("synci_api_token");
     if (!synciToken) {
