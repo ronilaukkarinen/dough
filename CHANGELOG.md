@@ -1,4 +1,4 @@
-### 1.14.0: 2026-03-31
+### 2.0.0: 2026-03-31
 
 * Budget calculation spans to next income across month boundary
 * Exclude bill, debt and investment payments from daily budget spending
