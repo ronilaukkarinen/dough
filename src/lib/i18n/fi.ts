@@ -57,7 +57,7 @@ export const fi = {
     nextIncome: "Seuraava tulo",
     cashFlowForecast: "Kassavirtaennuste",
     endOfMonthEstimate: "Kuun lopun arvio",
-    daysUntilNextIncome: "päivää tilipäivään",
+    daysUntilNextIncome: "päivää seuraavaan rahapäivään",
     cutNonEssentials: "vain välttämättömät menot",
     beCareful: "maltilla eteenpäin",
     spendingThisMonth: "Kulut tässä kuussa",
