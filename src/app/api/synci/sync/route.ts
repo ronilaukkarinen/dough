@@ -102,11 +102,8 @@ export async function POST(request: Request) {
 
         // Skip if already processed
         const synciTxId = `synci_${txId}`;
-        const existing = db.prepare("SELECT id FROM monthly_matches WHERE ynab_transaction_id = ?").get(synciTxId);
-        if (existing) continue;
-
-        // Skip if created before last sync (already seen)
-        if (lastSyncTime && tx.created_at && tx.created_at <= lastSyncTime) continue;
+        const alreadyProcessed = db.prepare("SELECT synci_tx_id FROM synci_processed WHERE synci_tx_id = ?").get(synciTxId);
+        if (alreadyProcessed) continue;
 
         const matchMonth = txDate ? `${txDate.split("-")[0]}-${txDate.split("-")[1]}` : currentMonth;
 
@@ -159,6 +156,9 @@ export async function POST(request: Request) {
             console.error("[synci/sync] YNAB create error:", err);
           }
         }
+
+        // Mark as processed regardless of YNAB creation
+        db.prepare("INSERT OR IGNORE INTO synci_processed (synci_tx_id) VALUES (?)").run(synciTxId);
       }
     }
 

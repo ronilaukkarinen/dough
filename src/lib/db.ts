@@ -427,6 +427,18 @@ function initializeDb(db: Database.Database) {
     console.info("[db] Migration complete");
   }
 
+  // Track processed Synci transactions to prevent duplicates
+  const hasSynciProcessed = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='synci_processed'").get();
+  if (!hasSynciProcessed) {
+    console.info("[db] Creating synci_processed table");
+    db.exec(`
+      CREATE TABLE synci_processed (
+        synci_tx_id TEXT PRIMARY KEY,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `);
+  }
+
   // Create chat_reactions table if missing
   const hasReactions = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='chat_reactions'").get();
   if (!hasReactions) {
