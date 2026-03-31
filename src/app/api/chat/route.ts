@@ -205,16 +205,20 @@ export async function POST(request: Request) {
           // Daily budget via shared cash flow simulation — respect bills setting
           const { calculateDailyBudget } = await import("@/lib/daily-budget");
           const billsSetting = getHouseholdSetting("budget_include_bills") || "auto";
+          const allDebtItems = debts.map((d: any) => ({ amount: d.minimumPayment || 0, dueDay: d.dueDay || 0 }));
           const budgetParams = {
             balance: checkingSavings,
             savingGoal: savingRate,
             today,
             daysInMonth,
             unpaidBills: unpaidBills.map((b) => ({ amount: b.amount, dueDay: b.dueDay })),
-            debts: debts.map((d: any) => ({ amount: d.minimumPayment || 0, dueDay: d.dueDay || 0 })),
+            debts: allDebtItems,
             unreceivedIncomes: incomeWithIds
               .filter((i) => resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
               .map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
+            allIncomes: incomeWithIds.map((i) => ({ amount: i.amount, expectedDay: i.expected_day })),
+            allBills: enrichedBills.map((b) => ({ amount: b.amount, dueDay: b.dueDay })),
+            allDebts: allDebtItems,
             resolveDay,
           };
 
@@ -263,8 +267,16 @@ export async function POST(request: Request) {
               "SELECT COALESCE(SUM(ABS(amount)), 0) as total FROM (SELECT amount FROM transactions WHERE date >= ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' AND category != 'Uncategorized' GROUP BY ynab_id)"
             ).get(monthStart) as { total: number }).total * 100
           ) / 100;
-          const daysAfterToday = Math.max(1, daysLeft - 1);
-          const tomorrowBudget = Math.max(0, Math.round((dailyBudget * daysLeft - todaySpent) / daysAfterToday));
+          const daysToNextIncome = (() => {
+            const unreceived = incomeWithIds
+              .filter((i) => resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
+              .sort((a, b) => resolveDay(a.expected_day) - resolveDay(b.expected_day));
+            if (unreceived.length > 0) return resolveDay(unreceived[0].expected_day) - today;
+            const allDays = incomeWithIds.map((i) => resolveDay(i.expected_day)).sort((a, b) => a - b);
+            return allDays.length > 0 ? (daysInMonth - today) + allDays[0] : Math.max(1, daysLeft);
+          })();
+          const daysAfterToday = Math.max(1, daysToNextIncome - 1);
+          const tomorrowBudget = Math.max(0, Math.round((dailyBudget * daysToNextIncome - todaySpent) / daysAfterToday));
 
           context = {
             totalBalance: Math.round(checkingSavings * 100) / 100,
@@ -279,7 +291,14 @@ export async function POST(request: Request) {
             savingGoal: savingRate,
             incomeSources: incomeRows.map((i) => ({ name: i.name, amount: i.amount, expectedDay: i.expected_day })),
             dailyBudget,
-            daysUntilNextIncome: daysLeft,
+            daysUntilNextIncome: (() => {
+              const unreceived = incomeWithIds
+                .filter((i) => resolveDay(i.expected_day) > today && !matchedIncomeIds.has(i.id))
+                .sort((a, b) => resolveDay(a.expected_day) - resolveDay(b.expected_day));
+              if (unreceived.length > 0) return resolveDay(unreceived[0].expected_day) - today;
+              const allDays = incomeWithIds.map((i) => resolveDay(i.expected_day)).sort((a, b) => a - b);
+              return allDays.length > 0 ? (daysInMonth - today) + allDays[0] : daysLeft;
+            })(),
             availableBeforePayday,
             dailySpendableBeforePayday,
             monthlyHistory: historySnapshots.map((s) => ({ month: s.month, income: Math.round(s.income), expenses: Math.round(s.expenses), net: Math.round(s.income - s.expenses) })),
