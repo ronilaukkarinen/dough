@@ -97,10 +97,22 @@ export function DailyAllowance({
                 <Info />
               </button>
               <span className="metric-info-popup">
-                {budgetBreakdown ? (locale === "fi"
-                  ? `Nyt: ${fmt(availableBalance)} € / ${daysUntilIncome > 0 ? daysUntilIncome : "?"} pv. Tiukin jakso: pv ${budgetBreakdown.startDay + 1}\u2013${budgetBreakdown.endDay} (${budgetBreakdown.days} pv, ${fmt(budgetBreakdown.pool)} €). Budjetti = ${fmt(dailyBudget)} €/pv`
-                  : `Now: ${fmt(availableBalance)} € / ${daysUntilIncome > 0 ? daysUntilIncome : "?"} days. Tightest: day ${budgetBreakdown.startDay + 1}\u2013${budgetBreakdown.endDay} (${budgetBreakdown.days}d, ${fmt(budgetBreakdown.pool)} €). Budget = ${fmt(dailyBudget)} €/day`
-                ) : (locale === "fi" ? "Päiväbudjetti lasketaan jakamalla käytettävissä oleva raha tulojen välisiin jaksoihin" : "Daily budget calculated by splitting available money between income segments")}
+                {budgetBreakdown ? (() => {
+                  const now2 = new Date();
+                  const dim = new Date(now2.getFullYear(), now2.getMonth() + 1, 0).getDate();
+                  const startAbs = budgetBreakdown.startDay + 1;
+                  const endAbs = budgetBreakdown.endDay;
+                  const startDay = startAbs > dim ? startAbs - dim : startAbs;
+                  const endDay = endAbs > dim ? endAbs - dim : endAbs;
+                  const startMonth = startAbs > dim ? now2.getMonth() + 2 : now2.getMonth() + 1;
+                  const endMonth = endAbs > dim ? now2.getMonth() + 2 : now2.getMonth() + 1;
+                  const range = startMonth === endMonth
+                    ? `${startDay}.${startMonth}.\u2013${endDay}.${endMonth}.`
+                    : `${startDay}.${startMonth}.\u2013${endDay}.${endMonth}.`;
+                  return locale === "fi"
+                    ? `Käytettävissä ${fmt(availableBalance)} €, ${daysUntilIncome} pv seuraavaan tuloon. Tiukin jakso: ${range} (${budgetBreakdown.days} pv, ${fmt(budgetBreakdown.pool)} €). Budjetti = ${fmt(dailyBudget)} €/pv`
+                    : `Available ${fmt(availableBalance)} €, ${daysUntilIncome} days to next income. Tightest: ${range} (${budgetBreakdown.days}d, ${fmt(budgetBreakdown.pool)} €). Budget = ${fmt(dailyBudget)} €/day`;
+                })() : (locale === "fi" ? "Päiväbudjetti lasketaan jakamalla käytettävissä oleva raha tulojen välisiin jaksoihin" : "Daily budget calculated by splitting available money between income segments")}
               </span>
             </span>
           </p>
