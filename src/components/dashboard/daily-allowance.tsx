@@ -25,6 +25,7 @@ interface DailyAllowanceProps {
   trendPercent?: number;
   billsDelayNeeded?: boolean;
   budgetWithBills?: number;
+  upcomingObligations?: { name: string; amount: number; dueDay: number; absDay: number }[];
   streakProps?: {
     dailyBudget: number;
     todaySpent: number;
@@ -61,6 +62,7 @@ export function DailyAllowance({
   trendPercent = 0,
   billsDelayNeeded = false,
   budgetWithBills = 0,
+  upcomingObligations = [],
   streakProps,
   thresholds = { tight: 20, normal: 30, good: 50 },
   budgetBreakdown,
@@ -164,6 +166,23 @@ export function DailyAllowance({
             )}
             {!billsDelayNeeded && !overspent && status === "danger" && `. ${t.dashboard.cutNonEssentials}`}
             {!billsDelayNeeded && !overspent && status === "tight" && `. ${t.dashboard.beCareful}`}
+            {upcomingObligations.length > 0 && (
+              <>
+                {" "}
+                <span className="metric-info-wrap">
+                  <span className="daily-allowance-obligations">
+                    {locale === "fi" ? "Tulossa " : "Upcoming "}
+                    <span className="text-negative"><F v={upcomingObligations.reduce((s, o) => s + o.amount, 0)} s={` ${currency}`} /></span>
+                    {locale === "fi" ? " laskuja ja velkoja" : " in bills and debts"}
+                  </span>
+                  <span className="metric-info-popup">
+                    {upcomingObligations.map((o, i) => (
+                      <span key={i}>{o.name}: {fmt(o.amount)} {currency} ({o.dueDay}.){i < upcomingObligations.length - 1 ? ", " : ""}</span>
+                    ))}
+                  </span>
+                </span>
+              </>
+            )}
           </p>
         </div>
         <div className="daily-allowance-hero-bg">
