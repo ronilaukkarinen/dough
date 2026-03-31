@@ -173,7 +173,7 @@ export function DailyAllowance({
                   <span className="daily-allowance-obligations">
                     {locale === "fi" ? "Tulossa " : "Upcoming "}
                     <span className="text-negative"><F v={upcomingObligations.reduce((s, o) => s + o.amount, 0)} s={` ${currency}`} /></span>
-                    {locale === "fi" ? " laskuja ja velkoja" : " in bills and debts"}
+                    {locale === "fi" ? " laskuja ja velkoja." : " in bills and debts."}
                   </span>
                   <span className="metric-info-popup">
                     {upcomingObligations.map((o, i) => (
