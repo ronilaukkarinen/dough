@@ -20,7 +20,7 @@ export async function GET() {
     // Get transactions for monthly transfer detection
     const now2 = new Date();
     const monthStr2 = `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, "0")}`;
-    const transactions = db.prepare("SELECT amount, account_id, date FROM transactions WHERE user_id = ? AND date >= ?").all(user.id, monthStr2 + "-01") as { amount: number; account_id: string; date: string }[];
+    const transactions = db.prepare("SELECT amount, account_id, date FROM transactions WHERE date >= ?").all(monthStr2 + "-01") as { amount: number; account_id: string; date: string }[];
 
     // Load overrides from DB
     const overrides = db.prepare("SELECT * FROM investment_overrides").all() as any[];

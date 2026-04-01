@@ -226,7 +226,7 @@ export async function POST() {
       const upsertTx = pdb.prepare(`
         INSERT INTO transactions (user_id, ynab_id, date, amount, payee, category, memo, account_id, approved, cleared)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(user_id, ynab_id) DO UPDATE SET date=excluded.date, amount=excluded.amount, payee=excluded.payee, category=excluded.category, memo=excluded.memo, account_id=excluded.account_id, approved=excluded.approved, cleared=excluded.cleared
+        ON CONFLICT(ynab_id) DO UPDATE SET date=excluded.date, amount=excluded.amount, payee=excluded.payee, category=excluded.category, memo=excluded.memo, account_id=excluded.account_id, approved=excluded.approved, cleared=excluded.cleared
       `);
       const txBatch = pdb.transaction(() => {
         for (const t of heatmapTransactions) {

@@ -335,13 +335,18 @@ function initializeDb(db: Database.Database) {
     db.exec("ALTER TABLE investment_overrides ADD COLUMN ticker TEXT DEFAULT ''");
   }
 
-  // Fix partial unique index on transactions — replace with proper unique index for upsert support
-  try {
+  // Migrate transactions to shared (one copy per ynab_id, no user_id in unique constraint)
+  const hasOldIndex = db.prepare("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_transactions_user_ynab'").get();
+  if (hasOldIndex) {
+    console.info("[db] Migrating transactions to shared (removing per-user duplicates)");
+    // Remove duplicates: keep the lowest id per ynab_id
+    db.exec("DELETE FROM transactions WHERE id NOT IN (SELECT MIN(id) FROM transactions GROUP BY ynab_id)");
+    db.exec("DROP INDEX IF EXISTS idx_transactions_user_ynab");
     db.exec("DROP INDEX IF EXISTS idx_transactions_ynab_id");
-    db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_user_ynab ON transactions(user_id, ynab_id)");
-    console.debug("[db] Ensured transactions unique index");
-  } catch (err) {
-    console.warn("[db] Transaction index migration:", err);
+    db.exec("CREATE UNIQUE INDEX idx_transactions_ynab ON transactions(ynab_id)");
+    console.info("[db] Transactions migrated to shared unique index on ynab_id");
+  } else {
+    db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_ynab ON transactions(ynab_id)");
   }
 
   // Add account_id column to transactions if missing

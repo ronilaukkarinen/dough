@@ -125,7 +125,7 @@ export async function POST(request: Request) {
         getTxDb().prepare(`
           INSERT INTO transactions (user_id, ynab_id, date, amount, payee, category, memo, account_id, approved, cleared)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 'cleared')
-          ON CONFLICT(user_id, ynab_id) DO UPDATE SET date=excluded.date, amount=excluded.amount, payee=excluded.payee, category=excluded.category, memo=excluded.memo, account_id=excluded.account_id
+          ON CONFLICT(ynab_id) DO UPDATE SET date=excluded.date, amount=excluded.amount, payee=excluded.payee, category=excluded.category, memo=excluded.memo, account_id=excluded.account_id
         `).run(user.id, createdTx.id, date || new Date().toISOString().slice(0, 10), parseFloat(amount) * -1, payee_name, createdTx.category_name || "", memo || "", account_id);
         console.info("[ynab/transaction] Persisted to local SQLite");
       } catch (err) {
