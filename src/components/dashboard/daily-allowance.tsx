@@ -178,8 +178,8 @@ export function DailyAllowance({
             )}
             {!billsDelayNeeded && !overspent && status === "danger" && `. ${t.dashboard.cutNonEssentials}`}
             {!billsDelayNeeded && !overspent && status === "tight" && `. ${t.dashboard.beCareful}`}
-            {upcomingObligations.length > 0 && (
-              <> {locale === "fi" ? "Tulossa " : "Upcoming "}<span className="text-negative"><F v={upcomingObligations.reduce((s, o) => s + o.amount, 0)} s={` ${currency}`} /></span>{locale === "fi" ? " laskuja ja velkoja." : " in bills and debts."}</>
+            {upcomingBills > 0 && (
+              <> {locale === "fi" ? "Tulossa " : "Upcoming "}<span className="text-negative"><F v={upcomingBills} s={` ${currency}`} /></span>{locale === "fi" ? " laskuja ja velkoja." : " in bills and debts."}</>
             )}
           </p>
         </div>
