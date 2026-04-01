@@ -116,6 +116,7 @@ interface Subscription {
   is_active: number;
   is_paid: boolean;
   is_overdue: boolean;
+  is_priority: number;
   patterns: string[];
 }
 
@@ -222,6 +223,17 @@ export default function SubscriptionsPage() {
     } catch (err) { console.error("[subscriptions] Toggle paid error:", err); }
   };
 
+  const togglePriority = async (subId: number, currentPriority: number) => {
+    try {
+      await fetch("/api/subscriptions", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: subId, is_priority: currentPriority ? 0 : 1 }),
+      });
+      loadSubscriptions();
+    } catch (err) { console.error("[subscriptions] Toggle priority error:", err); }
+  };
+
   const addPattern = async (subId: number) => {
     if (!newPattern.trim()) return;
     try {
@@ -308,6 +320,9 @@ export default function SubscriptionsPage() {
                     <p className={`subscription-card-name ${!sub.is_active ? "is-inactive" : ""}`}>{sub.name}</p>
                     {sub.is_paid && <Badge className="badge-matched"><Check className="icon-xs" />{locale === "fi" ? "Maksettu" : "Paid"}</Badge>}
                     {sub.is_overdue && <Badge variant="destructive">{locale === "fi" ? "Myöhässä" : "Overdue"}</Badge>}
+                    <button type="button" className={`priority-toggle ${sub.is_priority ? "is-priority" : ""}`} onClick={(e) => { e.stopPropagation(); togglePriority(sub.id, sub.is_priority); }} title={locale === "fi" ? (sub.is_priority ? "Pakollinen" : "Merkitse pakolliseksi") : (sub.is_priority ? "Must-pay" : "Mark as must-pay")}>
+                      <AlertCircle />
+                    </button>
                   </div>
                   <p className="subscription-card-meta">
                     {locale === "fi" ? "Veloitus" : "Billing"} {sub.due_day}. {locale === "fi" ? "päivä" : ""}

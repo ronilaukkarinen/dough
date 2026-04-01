@@ -15,6 +15,7 @@ import {
   Flame,
   Loader2,
   Sparkles,
+  AlertCircle,
   RefreshCw,
   Save,
   Check,
@@ -43,6 +44,7 @@ interface DebtData {
   monthlyTarget: number;
   monthlyPayment: number;
   notes: string;
+  isPriority: number;
 }
 
 function calculatePayoff(debts: DebtData[], extraPayment: number, sortFn: (a: DebtData, b: DebtData) => number) {
@@ -258,7 +260,12 @@ export default function DebtsPage() {
             <div key={debt.id} className="edit-item" draggable onDragStart={() => handleDragStart(idx)} onDragOver={(e) => handleDragOver(e, idx)} onDragEnd={handleDragEnd}>
               <div className="edit-item-header">
                 <div>
-                  <p className="edit-item-name">{debt.name}</p>
+                  <div className="list-item-name-row">
+                    <p className="edit-item-name">{debt.name}</p>
+                    <button type="button" className={`priority-toggle ${debt.isPriority ? "is-priority" : ""}`} onClick={async (e) => { e.stopPropagation(); await fetch("/api/debts", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ynab_account_id: debt.id, is_priority: debt.isPriority ? 0 : 1 }) }); setDebts((prev) => prev.map((d) => d.id === debt.id ? { ...d, isPriority: debt.isPriority ? 0 : 1 } : d)); }} title={locale === "fi" ? (debt.isPriority ? "Pakollinen" : "Merkitse pakolliseksi") : (debt.isPriority ? "Must-pay" : "Mark as must-pay")}>
+                      <AlertCircle />
+                    </button>
+                  </div>
                   {debt.monthlyPayment > 0 && (
                     <p className="edit-item-meta">
                       {locale === "fi" ? "Maksettu tässä kuussa" : "Paid this month"}: <F v={debt.monthlyPayment} />

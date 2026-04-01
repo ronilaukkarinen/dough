@@ -352,6 +352,36 @@
   white-space: nowrap;
 }
 
+/* Priority toggle */
+.priority-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted-foreground);
+  opacity: 0.3;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 150ms, opacity 150ms;
+  flex-shrink: 0;
+}
+
+.priority-toggle svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.priority-toggle.is-priority {
+  color: var(--negative);
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .priority-toggle:hover {
+    opacity: 0.7;
+  }
+}
+
 .list-item-name.is-inactive {
   color: var(--muted-foreground);
   text-decoration: line-through;

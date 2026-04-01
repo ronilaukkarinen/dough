@@ -32,6 +32,7 @@ interface Bill {
   amount_diff: number | null;
   is_overdue: boolean;
   is_due_soon: boolean;
+  is_priority: number;
   patterns: { id: number; payee_pattern: string; min_amount: number; max_amount: number }[];
   average_amount: number | null;
   history_count: number;
@@ -146,6 +147,17 @@ export default function BillsPage() {
       });
       loadBills();
     } catch (err) { console.error("[bills] Toggle paid error:", err); }
+  };
+
+  const togglePriority = async (billId: number, currentPriority: number) => {
+    try {
+      await fetch("/api/bills", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: billId, is_priority: currentPriority ? 0 : 1 }),
+      });
+      loadBills();
+    } catch (err) { console.error("[bills] Toggle priority error:", err); }
   };
 
   const addPattern = async (billId: number) => {
@@ -281,6 +293,9 @@ export default function BillsPage() {
                     {bill.is_paid && <Badge className="badge-matched"><Check className="icon-xs" />{locale === "fi" ? "Maksettu" : "Paid"}</Badge>}
                     {bill.is_overdue && <Badge variant="destructive">{locale === "fi" ? "Myöhässä" : "Overdue"}</Badge>}
                     {bill.is_due_soon && !bill.is_paid && <Badge variant="secondary">{t.bills.dueSoon}</Badge>}
+                    <button type="button" className={`priority-toggle ${bill.is_priority ? "is-priority" : ""}`} onClick={(e) => { e.stopPropagation(); togglePriority(bill.id, bill.is_priority); }} title={locale === "fi" ? (bill.is_priority ? "Pakollinen lasku" : "Merkitse pakolliseksi") : (bill.is_priority ? "Must-pay" : "Mark as must-pay")}>
+                      <AlertCircle />
+                    </button>
                   </div>
                   <p className="list-item-meta">
                     {bill.category ? `${bill.category} · ` : ""}{locale === "fi" ? "Erääntyy" : t.bills.dueOn} {bill.due_day}. {t.bills.dayOfMonth}
