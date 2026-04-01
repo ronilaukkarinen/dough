@@ -1,6 +1,9 @@
 ### 2.0.2: 2026-04-01
 
-* Fix spending flow bubble clipping on first days of month
+* Fix spending flow chart left margin offset causing clipping
+* Set spending flow overflow visible on all devices
+* Add first-day dot position transform
+* Use emoji flames in savings streak with greyscale for older days
 
 ### 2.0.1: 2026-03-31
 
