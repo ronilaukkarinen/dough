@@ -23,9 +23,16 @@
   cursor: default;
 }
 
-.savings-streak-dot.is-fire {
+/* Today's fire dot: orange */
+.savings-streak-dot.is-fire:last-child {
   border-color: #f97316;
   background: color-mix(in srgb, #f97316 10%, transparent);
+}
+
+/* Older fire dots: grey */
+.savings-streak-dot.is-fire:not(:last-child) {
+  border-color: #52525b;
+  background: color-mix(in srgb, #52525b 10%, transparent);
 }
 
 .savings-streak-dot.is-fail {
@@ -49,48 +56,29 @@
   background: rgba(255, 255, 255, 0.15);
 }
 
-/* Animated fire for success days */
+/* Fire icon as emoji */
 .savings-streak-fire-icon {
-  width: 0.625rem;
-  height: 0.75rem;
-  position: relative;
+  font-size: 0.75rem;
+  line-height: 1;
 }
 
 .savings-streak-fire-icon::before {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0.5rem;
-  height: 0.625rem;
-  background: #f97316;
-  border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
-  animation: streak-flame 0.6s ease-in-out infinite alternate;
+  content: "\1F525";
 }
 
-.savings-streak-fire-icon::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0.25rem;
-  height: 0.375rem;
-  background: #fbbf24;
-  border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
-  animation: streak-flame-inner 0.5s ease-in-out infinite alternate;
-  z-index: 1;
+/* Today's flame: animated pulse */
+.savings-streak-dot:last-child .savings-streak-fire-icon {
+  animation: streak-pulse 1s ease-in-out infinite alternate;
 }
 
-@keyframes streak-flame {
-  0% { transform: translateX(-50%) scaleY(0.85); }
-  100% { transform: translateX(-50%) scaleY(1.1) translateY(-1px); }
+/* Older flames: grey via filter */
+.savings-streak-dot:not(:last-child) .savings-streak-fire-icon {
+  filter: grayscale(1) brightness(0.7);
 }
 
-@keyframes streak-flame-inner {
-  0% { transform: translateX(-50%) scaleY(0.9); opacity: 0.9; }
-  100% { transform: translateX(-50%) scaleY(1.15) translateY(-0.5px); opacity: 1; }
+@keyframes streak-pulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.15); }
 }
 
 /* Red cross for fail days */
