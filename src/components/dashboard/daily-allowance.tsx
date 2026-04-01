@@ -179,21 +179,7 @@ export function DailyAllowance({
             {!billsDelayNeeded && !overspent && status === "danger" && `. ${t.dashboard.cutNonEssentials}`}
             {!billsDelayNeeded && !overspent && status === "tight" && `. ${t.dashboard.beCareful}`}
             {upcomingObligations.length > 0 && (
-              <>
-                {" "}
-                <span className="metric-info-wrap">
-                  <span className="daily-allowance-obligations">
-                    {locale === "fi" ? "Tulossa " : "Upcoming "}
-                    <span className="text-negative"><F v={upcomingObligations.reduce((s, o) => s + o.amount, 0)} s={` ${currency}`} /></span>
-                    {locale === "fi" ? " laskuja ja velkoja." : " in bills and debts."}
-                  </span>
-                  <span className="metric-info-popup">
-                    {upcomingObligations.map((o, i) => (
-                      <span key={i}>{o.name}: {fmt(o.amount)} {currency} ({o.dueDay}.){i < upcomingObligations.length - 1 ? ", " : ""}</span>
-                    ))}
-                  </span>
-                </span>
-              </>
+              <> {locale === "fi" ? "Tulossa " : "Upcoming "}<span className="text-negative"><F v={upcomingObligations.reduce((s, o) => s + o.amount, 0)} s={` ${currency}`} /></span>{locale === "fi" ? " laskuja ja velkoja." : " in bills and debts."}</>
             )}
           </p>
         </div>
