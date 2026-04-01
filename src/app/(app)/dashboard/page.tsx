@@ -552,7 +552,12 @@ export default function DashboardPage() {
         todaySpentAll={todaySpentAll}
         todayRemaining={todayRemaining}
         monthIncome={combinedIncome}
-        monthExpenses={Math.round((realSpendingTotal + unpaidBillsAmount + (dailyDiscretionary * daysLeft)) * 100) / 100}
+        monthExpenses={Math.round((realSpendingTotal + unpaidBillsAmount + (dailyDiscretionary * daysLeft) + (() => {
+          // Add debt/investment payments if not yet paid this month
+          const debtPaid = data.transactions.some((t) => t.amount < 0 && !isTransfer(t.payee, t.category) && isFixedCost(t.payee, t.category) && debtAccountNames.has(t.category.toLowerCase()));
+          const investPaid = data.transactions.some((t) => t.category.toLowerCase().includes("sijoittaminen") || t.category.toLowerCase().includes("investment"));
+          return (debtPaid ? 0 : debtMonthly) + (investPaid ? 0 : investmentMonthly);
+        })()) * 100) / 100}
         trendPercent={trendPercent}
         budgetBreakdown={budgetResult.tightestSegment}
         streakProps={{ dailyBudget, todaySpent: todaySpentAll }}
