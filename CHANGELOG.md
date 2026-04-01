@@ -1,3 +1,17 @@
+### 2.2.0: 2026-04-02
+
+* Add must-pay priority flag to bills, subscriptions, and debts
+* Priority items always included in budget calculation regardless of auto mode
+* Priority toggle button in bill, subscription, and debt edit views
+* Priority indicator icon in bill and subscription lists
+* Show all unpaid bills total in daily budget note, consistent with Erääntyviä laskuja card
+* Fix obligations text inline without line break
+* Fix priority icon alignment for multi-line titles on mobile
+* Add gap for debt priority button on mobile
+* Show red dot and cross in savings streak when over budget
+* Update streak message when over budget
+* Fix spending flow chart start-of-month bubble clipping
+
 ### 2.1.0: 2026-04-01
 
 * Migrate transactions to shared: one copy per YNAB transaction regardless of user
