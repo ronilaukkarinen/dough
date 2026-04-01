@@ -1,3 +1,7 @@
+### 2.0.2: 2026-04-01
+
+* Fix spending flow bubble clipping on first days of month
+
 ### 2.0.1: 2026-03-31
 
 * AI summary reads from local transactions DB for consistency with dashboard
