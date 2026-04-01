@@ -3,26 +3,18 @@
 .spending-flow {
   position: relative;
   border-radius: 0.75rem;
-  overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .spending-flow {
-    overflow: visible;
-  }
+  overflow: visible;
 }
 
 .spending-flow-chart {
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
-@media (min-width: 768px) {
-  .spending-flow-chart {
-    overflow: visible;
-  }
+.spending-flow-chart .recharts-surface {
+  overflow: visible;
+}
 
-  .spending-flow-chart .recharts-surface {
-    overflow: visible;
-  }
+.spending-flow.is-first-day .recharts-reference-dot {
+  transform: translate(5px, -3px);
 }
