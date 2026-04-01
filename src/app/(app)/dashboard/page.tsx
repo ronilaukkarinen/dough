@@ -102,9 +102,10 @@ export default function DashboardPage() {
         const totalDebtPayments = debtData.debts
           .reduce((s: number, d: { minimumPayment: number; monthlyTarget: number }) => s + (d.minimumPayment || d.monthlyTarget || 0), 0);
         setDebtMonthly(totalDebtPayments);
-        setDebtItems(debtData.debts.map((d: { minimumPayment: number; monthlyTarget: number; dueDay: number }) => ({
+        setDebtItems(debtData.debts.map((d: { minimumPayment: number; monthlyTarget: number; dueDay: number; isPriority: number }) => ({
           amount: d.minimumPayment || d.monthlyTarget || 0,
           dueDay: d.dueDay || 0,
+          isPriority: !!d.isPriority,
         })));
       }
       if (matchData.monthlyMatches) {
@@ -245,9 +246,12 @@ export default function DashboardPage() {
     allDebts: debtItems,
     resolveDay,
   };
-  // Calculate with and without bills
+  // Calculate with and without bills (priority items always included in both modes)
+  const priorityBills = bills.filter((b: any) => b.is_active && !b.is_paid && b.is_priority).map((b) => ({ amount: b.amount, dueDay: b.due_day }));
+  const priorityDebts = debtItems.filter((d: any) => d.isPriority);
+  const allPriorityBills = bills.filter((b: any) => b.is_active && b.is_priority).map((b) => ({ amount: b.amount, dueDay: b.due_day }));
   const budgetWithBills = calculateDailyBudget(budgetParams);
-  const budgetWithoutBills = calculateDailyBudget({ ...budgetParams, unpaidBills: [], debts: [] });
+  const budgetWithoutBills = calculateDailyBudget({ ...budgetParams, unpaidBills: priorityBills, debts: priorityDebts, allBills: allPriorityBills, allDebts: priorityDebts });
 
   // Auto mode: include bills if balance covers them AND budget stays above "normal" threshold
   let useBills: boolean;

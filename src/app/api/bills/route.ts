@@ -11,7 +11,7 @@ export async function GET() {
 
     const db = getDb();
     const bills = db
-      .prepare("SELECT id, name, amount, due_day, category, is_active FROM recurring_bills ORDER BY due_day ASC")
+      .prepare("SELECT id, name, amount, due_day, category, is_active, is_priority FROM recurring_bills ORDER BY due_day ASC")
       .all() as any[];
 
     // Get matches for this month
@@ -133,6 +133,15 @@ export async function PUT(request: Request) {
         console.info("[bills] Manually marked bill", id, "as unpaid");
       }
       eventBus.emit("data:updated", { source: "bill-status-changed" });
+      return NextResponse.json({ success: true });
+    }
+
+    // Toggle priority
+    if (body.is_priority !== undefined && Object.keys(body).length === 2) {
+      db.prepare("UPDATE recurring_bills SET is_priority = ?, updated_at = datetime('now') WHERE id = ?")
+        .run(body.is_priority ? 1 : 0, id);
+      console.info("[bills] Toggled bill", id, "priority:", body.is_priority);
+      eventBus.emit("data:updated", { source: "bill-priority-changed" });
       return NextResponse.json({ success: true });
     }
 

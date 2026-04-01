@@ -444,6 +444,15 @@ function initializeDb(db: Database.Database) {
     `);
   }
 
+  // Add is_priority column to bills, subscriptions, debt_overrides
+  const billCols = db.prepare("PRAGMA table_info(recurring_bills)").all() as { name: string }[];
+  if (!billCols.some((c) => c.name === "is_priority")) {
+    console.info("[db] Adding is_priority column to recurring_bills, subscriptions, debt_overrides");
+    db.exec("ALTER TABLE recurring_bills ADD COLUMN is_priority INTEGER NOT NULL DEFAULT 0");
+    db.exec("ALTER TABLE subscriptions ADD COLUMN is_priority INTEGER NOT NULL DEFAULT 0");
+    db.exec("ALTER TABLE debt_overrides ADD COLUMN is_priority INTEGER NOT NULL DEFAULT 0");
+  }
+
   // Create chat_reactions table if missing
   const hasReactions = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='chat_reactions'").get();
   if (!hasReactions) {

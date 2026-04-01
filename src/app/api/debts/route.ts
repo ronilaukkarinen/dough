@@ -55,6 +55,7 @@ export async function GET() {
         monthlyPayment,
         notes: override?.notes ?? "",
         sortOrder: override?.sort_order ?? 999,
+        isPriority: override?.is_priority ?? 0,
       };
     });
 
@@ -102,6 +103,17 @@ export async function PUT(request: Request) {
     const { ynab_account_id, interest_rate, minimum_payment, due_day, notes } = body;
 
     if (!ynab_account_id) return NextResponse.json({ error: "Account ID required" }, { status: 400 });
+
+    // Toggle priority only
+    if (body.is_priority !== undefined && !due_day) {
+      const db2 = getDb();
+      db2.prepare("UPDATE debt_overrides SET is_priority = ?, updated_at = datetime('now') WHERE ynab_account_id = ?")
+        .run(body.is_priority ? 1 : 0, ynab_account_id);
+      console.info("[debts] Toggled priority for", ynab_account_id, ":", body.is_priority);
+      eventBus.emit("data:updated", { source: "debt-priority-changed" });
+      return NextResponse.json({ success: true });
+    }
+
     if (!due_day || due_day < 1 || due_day > 31) return NextResponse.json({ error: "Due day (1-31) required" }, { status: 400 });
 
     const db = getDb();

@@ -97,6 +97,15 @@ export async function PUT(request: Request) {
 
     const db = getDb();
 
+    // Toggle priority
+    if (body.is_priority !== undefined && Object.keys(body).length === 2) {
+      db.prepare("UPDATE subscriptions SET is_priority = ?, updated_at = datetime('now') WHERE id = ?")
+        .run(body.is_priority ? 1 : 0, id);
+      console.info("[subscriptions] Toggled", id, "priority:", body.is_priority);
+      eventBus.emit("data:updated", { source: "subscription-priority-changed" });
+      return NextResponse.json({ success: true });
+    }
+
     // Manual paid/unpaid toggle
     if (body.mark_paid !== undefined) {
       const month = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
