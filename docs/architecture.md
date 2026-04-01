@@ -10,9 +10,10 @@
 - **Icons**: lucide-react
 - **Charts**: Recharts
 - **i18n**: Custom locale system with React context
-- **AI**: Claude CLI via stdin pipe
+- **AI**: Claude CLI via stdin pipe (Opus model)
 - **Real-time**: Server-Sent Events (in-process EventBus)
 - **Finance data**: YNAB REST API
+- **Bank sync**: Synci REST API (income polling)
 
 ### Directory structure
 
@@ -21,101 +22,141 @@ src/
   app/                    # Next.js app router pages
     (app)/                # Authenticated app pages
     api/                  # API routes
+      chat/               # Chat messages, reactions, typing
+      synci/              # Synci bank sync (accounts, sync)
+      ynab/               # YNAB sync, transactions, accounts
+      heatmap/            # Spending heatmap data
+      summary/            # AI financial summary
     login/                # Public login page
   components/
     ui/                   # Reusable UI components
-    layout/               # App shell, sidebar
-    dashboard/            # Dashboard components (greeting, charts, net worth, etc.)
+    layout/               # App shell, sidebar, FAB
+    dashboard/            # Dashboard components
     chat/                 # Chat interface
+    shared/               # Shared components (add expense dialog)
   lib/
     auth.ts               # JWT session management
-    db.ts                 # SQLite database + schema init
+    db.ts                 # SQLite database + schema init + migrations
     event-bus.ts          # In-memory pub/sub for SSE
     use-events.ts         # Client-side SSE hook
+    daily-budget.ts       # Segment-based cash flow simulation
     household.ts          # Shared household settings helpers
     matching.ts           # YNAB payee matching engine
     transaction-utils.ts  # Transfer detection helpers
-    date-utils.ts         # Date formatting (Finnish format, relative dates)
+    date-utils.ts         # Date formatting
     locale-context.tsx    # React context for i18n
     ynab-context.tsx      # React context for YNAB data
     ai/
-      finance-advisor.ts  # Claude CLI integration for chat
+      finance-advisor.ts  # Claude CLI integration for Dougie
+      claude-image.ts     # Claude vision for receipts
       default-prompts.ts  # Default AI prompt templates
     ynab/
-      client.ts           # YNAB REST API client
+      client.ts           # YNAB REST API client (read + create)
     i18n/
       en.ts, fi.ts        # Translation files
   styles/
     theme.css             # CSS custom properties (light/dark)
-    base.css              # Resets, typography, focus styles
+    base.css              # Resets, typography
     animations.css        # Keyframes
     state.css             # State classes
-    layout.css            # App shell, sidebar, page layout
+    layout.css            # App shell, sidebar, FAB, PWA safe areas
     modules/              # Per-component CSS modules
     index.css             # Single entry point
-scripts/
-  seed.ts                 # User creation script
-docs/                     # Documentation
+middleware.ts             # Auth middleware with exemptions
 data/                     # SQLite database (gitignored)
+docs/                     # Documentation
 ```
 
 ### Database tables
 
-- `users` — user accounts with locale, linked YNAB credentials
+- `users` — user accounts with locale, budget share
 - `user_linked_accounts` — per-user linked YNAB spending accounts
-- `household_settings` — shared key-value settings (YNAB, saving rate, AI prompts, etc.)
-- `recurring_bills` — monthly recurring bills
+- `household_settings` — shared key-value settings
+- `transactions` — YNAB transactions (shared, unique on ynab_id)
+- `recurring_bills` — monthly bills with is_priority flag
 - `bill_amount_history` — bill amount tracking per month
 - `bill_manual_status` — manual paid/unpaid overrides per month
 - `income_sources` — income sources with expected day
 - `income_amount_history` — income amount tracking per month
-- `debt_overrides` — manual interest rate and payment overrides
-- `investment_overrides` — monthly contribution and expected return overrides for YNAB investment accounts
-- `subscriptions` — recurring subscriptions with brand styling
+- `debt_overrides` — interest rate, payment, priority overrides
+- `investment_overrides` — contribution, return, ticker overrides
+- `subscriptions` — recurring subscriptions with brand styling and priority
 - `account_notes` — per-account notes for AI context
-- `savings_goals` — savings targets with progress tracking
-- `payee_matches` — YNAB payee patterns for matching with optional amount range
+- `savings_goals` — savings targets with progress
+- `payee_matches` — YNAB payee patterns with optional amount range
 - `monthly_matches` — matched transactions per source per month
-- `chat_messages` — shared chat history with optional image thumbnails
+- `chat_messages` — shared chat history with image thumbnails
+- `chat_reactions` — emoji reactions on chat messages
 - `chat_last_seen` — per-user read tracking
 - `typing_status` — real-time typing indicators
 - `transactions_last_seen` — per-user transaction read tracking
+- `daily_budget_history` — daily budget and spending for savings streak
 - `net_worth_snapshots` — daily net worth history
-- `monthly_snapshots` — monthly income/expenses/categories history for trends and cash flow chart
-- `ai_summaries` — cached AI summaries per locale
+- `monthly_snapshots` — monthly income/expenses/categories for trends
+- `ai_summaries` — cached AI summaries per locale (shared across users)
+- `synci_processed` — tracks processed Synci transaction IDs
+- `ynab_accounts` — cached YNAB accounts with closed status
+- `ynab_categories` — cached YNAB categories per month
+- `ynab_month_budget` — cached YNAB month budget data
+- `ticker_cache` — cached stock/fund ticker data
 
 ### Data flow
 
-1. YNAB sync fetches accounts, transactions, month budget
-2. Data cached in YNAB context (React state, not DB)
+1. YNAB sync fetches accounts, transactions (10 months), month budget
+2. Data persisted to local SQLite tables
 3. Auto-match runs against payee patterns
-4. Net worth snapshot saved to DB
-5. SSE broadcasts `sync:complete` to all clients
-6. All connected dashboards re-fetch and update
+4. Deleted YNAB transactions removed from local DB
+5. Closed accounts marked in ynab_accounts
+6. Net worth and monthly snapshots saved
+7. SSE broadcasts `sync:complete` and `data:updated` to all clients
+8. Dashboards, heatmap, and chat re-fetch from local DB
+
+### Budget calculation
+
+Segment-based cash flow simulation (`src/lib/daily-budget.ts`):
+
+1. Spans from today to next income event (wraps across month boundary)
+2. Builds segments between income events
+3. Subtracts obligations (bills, debts) due in each segment
+4. Savings goal deducted from last segment
+5. Daily budget = tightest segment's pool / days
+6. Must-pay priority items always subtracted regardless of auto mode
+7. Non-priority items optionally included based on settings
 
 ### AI integration
 
-Claude CLI is invoked via `spawn` with stdin pipe. Three AI features:
+Claude CLI invoked via `spawn` with Opus model. Features:
 
-1. **Chat advisor** — full conversation with financial context
-2. **Daily summary** — cached 24h, includes income/expense/burn rate
-3. **Debt suggestion** — one-shot advice on debt prioritization
+1. **Dougie (chat advisor)** — full conversation with financial context, priority awareness, conservative advice
+2. **AI summary** — cached, shared across users, reads from local DB
+3. **Debt suggestion** — one-shot advice, shared cache
+4. **Receipt parsing** — Claude vision extracts amounts, payees, dates, accounts
+5. **Transaction categorization** — AI picks YNAB category for new expenses
 
-All prompts are editable via settings. Household profile injected into every prompt.
+### Synci integration
+
+Polls Synci REST API every 30 minutes via systemd timer:
+
+1. Fetches transactions for mapped bank accounts
+2. Matches positive amounts against income source patterns
+3. Creates real YNAB transaction with proper ID
+4. Updates local account balance
+5. Marks income as received in monthly_matches
+6. Deduplicates via synci_processed table
 
 ### Authentication flow
 
 1. User submits credentials to `POST /api/auth/login`
 2. Server validates against SQLite, returns JWT in httpOnly cookie
 3. Middleware checks JWT on every request
-4. Unauthenticated requests redirect to `/login`
-5. Logout via GET redirect clears cookie server-side
+4. Exempted: `/api/auth`, `/api/events`, `/api/synci/sync` (cron secret)
+5. Unauthenticated requests redirect to `/login`
 
 ### CSS naming convention
 
 - Module root: `.card`, `.button`, `.dialog`
 - Sub-elements: `.card-header`, `.card-title`
 - Layout: `.l-app-shell`, `.l-sidebar`, `.l-page-container`
-- State: `.is-active`, `.is-disabled`, `.is-paid`
+- State: `.is-active`, `.is-disabled`, `.is-paid`, `.is-priority`
 - Variants: `[data-variant="outline"]`, `[data-size="sm"]`
 - Overrides use compound selectors: `.card.metric-card`
