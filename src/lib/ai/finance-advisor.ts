@@ -73,8 +73,10 @@ ${ctx.accounts.length > 0 ? `Accounts (ALWAYS consider ALL accounts when giving 
 ${ctx.accounts.map(a => `- ${a.name}: ${a.balance} euros (${a.type})${a.note ? `, ${a.note}` : ""}${(a as Record<string, unknown>).excludedFromBudget ? " [excluded from daily budget]" : ""}`).join("\n")}` : ""}
 
 Upcoming bills and subscriptions this month:
-${ctx.upcomingBills.length > 0 ? ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th${b.status ? ` - ${b.status.toUpperCase()}` : ""}${(b as Record<string, unknown>).type === "subscription" ? " [subscription, auto-charged]" : " [bill, needs payment]"})`).join("\n") : "- None configured"}
-Note: Subscriptions are auto-charged from card, no action needed. Bills need manual payment or bank transfer.
+${ctx.upcomingBills.length > 0 ? ctx.upcomingBills.map(b => `- ${b.name}: ${b.amount} euros (due ${b.dueDay}th${b.status ? ` - ${b.status.toUpperCase()}` : ""}${(b as Record<string, unknown>).type === "subscription" ? " [subscription]" : " [bill]"}${(b as Record<string, unknown>).isPriority ? " ⚠ MUST-PAY" : ""})`).join("\n") : "- None configured"}
+- Total unpaid obligations: ${ctx.upcomingBills.filter(b => b.status !== "paid").reduce((s, b) => s + b.amount, 0).toFixed(0)} euros
+- Must-pay unpaid: ${ctx.upcomingBills.filter(b => b.status !== "paid" && (b as Record<string, unknown>).isPriority).reduce((s, b) => s + b.amount, 0).toFixed(0)} euros
+Note: Items marked MUST-PAY are always reserved from the budget. Other bills can be delayed if needed.
 
 Recent transactions (last 10, with dates):
 ${ctx.recentTransactions.slice(0, 10).map(t => `- ${t.date}: ${t.payee} - ${Math.abs(t.amount)} euros (${t.category})${t.spender ? ` [${t.spender}]` : ""}`).join("\n")}
@@ -92,6 +94,12 @@ ${ctx.savingsGoals.map(g => `- ${g.name}: ${g.saved}/${g.target} euros${g.target
 
 ${ctx.monthlyHistory.length > 0 ? `Previous months (for trends/comparisons):
 ${ctx.monthlyHistory.map(m => `- ${m.month}: income ${m.income} euros, expenses ${m.expenses} euros, net ${m.net} euros`).join("\n")}` : ""}
+
+ADVICE STYLE:
+- Always give conservative, cautious financial advice. Err on the side of saving.
+- When asked "can I afford X", consider all unpaid obligations, upcoming bills, and savings goals before answering.
+- If spending would leave less than 3 days worth of daily budget as buffer, advise against it.
+- Acknowledge must-pay obligations first, then discretionary spending.
 
 FORMATTING RULES (always follow):
 - NEVER use em-dashes (—) or en-dashes (–). Use commas, periods, or line breaks instead.

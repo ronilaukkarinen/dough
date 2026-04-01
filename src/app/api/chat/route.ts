@@ -122,8 +122,8 @@ export async function POST(request: Request) {
 
           // Load recurring bills with paid/overdue status
           const bills = chatDb
-            .prepare("SELECT id, name, amount, due_day FROM recurring_bills WHERE is_active = 1 ORDER BY due_day ASC")
-            .all() as { id: number; name: string; amount: number; due_day: number }[];
+            .prepare("SELECT id, name, amount, due_day, is_priority FROM recurring_bills WHERE is_active = 1 ORDER BY due_day ASC")
+            .all() as { id: number; name: string; amount: number; due_day: number; is_priority: number }[];
 
           const chatMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
           const chatBillMatches = chatDb
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
             .all(chatMonth) as { bill_id: number; is_paid: number }[];
           const manualMap = new Map(manualStatuses.map((m) => [m.bill_id, !!m.is_paid]));
 
-          const enrichedBills: { name: string; amount: number; dueDay: number; status: string; type: string }[] = bills.map((b) => {
+          const enrichedBills: { name: string; amount: number; dueDay: number; status: string; type: string; isPriority: boolean }[] = bills.map((b) => {
             const isPaid = manualMap.has(b.id) ? manualMap.get(b.id)! : paidBillIds.has(b.id);
             return {
             name: b.name,
@@ -145,12 +145,13 @@ export async function POST(request: Request) {
             dueDay: b.due_day,
             status: isPaid ? "paid" : b.due_day < now.getDate() ? "overdue" : "upcoming",
             type: "bill",
+            isPriority: !!b.is_priority,
           }; });
 
           // Load subscriptions with paid status from payee matching
           const subscriptions = chatDb
-            .prepare("SELECT id, name, amount, due_day FROM subscriptions WHERE is_active = 1 ORDER BY due_day ASC")
-            .all() as { id: number; name: string; amount: number; due_day: number }[];
+            .prepare("SELECT id, name, amount, due_day, is_priority FROM subscriptions WHERE is_active = 1 ORDER BY due_day ASC")
+            .all() as { id: number; name: string; amount: number; due_day: number; is_priority: number }[];
           const subMatches = chatDb
             .prepare("SELECT source_id FROM monthly_matches WHERE source_type = 'subscription' AND month = ?")
             .all(chatMonth) as { source_id: number }[];
@@ -164,6 +165,7 @@ export async function POST(request: Request) {
               dueDay: sub.due_day,
               status: paidSubIds.has(sub.id) ? "paid" : sub.due_day < now.getDate() ? "overdue" : "upcoming",
               type: "subscription",
+              isPriority: !!sub.is_priority,
             });
           }
 

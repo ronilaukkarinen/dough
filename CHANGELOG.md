@@ -1,3 +1,10 @@
+### 2.2.1: 2026-04-02
+
+* Dougie knows about must-pay priority flags on bills, subscriptions, and debts
+* Show total unpaid and must-pay amounts in Dougie context
+* Add conservative advice rules to Dougie system prompt
+* Add NextDNS brand config and SVG icon
+
 ### 2.2.0: 2026-04-02
 
 * Add must-pay priority flag to bills, subscriptions, and debts
