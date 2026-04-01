@@ -434,6 +434,16 @@ export default function BillsPage() {
                   ? (locale === "fi" ? "Merkitse maksamattomaksi" : "Mark unpaid")
                   : (locale === "fi" ? "Merkitse maksetuksi" : "Mark paid")}
               </Button>
+              <Button
+                type="button"
+                variant={editTarget.is_priority ? "destructive" : "outline"}
+                size="sm"
+                onClick={() => { togglePriority(editTarget.id, editTarget.is_priority); setEditTarget({ ...editTarget, is_priority: editTarget.is_priority ? 0 : 1 }); }}
+              >
+                {editTarget.is_priority
+                  ? (locale === "fi" ? "Pakollinen lasku" : "Must-pay bill")
+                  : (locale === "fi" ? "Merkitse pakolliseksi" : "Mark as must-pay")}
+              </Button>
               <div className="form-grid-2">
                 <Button type="button" variant="destructive" onClick={() => { deleteBill(editTarget.id); setEditOpen(false); }}>
                   {t.common.delete}
