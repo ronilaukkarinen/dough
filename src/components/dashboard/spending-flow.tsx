@@ -117,12 +117,9 @@ export function SpendingFlow({
 
     const bw = bubbleLabel.length * 5.8 + 6;
     const bh = 20;
-    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-    const flipLeft = isEndOfMonth && isMobile;
-    const rawBx = flipLeft ? x - bw + 4 : x + 8;
-    const bx = Math.max(3, rawBx);
-    const isStartOfMonth = daysPassed <= 3;
-    const by = isStartOfMonth ? y - bh - 18 : y - bh - 5;
+    const flipLeft = isEndOfMonth && typeof window !== "undefined" && window.innerWidth < 768;
+    const bx = flipLeft ? x - bw + 4 : x + 8;
+    const by = y - bh - 5;
 
     const tipPath = flipLeft
       ? `M${bx + bw - 2},${by + bh - 2} L${bx + bw - 9},${by + bh - 2} L${bx + bw - 2},${by + bh + 5} Z`
@@ -149,10 +146,10 @@ export function SpendingFlow({
   };
 
   return (
-    <div className="spending-flow">
+    <div className={`spending-flow ${daysPassed <= 1 ? "is-first-day" : ""}`}>
       <div className="spending-flow-chart">
         <ResponsiveContainer width="100%" height={160}>
-          <AreaChart data={data} margin={{ top: 36, right: 4, left: -20, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 36, right: 4, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="flowLineGrad" x1="0" y1="0" x2="1" y2="0">
                 {gradientStops.map((s, i) => (
