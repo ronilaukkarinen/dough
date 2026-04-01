@@ -95,7 +95,7 @@ export function SavingsStreak({ dailyBudget, todaySpent }: SavingsStreakProps) {
             {days.map((d, i) => (
               <div
                 key={i}
-                className={`savings-streak-dot ${d.status === "fire" ? "is-fire" : d.status === "fail" ? "is-fail" : d.status === "today" ? (dailyBudget > 0 && d.spent <= dailyBudget ? "is-fire" : "is-today") : "is-neutral"}`}
+                className={`savings-streak-dot ${d.status === "fire" ? "is-fire" : d.status === "fail" ? "is-fail" : d.status === "today" ? (dailyBudget > 0 && d.spent <= dailyBudget ? "is-fire" : "is-fail") : "is-neutral"}`}
               >
                 {(d.status === "fire" || (d.status === "today" && dailyBudget > 0 && d.spent <= dailyBudget)) && <span className="savings-streak-fire-icon" />}
                 {d.status === "fail" && <span className="savings-streak-x-icon" />}
@@ -111,6 +111,8 @@ export function SavingsStreak({ dailyBudget, todaySpent }: SavingsStreakProps) {
           <p className="metric-card-note">
             {currentStreak > 0
               ? (locale === "fi" ? `Olet onnistunut selviämään alle päiväbudjetin ${currentStreak} päivää putkeen.` : `You've stayed under budget ${currentStreak} days in a row.`)
+              : todaySpent > dailyBudget
+              ? (locale === "fi" ? "Päiväbudjetti ylitetty. Huomenna uusi mahdollisuus!" : "Over budget today. Tomorrow is a fresh start!")
               : (locale === "fi" ? "Ei putkea vielä. Pysy budjetissa tänään!" : "No streak yet. Stay under budget today!")}
           </p>
         </div>
