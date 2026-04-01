@@ -234,7 +234,22 @@ export async function POST() {
         }
       });
       txBatch();
-      console.info("[api/ynab/sync] Persisted", heatmapTransactions.length, "transactions (6 months)");
+
+      // Delete local transactions that were removed from YNAB
+      const ynabIds = new Set(heatmapTransactions.map((t: any) => t.id));
+      const heatmapSinceStr = `${heatmapSince.getFullYear()}-${String(heatmapSince.getMonth() + 1).padStart(2, "0")}-01`;
+      const localTx = pdb.prepare(
+        "SELECT ynab_id FROM transactions WHERE user_id = ? AND date >= ? AND ynab_id NOT LIKE 'synci_%'"
+      ).all(user.id, heatmapSinceStr) as { ynab_id: string }[];
+      let deleted = 0;
+      for (const lt of localTx) {
+        if (!ynabIds.has(lt.ynab_id)) {
+          pdb.prepare("DELETE FROM transactions WHERE user_id = ? AND ynab_id = ?").run(user.id, lt.ynab_id);
+          deleted++;
+        }
+      }
+      if (deleted > 0) console.info("[api/ynab/sync] Deleted", deleted, "removed transactions");
+      console.info("[api/ynab/sync] Persisted", heatmapTransactions.length, "transactions (10 months)");
 
       // Upsert month budget + categories
       const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
