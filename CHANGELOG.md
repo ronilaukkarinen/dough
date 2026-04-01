@@ -1,3 +1,8 @@
+### 2.1.0: 2026-04-01
+
+* Migrate transactions to shared: one copy per YNAB transaction regardless of user
+* Remove per-user duplicate transactions from database
+
 ### 2.0.3: 2026-04-01
 
 * Sync transaction deletions from YNAB to Dough for all users
