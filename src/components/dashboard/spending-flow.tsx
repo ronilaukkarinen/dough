@@ -120,8 +120,9 @@ export function SpendingFlow({
     const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
     const flipLeft = isEndOfMonth && isMobile;
     const rawBx = flipLeft ? x - bw + 4 : x + 8;
-    const bx = Math.max(2, rawBx);
-    const by = y - bh - 5;
+    const bx = Math.max(3, rawBx);
+    const isStartOfMonth = daysPassed <= 3;
+    const by = isStartOfMonth ? y - bh - 18 : y - bh - 5;
 
     const tipPath = flipLeft
       ? `M${bx + bw - 2},${by + bh - 2} L${bx + bw - 9},${by + bh - 2} L${bx + bw - 2},${by + bh + 5} Z`
