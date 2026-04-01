@@ -235,12 +235,11 @@ export async function POST() {
       });
       txBatch();
 
-      // Delete local transactions that were removed from YNAB
+      // Delete local transactions that were removed from YNAB (current month only to preserve history)
       const ynabIds = new Set(heatmapTransactions.map((t: any) => t.id));
-      const heatmapSinceStr = `${heatmapSince.getFullYear()}-${String(heatmapSince.getMonth() + 1).padStart(2, "0")}-01`;
       const localTx = pdb.prepare(
         "SELECT ynab_id FROM transactions WHERE user_id = ? AND date >= ? AND ynab_id NOT LIKE 'synci_%'"
-      ).all(user.id, heatmapSinceStr) as { ynab_id: string }[];
+      ).all(user.id, sinceDate) as { ynab_id: string }[];
       let deleted = 0;
       for (const lt of localTx) {
         if (!ynabIds.has(lt.ynab_id)) {
