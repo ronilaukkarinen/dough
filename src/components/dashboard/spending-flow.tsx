@@ -117,8 +117,10 @@ export function SpendingFlow({
 
     const bw = bubbleLabel.length * 5.8 + 6;
     const bh = 20;
-    const flipLeft = isEndOfMonth && typeof window !== "undefined" && window.innerWidth < 768;
-    const bx = flipLeft ? x - bw + 4 : x + 8;
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    const flipLeft = isEndOfMonth && isMobile;
+    const rawBx = flipLeft ? x - bw + 4 : x + 8;
+    const bx = Math.max(2, rawBx);
     const by = y - bh - 5;
 
     const tipPath = flipLeft
