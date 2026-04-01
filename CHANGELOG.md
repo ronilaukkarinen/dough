@@ -1,6 +1,6 @@
 ### 2.0.3: 2026-04-01
 
-* Sync transaction deletions from YNAB to Dough
+* Sync transaction deletions from YNAB to Dough for all users
 * Preserve all historical transactions, only check current month for deletions
 
 ### 2.0.2: 2026-04-01
