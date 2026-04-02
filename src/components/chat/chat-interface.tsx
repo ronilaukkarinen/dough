@@ -335,10 +335,14 @@ export function ChatInterface() {
                         const text = String(children);
                         const hasEuro = text.includes("€");
                         if (!hasEuro) return <strong>{children}</strong>;
-                        const hasMinus = text.includes("-") || text.includes("\u2212");
-                        const hasPercent = text.includes("%");
-                        const cls = hasMinus ? "chat-amount-negative" : hasPercent ? "chat-amount-neutral" : "chat-amount-positive";
-                        return <strong className={cls}>{children}</strong>;
+                        // Only short amounts get nowrap, long text with amounts stays wrappable
+                        if (text.length <= 20) {
+                          const hasMinus = text.includes("-") || text.includes("\u2212");
+                          const hasPercent = text.includes("%");
+                          const cls = hasMinus ? "chat-amount-negative" : hasPercent ? "chat-amount-neutral" : "chat-amount-positive";
+                          return <strong className={cls}>{children}</strong>;
+                        }
+                        return <strong>{children}</strong>;
                       }
                     }}>{message.content}</ReactMarkdown>
                   ) : message.content}
