@@ -110,8 +110,8 @@ export function DailyAllowance({
                     ? `${startDay}.${startMonth}.\u2013${endDay}.${endMonth}.`
                     : `${startDay}.${startMonth}.\u2013${endDay}.${endMonth}.`;
                   return locale === "fi"
-                    ? `Saldo: ${fmt(availableBalance)} €. Jakso: ${range} (${budgetBreakdown.days} pv). Pakolliset velvoitteet: ${fmt(budgetBreakdown.obligations)} €. Säästötavoite: ${fmt(budgetBreakdown.savingGoalDeducted)} €. Laskuja tulossa: ${fmt(upcomingBills)} €. Jos maksat kaikki laskut, päiväbudjetti olisi ${fmt(budgetWithBills)} €/pv.`
-                    : `Balance: ${fmt(availableBalance)} €. Window: ${range} (${budgetBreakdown.days}d). Must-pay: ${fmt(budgetBreakdown.obligations)} €. Savings: ${fmt(budgetBreakdown.savingGoalDeducted)} €. Bills upcoming: ${fmt(upcomingBills)} €. If all bills paid, budget would be ${fmt(budgetWithBills)} €/day.`;
+                    ? `Saldo: ${fmt(availableBalance)} €. Jakso: ${range} (${budgetBreakdown.days} pv). Pakolliset velvoitteet: ${fmt(budgetBreakdown.obligations)} €. Säästötavoite: ${fmt(budgetBreakdown.savingGoalDeducted)} €. Laskuja, velkoja ja tilauksia tulossa: ${fmt(upcomingBills)} €. Jos maksat kaikki, päiväbudjetti olisi ${fmt(budgetWithBills)} €/pv.`
+                    : `Balance: ${fmt(availableBalance)} €. Window: ${range} (${budgetBreakdown.days}d). Must-pay: ${fmt(budgetBreakdown.obligations)} €. Savings: ${fmt(budgetBreakdown.savingGoalDeducted)} €. Bills, debts and subscriptions upcoming: ${fmt(upcomingBills)} €. If all paid, budget would be ${fmt(budgetWithBills)} €/day.`;
                 })() : (locale === "fi" ? "Päiväbudjetti lasketaan jakamalla käytettävissä oleva raha tulojen välisiin jaksoihin" : "Daily budget calculated by splitting available money between income segments")}
               </span>
             </span>

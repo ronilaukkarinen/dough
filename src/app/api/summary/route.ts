@@ -296,7 +296,7 @@ Pre-calculated analysis:
 - Monthly investment contributions: ${totalInvestmentContributions} euros${savingGoal > 0 ? `\n- Savings goal: ${savingGoal} euros/month` : ""}
 - ** PROJECTED MONTH-END BALANCE: ${projectedMonthEnd} euros ** (USE THIS NUMBER, do not calculate your own)
 - Monthly surplus/deficit: ${totalExpectedMonthlyIncome - projectedTotalExpenses} euros (income minus projected expenses)
-- Daily budget (balance minus saving goal minus unpaid bills minus debts minus investments, divided by days left): ${dailyBudget} euros/day
+- Daily budget (rolling 14-day window: current balance minus must-pay obligations and savings, no future income counted): ${dailyBudget} euros/day
 - Spending by category: ${categoryBreakdown}
 - Top individual expenses: ${topExpenses}
 - Bills this month: ${recurringBills.length > 0 ? recurringBills.map((b) => {

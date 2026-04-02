@@ -58,13 +58,13 @@ CRITICAL RULES FOR CALCULATIONS:
 
 Current financial snapshot:
 - Checking+savings balance: ${ctx.totalBalance} euros
-- ** DAILY BUDGET: ${ctx.dailyBudget} euros/day ** (cash flow simulation: walks each future day, tracks balance as income arrives and obligations are paid, then takes the tightest point — the minimum affordable daily spend across all remaining days. This prevents future salary from inflating today's budget. USE THIS NUMBER.)
+- ** DAILY BUDGET: ${ctx.dailyBudget} euros/day ** (rolling 14-day window: current balance minus must-pay obligations and proportional savings, divided by 14 days. Future income is NOT included — only what is in the bank right now. USE THIS NUMBER.)
 - With upcoming income before payday: ${ctx.dailySpendableBeforePayday} euros/day (adds expected income arriving before month end)
 - Days left in month: ${ctx.daysUntilNextIncome}
 - Income RECEIVED so far this month: ${ctx.monthlyIncome} euros
 - Total EXPECTED monthly income: ${ctx.incomeSources.reduce((s, i) => s + i.amount, 0)} euros
 - Income sources: ${ctx.incomeSources.map(i => `${i.name}: ${i.amount} euros (day ${i.expectedDay})`).join(", ") || "none configured"}
-- MONEY TIMELINE (this is critical for advice): The household has ${ctx.totalBalance} euros NOW. ${ctx.incomeSources.filter(i => i.expectedDay > dayOfMonth).map(i => `${i.name} (${i.amount} euros) arrives day ${i.expectedDay}`).join(". ") || "No more income this month"}. Until next income, they must cover daily expenses (food, transport) from current balance. ALWAYS calculate: can they afford a payment AND still eat until the next money comes?
+- MONEY TIMELINE: The household has ${ctx.totalBalance} euros NOW. The daily budget is based ONLY on current balance (no future income counted). ${ctx.incomeSources.filter(i => i.expectedDay > dayOfMonth).map(i => `${i.name} (${i.amount} euros) arrives day ${i.expectedDay}`).join(". ") || "No more income this month"}. When income arrives, budget recalculates automatically. Until then, they must live within ${ctx.dailyBudget} euros/day from current balance. Be conservative.
 - Monthly expenses so far (excluding transfers): ${ctx.monthlyExpenses} euros
 - TODAY'S spending so far: ${ctx.todaySpent} euros. Remaining today: ${Math.max(0, ctx.dailyBudget - ctx.todaySpent).toFixed(2)} euros. Use these exact numbers.
 - Tomorrow's budget if no more spending today: ${ctx.tomorrowBudget} euros
