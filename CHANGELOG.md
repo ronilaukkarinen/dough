@@ -1,10 +1,11 @@
-### 2.2.2: 2026-04-04
+### 2.3.0: 2026-04-02
 
-* Fix double dot punctuation in daily allowance income countdown text
-* Update cutNonEssentials text to "Vain välttämättömät menot jatkossa"
-
-### 2.2.1: 2026-04-02
-
+* Replace segment-based budget with rolling 14-day window using current balance only
+* No future income projected in daily budget, recalculates when income arrives
+* Proportional savings deduction based on window length
+* Budget tooltip shows balance, window, must-pay, savings, upcoming bills, and with-bills budget
+* Update Dougie and AI summary prompts for rolling window approach
+* Dougie gets income timeline and conservative advice based on current balance
 * Dougie knows about must-pay priority flags on bills, subscriptions, and debts
 * Show total unpaid and must-pay amounts in Dougie context
 * Add conservative advice rules to Dougie system prompt

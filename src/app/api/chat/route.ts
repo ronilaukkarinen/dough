@@ -256,11 +256,22 @@ export async function POST(request: Request) {
           const dailySpendableBeforePayday = daysBeforePayday > 0 ? Math.round((Math.max(0, availableBeforePayday) / daysBeforePayday) * 100) / 100 : 0;
 
           const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-          // Use local transactions table for today's spending — it has real-time data including manually added expenses
+          // Exclude fixed costs (bills, debts, investments) from today's discretionary spending
+          const billNameSet = new Set([...bills.map((b) => b.name.toLowerCase()), ...subscriptions.map((s) => s.name.toLowerCase())]);
+          const debtNames: string[] = debts.map((d: { name: string }) => d.name.toLowerCase());
+          const debtNameSet = new Set(debtNames);
           const todayTxRows = chatDb.prepare(
-            "SELECT amount FROM transactions WHERE date = ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' GROUP BY ynab_id"
-          ).all(todayStr) as { amount: number }[];
-          const todaySpent = Math.round(todayTxRows.reduce((s, t) => s + Math.abs(t.amount), 0) * 100) / 100;
+            "SELECT amount, payee, category FROM transactions WHERE date = ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' GROUP BY ynab_id"
+          ).all(todayStr) as { amount: number; payee: string; category: string }[];
+          const isFixedCost = (p: string, c: string) => {
+            const pl = p.toLowerCase(); const cl = c.toLowerCase();
+            if ([...billNameSet].some((bn) => pl.includes(bn) || bn.includes(pl) || cl.includes(bn) || bn.includes(cl))) return true;
+            if ([...debtNameSet].some((dn) => pl.includes(dn) || dn.includes(pl) || cl.includes(dn) || dn.includes(cl))) return true;
+            if (cl.includes("sijoittaminen") || cl.includes("investing") || cl.includes("investment")) return true;
+            return false;
+          };
+          const todaySpent = Math.round(todayTxRows.filter((t) => !isFixedCost(t.payee, t.category)).reduce((s, t) => s + Math.abs(t.amount), 0) * 100) / 100;
+          const todayFixedCosts = Math.round(todayTxRows.filter((t) => isFixedCost(t.payee, t.category)).reduce((s, t) => s + Math.abs(t.amount), 0) * 100) / 100;
 
           // Monthly expenses from local DB for freshness
           const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
@@ -285,6 +296,7 @@ export async function POST(request: Request) {
             monthlyIncome: Math.round(monthBudget.income * 100) / 100,
             monthlyExpenses: localMonthlyExpenses,
             todaySpent,
+            todayFixedCosts,
             tomorrowBudget,
             upcomingBills: enrichedBills,
             recentTransactions: recentTx,
@@ -326,6 +338,7 @@ export async function POST(request: Request) {
         monthlyIncome: 0,
         monthlyExpenses: 0,
         todaySpent: 0,
+        todayFixedCosts: 0,
         tomorrowBudget: 0,
         upcomingBills: [],
         recentTransactions: [],
