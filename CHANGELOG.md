@@ -10,6 +10,9 @@
 * Show total unpaid and must-pay amounts in Dougie context
 * Add conservative advice rules to Dougie system prompt
 * Add NextDNS brand config and SVG icon
+* Exclude fixed costs (bills, debts, investments) from Dougie todaySpent
+* Show today's fixed costs separately in Dougie context
+* Only apply nowrap to short euro amounts in chat, not long bold headings
 
 ### 2.2.0: 2026-04-02
 
