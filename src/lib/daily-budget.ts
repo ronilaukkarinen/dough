@@ -1,10 +1,10 @@
 /**
- * Calculate daily budget using segment-based cash flow simulation.
+ * Calculate daily budget using a rolling window approach.
  *
- * Splits the remaining days into segments between income events,
- * wrapping into next month. Each segment has a pool of money
- * (balance at segment start minus obligations due in that segment).
- * The daily budget is the tightest segment.
+ * Looks ahead from today to find a sustainable daily spend rate.
+ * Considers all income arriving and all obligations due within the window.
+ * The window extends to the next major income (or 14 days minimum)
+ * to prevent short-sighted budgeting around small income events.
  */
 
 interface BudgetIncome {
@@ -52,22 +52,11 @@ export function calculateDailyBudget(params: {
 }): DailyBudgetResult {
   const { balance, savingGoal, today, daysInMonth, unpaidBills, debts, unreceivedIncomes, allIncomes, allBills, allDebts, resolveDay } = params;
 
-  // Find the next income after today — wrap into next month if needed
-  // Use allIncomes (all active sources) to find the earliest income in next month
-  const remainingThisMonth = unreceivedIncomes
-    .map((i) => resolveDay(i.expectedDay))
-    .filter((d) => d > today && d <= daysInMonth);
+  // Build a 14-day minimum window, extending to cover at least one significant income
+  // This prevents spending everything before a small income and starving the next period
+  const minWindowDays = 14;
 
-  let nextMonthFirstIncome = daysInMonth + 1; // default: tomorrow if no data
-  if (allIncomes && allIncomes.length > 0) {
-    // Find the earliest income day in next month = smallest expectedDay from all incomes
-    const allDays = allIncomes.map((i) => resolveDay(i.expectedDay)).sort((a, b) => a - b);
-    // The earliest income day wraps to next month as daysInMonth + that day
-    nextMonthFirstIncome = daysInMonth + (allDays[0] || 1);
-  }
-
-  // Build absolute day timeline: today ... daysInMonth ... nextMonthFirstIncome
-  // Income events this month
+  // Collect all income events with absolute day positions
   const incomeEvents: { absDay: number; amount: number }[] = [];
   for (const i of unreceivedIncomes) {
     const d = resolveDay(i.expectedDay);
@@ -76,120 +65,82 @@ export function calculateDailyBudget(params: {
     }
   }
 
-  // End boundary: next month's first income
-  const endAbsDay = incomeEvents.length > 0
-    ? Math.max(...incomeEvents.map((e) => e.absDay), nextMonthFirstIncome)
-    : nextMonthFirstIncome;
+  // Add next month's income events if window extends past month end
+  if (allIncomes) {
+    const allDays = allIncomes.map((i) => resolveDay(i.expectedDay)).sort((a, b) => a - b);
+    for (const d of allDays) {
+      incomeEvents.push({ absDay: daysInMonth + d, amount: allIncomes.find((i) => resolveDay(i.expectedDay) === d)!.amount });
+    }
+  }
+  incomeEvents.sort((a, b) => a.absDay - b.absDay);
 
-  // Total days we're budgeting across
+  // Window end: at least minWindowDays, but extend to cover the next income after that
+  const minEnd = today + minWindowDays;
+  const endAbsDay = Math.max(minEnd, incomeEvents.find((e) => e.absDay >= minEnd)?.absDay || minEnd);
+
   const totalDays = endAbsDay - today;
   if (totalDays <= 0) return { dailyBudget: 0, tightestSegment: null, segmentCount: 0 };
 
-  // Build segment boundaries from income events
-  const uniqueIncomeDays = [...new Set(incomeEvents.map((e) => e.absDay))].sort((a, b) => a - b);
-  const boundaries = [today, ...uniqueIncomeDays, endAbsDay];
+  // Total income arriving in window
+  const windowIncome = incomeEvents
+    .filter((e) => e.absDay > today && e.absDay <= endAbsDay)
+    .reduce((s, e) => s + e.amount, 0);
 
-  // Build obligation timeline: this month's unpaid + next month's bills/debts before next income
-  const obligations: { absDay: number; amount: number }[] = [];
+  // Build obligations in window
+  let windowObligations = 0;
 
   // This month's unpaid bills and debts
   for (const b of unpaidBills) {
-    if (b.dueDay > today) obligations.push({ absDay: b.dueDay, amount: b.amount });
+    if (b.dueDay > today && b.dueDay <= Math.min(daysInMonth, endAbsDay)) {
+      windowObligations += b.amount;
+    }
   }
   for (const d of debts) {
-    if (d.dueDay > today && d.amount > 0) obligations.push({ absDay: d.dueDay, amount: d.amount });
-  }
-
-  // Next month's bills and debts before next month's first income
-  if (allBills) {
-    const nextIncomeDay = allIncomes ? Math.min(...allIncomes.map((i) => resolveDay(i.expectedDay))) : 31;
-    for (const b of allBills) {
-      if (b.dueDay <= nextIncomeDay) {
-        obligations.push({ absDay: daysInMonth + b.dueDay, amount: b.amount });
-      }
-    }
-  }
-  if (allDebts) {
-    const nextIncomeDay = allIncomes ? Math.min(...allIncomes.map((i) => resolveDay(i.expectedDay))) : 31;
-    for (const d of allDebts) {
-      if (d.dueDay <= nextIncomeDay && d.amount > 0) {
-        obligations.push({ absDay: daysInMonth + d.dueDay, amount: d.amount });
-      }
+    if (d.dueDay > today && d.dueDay <= Math.min(daysInMonth, endAbsDay) && d.amount > 0) {
+      windowObligations += d.amount;
     }
   }
 
-  console.debug("[daily-budget] balance:", Math.round(balance), "savingGoal:", savingGoal, "today:", today, "endAbsDay:", endAbsDay, "totalDays:", totalDays, "segments:", boundaries.length - 1);
-
-  // Walk segments
-  let runningBalance = balance;
-  let minDailyBudget = Infinity;
-  let tightestSegment: DailyBudgetResult["tightestSegment"] = null;
-
-  for (let s = 0; s < boundaries.length - 1; s++) {
-    const segStart = boundaries[s];
-    const segEnd = boundaries[s + 1];
-    const segDays = segEnd - segStart;
-    if (segDays <= 0) continue;
-
-    // Add incomes arriving at this segment's start
-    let incomeAtStart = 0;
-    if (s > 0) {
-      for (const inc of incomeEvents) {
-        if (inc.absDay === segStart) {
-          incomeAtStart += inc.amount;
-          runningBalance += inc.amount;
+  // Next month's bills and debts if window extends past month end
+  if (endAbsDay > daysInMonth) {
+    const nextMonthEnd = endAbsDay - daysInMonth;
+    if (allBills) {
+      for (const b of allBills) {
+        if (b.dueDay <= nextMonthEnd) {
+          windowObligations += b.amount;
         }
       }
     }
-
-    // Subtract obligations due within this segment
-    let segObligations = 0;
-    for (const ob of obligations) {
-      if (ob.absDay > segStart && ob.absDay <= segEnd) {
-        segObligations += ob.amount;
+    if (allDebts) {
+      for (const d of allDebts) {
+        if (d.dueDay <= nextMonthEnd && d.amount > 0) {
+          windowObligations += d.amount;
+        }
       }
     }
-
-    // Last segment before next month's income: subtract saving goal
-    const isLastSegment = s === boundaries.length - 2;
-    const savingGoalDeducted = isLastSegment ? savingGoal : 0;
-    const pool = runningBalance - segObligations - savingGoalDeducted;
-    const dailyForSegment = pool / segDays;
-
-    console.debug("[daily-budget] Segment", s + 1, "days", segStart + 1, "-", segEnd, `(${segDays}d)`, "balance:", Math.round(runningBalance), "obligations:", Math.round(segObligations), isLastSegment ? "savingGoal:" + savingGoal : "", "pool:", Math.round(pool), "daily:", Math.round(dailyForSegment));
-
-    if (dailyForSegment < minDailyBudget) {
-      minDailyBudget = dailyForSegment;
-      tightestSegment = {
-        startDay: segStart,
-        endDay: segEnd,
-        days: segDays,
-        balanceAtStart: Math.round(runningBalance * 100) / 100,
-        incomeAtStart: Math.round(incomeAtStart * 100) / 100,
-        obligations: Math.round(segObligations * 100) / 100,
-        savingGoalDeducted: Math.round(savingGoalDeducted * 100) / 100,
-        pool: Math.round(pool * 100) / 100,
-      };
-    }
-
-    runningBalance -= segObligations;
   }
 
-  if (minDailyBudget === Infinity) {
-    minDailyBudget = (balance - savingGoal) / Math.max(1, totalDays);
-    tightestSegment = {
-      startDay: today,
-      endDay: endAbsDay,
-      days: totalDays,
-      balanceAtStart: Math.round(balance * 100) / 100,
-      incomeAtStart: 0,
-      obligations: 0,
-      savingGoalDeducted: Math.round(savingGoal * 100) / 100,
-      pool: Math.round((balance - savingGoal) * 100) / 100,
-    };
-  }
+  // Proportional saving goal for the window
+  const dailySaving = daysInMonth > 0 ? savingGoal / daysInMonth : 0;
+  const windowSaving = Math.round(dailySaving * totalDays * 100) / 100;
 
-  const result = Math.max(0, Math.round(minDailyBudget * 100) / 100);
-  console.info("[daily-budget] Result:", result, "€/day across", boundaries.length - 1, "segments");
-  return { dailyBudget: result, tightestSegment, segmentCount: boundaries.length - 1 };
+  // Pool = current balance + incoming income - obligations - savings
+  const pool = balance + windowIncome - windowObligations - windowSaving;
+  const dailyBudget = Math.max(0, Math.round((pool / totalDays) * 100) / 100);
+
+  console.debug("[daily-budget] balance:", Math.round(balance), "windowIncome:", Math.round(windowIncome), "obligations:", Math.round(windowObligations), "saving:", Math.round(windowSaving), "pool:", Math.round(pool), "days:", totalDays, "daily:", dailyBudget);
+
+  const tightestSegment = {
+    startDay: today,
+    endDay: endAbsDay,
+    days: totalDays,
+    balanceAtStart: Math.round(balance * 100) / 100,
+    incomeAtStart: Math.round(windowIncome * 100) / 100,
+    obligations: Math.round(windowObligations * 100) / 100,
+    savingGoalDeducted: windowSaving,
+    pool: Math.round(pool * 100) / 100,
+  };
+
+  console.info("[daily-budget] Result:", dailyBudget, "€/day over", totalDays, "day window");
+  return { dailyBudget, tightestSegment, segmentCount: 1 };
 }
