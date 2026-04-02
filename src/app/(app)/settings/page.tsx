@@ -712,6 +712,13 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="form-stack">
             <div className="form-field">
+              <p className="settings-help">
+                {locale === "fi"
+                  ? "Päiväbudjetti lasketaan liukuvalla 14 päivän ikkunalla. Huomioi nykyisen saldon, tulevat tulot ja velvoitteet ikkunan sisällä. Pakolliseksi merkityt laskut ja velat vähennetään aina."
+                  : "Daily budget uses a rolling 14-day window. Considers current balance, upcoming income and obligations within the window. Must-pay bills and debts are always subtracted."}
+              </p>
+            </div>
+            <div className="form-field">
               <Label>{locale === "fi" ? "Laskut päiväbudjetissa" : "Bills in daily budget"}</Label>
               <div className="settings-row">
                 <select

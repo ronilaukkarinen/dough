@@ -110,8 +110,8 @@ export function DailyAllowance({
                     ? `${startDay}.${startMonth}.\u2013${endDay}.${endMonth}.`
                     : `${startDay}.${startMonth}.\u2013${endDay}.${endMonth}.`;
                   return locale === "fi"
-                    ? `Käytettävissä ${fmt(availableBalance)} €, ${daysUntilIncome} pv seuraavaan tuloon. Tiukin jakso: ${range} (${budgetBreakdown.days} pv, ${fmt(budgetBreakdown.pool)} €). Budjetti = ${fmt(dailyBudget)} €/pv`
-                    : `Available ${fmt(availableBalance)} €, ${daysUntilIncome} days to next income. Tightest: ${range} (${budgetBreakdown.days}d, ${fmt(budgetBreakdown.pool)} €). Budget = ${fmt(dailyBudget)} €/day`;
+                    ? `Käytettävissä ${fmt(availableBalance)} €. Laskentajakso: ${range} (${budgetBreakdown.days} pv). Tulot jaksossa: ${fmt(budgetBreakdown.incomeAtStart)} €. Velvoitteet: ${fmt(budgetBreakdown.obligations)} €. Säästötavoite: ${fmt(budgetBreakdown.savingGoalDeducted)} €. Käytettävissä: ${fmt(budgetBreakdown.pool)} € = ${fmt(dailyBudget)} €/pv`
+                    : `Available ${fmt(availableBalance)} €. Window: ${range} (${budgetBreakdown.days}d). Income: ${fmt(budgetBreakdown.incomeAtStart)} €. Obligations: ${fmt(budgetBreakdown.obligations)} €. Savings: ${fmt(budgetBreakdown.savingGoalDeducted)} €. Pool: ${fmt(budgetBreakdown.pool)} € = ${fmt(dailyBudget)} €/day`;
                 })() : (locale === "fi" ? "Päiväbudjetti lasketaan jakamalla käytettävissä oleva raha tulojen välisiin jaksoihin" : "Daily budget calculated by splitting available money between income segments")}
               </span>
             </span>
