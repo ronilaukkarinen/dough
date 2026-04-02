@@ -81,10 +81,8 @@ export function calculateDailyBudget(params: {
   const totalDays = endAbsDay - today;
   if (totalDays <= 0) return { dailyBudget: 0, tightestSegment: null, segmentCount: 0 };
 
-  // Total income arriving in window
-  const windowIncome = incomeEvents
-    .filter((e) => e.absDay > today && e.absDay <= endAbsDay)
-    .reduce((s, e) => s + e.amount, 0);
+  // No future income counted — only current balance. Recalculates when income arrives.
+  const windowIncome = 0;
 
   // Build obligations in window
   let windowObligations = 0;
