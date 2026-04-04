@@ -60,7 +60,7 @@ CRITICAL: Production runs on a remote server. After pushing, deploy by SSH: git 
 
 - Never add Claude watermark
 - Always concise, single line commits
-- Always commit ALL files including logs, runtime files and json files (git add -A)
+- Only commit relevant changed files, never blindly `git add -A` (public repo, risk of leaking sensitive data)
 - Always run `git status` after committing to verify nothing is left uncommitted
 
 ## Changelog
