@@ -39,6 +39,8 @@
 .subscription-brand-icon {
   width: 2.25rem;
   height: 2.25rem;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
   border-radius: 0.5rem;
   display: flex;
   align-items: center;
