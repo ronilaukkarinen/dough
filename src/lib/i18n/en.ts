@@ -58,7 +58,7 @@ export const en = {
     cashFlowForecast: "Cash flow forecast",
     endOfMonthEstimate: "End of month estimate",
     daysUntilNextIncome: "days until next income",
-    cutNonEssentials: "cut non-essentials",
+    cutNonEssentials: "Cut non-essentials going forward",
     beCareful: "be careful",
     spendingThisMonth: "Spending this month",
     monthlyCashFlow: "Monthly cash flow",

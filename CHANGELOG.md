@@ -1,3 +1,8 @@
+### 2.2.2: 2026-04-04
+
+* Fix double dot punctuation in daily allowance income countdown text
+* Update cutNonEssentials text to "Vain välttämättömät menot jatkossa"
+
 ### 2.2.1: 2026-04-02
 
 * Dougie knows about must-pay priority flags on bills, subscriptions, and debts
