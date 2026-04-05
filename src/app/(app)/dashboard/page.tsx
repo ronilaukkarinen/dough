@@ -401,12 +401,15 @@ export default function DashboardPage() {
     } catch { /* ignore */ }
   }
 
+  // Scale last month's spending to same number of days for fair comparison
+  const lastMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+  const dayScale = daysPassed / lastMonthDays;
   const trendData = data.monthBudget.categories
     .filter((c) => c.activity < 0 && c.name !== "Inflow: Ready to Assign")
     .map((c) => ({
       category: c.name,
       thisMonth: Math.round(Math.abs(c.activity) * 100) / 100,
-      lastMonth: Math.round((lastMonthCategories[c.name] || 0) * 100) / 100,
+      lastMonth: Math.round(((lastMonthCategories[c.name] || 0) * dayScale) * 100) / 100,
     }))
     .filter((t) => t.thisMonth > 0 || t.lastMonth > 0);
 
