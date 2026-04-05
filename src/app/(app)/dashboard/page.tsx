@@ -401,11 +401,21 @@ export default function DashboardPage() {
     } catch { /* ignore */ }
   }
 
-  // Scale last month's spending to same number of days for fair comparison
+  // Scale last month's spending to same number of days, exclude fixed costs from trends
   const lastMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
   const dayScale = daysPassed / lastMonthDays;
+  const fixedCostCategories = new Set([
+    ...bills.filter((b) => b.is_active).map((b) => b.name.toLowerCase()),
+    ...data.summary.accounts.filter((a) => a.type === "otherDebt").map((a) => a.name.toLowerCase()),
+  ]);
+  const isFixedCategory = (name: string) => {
+    const lower = name.toLowerCase();
+    if (fixedCostCategories.has(lower) || [...fixedCostCategories].some((fc) => lower.includes(fc) || fc.includes(lower))) return true;
+    if (lower.includes("sijoittaminen") || lower.includes("investment") || lower.includes("vuokra")) return true;
+    return false;
+  };
   const trendData = data.monthBudget.categories
-    .filter((c) => c.activity < 0 && c.name !== "Inflow: Ready to Assign")
+    .filter((c) => c.activity < 0 && c.name !== "Inflow: Ready to Assign" && !isFixedCategory(c.name))
     .map((c) => ({
       category: c.name,
       thisMonth: Math.round(Math.abs(c.activity) * 100) / 100,
