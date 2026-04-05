@@ -55,6 +55,7 @@ export default function DashboardPage() {
   const [monthlyHistory, setMonthlyHistory] = useState<{ month: string; income: number; expenses: number; categories_json?: string }[]>([]);
   const [lastYnabSync, setLastYnabSync] = useState<string | null>(null);
   const [sideDataLoaded, setSideDataLoaded] = useState(false);
+  const [trendData, setTrendData] = useState<{ category: string; thisMonth: number; lastMonth: number }[]>([]);
 
   const loadSideData = useCallback(() => {
     Promise.all([
@@ -124,6 +125,9 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => { loadSideData(); }, [loadSideData]);
+  useEffect(() => {
+    fetch("/api/trends").then((r) => r.json()).then((d) => { if (d.trends) setTrendData(d.trends); }).catch(() => {});
+  }, []);
 
   // SSE: re-fetch income/bills and YNAB cache when data changes
   useEvent("data:updated", useCallback(() => { loadSideData(); refresh(); }, [loadSideData, refresh]));
@@ -388,40 +392,7 @@ export default function DashboardPage() {
       amount: tx.amount,
     }));
 
-  // Spending trends — compare category spending this month vs last month
-  const lastMonthSnapshot = monthlyHistory
-    .filter((s) => s.month !== `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`)
-    .sort((a, b) => b.month.localeCompare(a.month))[0];
 
-  const lastMonthCategories: Record<string, number> = {};
-  if (lastMonthSnapshot?.categories_json) {
-    try {
-      const cats = JSON.parse(lastMonthSnapshot.categories_json) as { name: string; amount: number }[];
-      for (const c of cats) lastMonthCategories[c.name] = c.amount;
-    } catch { /* ignore */ }
-  }
-
-  // Scale last month's spending to same number of days, exclude fixed costs from trends
-  const lastMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
-  const dayScale = daysPassed / lastMonthDays;
-  const fixedCostCategories = new Set([
-    ...bills.filter((b) => b.is_active).map((b) => b.name.toLowerCase()),
-    ...data.summary.accounts.filter((a) => a.type === "otherDebt").map((a) => a.name.toLowerCase()),
-  ]);
-  const isFixedCategory = (name: string) => {
-    const lower = name.toLowerCase();
-    if (fixedCostCategories.has(lower) || [...fixedCostCategories].some((fc) => lower.includes(fc) || fc.includes(lower))) return true;
-    if (lower.includes("sijoittaminen") || lower.includes("investment") || lower.includes("vuokra")) return true;
-    return false;
-  };
-  const trendData = data.monthBudget.categories
-    .filter((c) => c.activity < 0 && c.name !== "Inflow: Ready to Assign" && !isFixedCategory(c.name))
-    .map((c) => ({
-      category: c.name,
-      thisMonth: Math.round(Math.abs(c.activity) * 100) / 100,
-      lastMonth: Math.round(((lastMonthCategories[c.name] || 0) * dayScale) * 100) / 100,
-    }))
-    .filter((t) => t.thisMonth > 0 || t.lastMonth > 0);
 
   // Cash flow – current month + up to 4 historical months (5 total)
   const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
