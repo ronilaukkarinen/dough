@@ -10,26 +10,25 @@ export async function GET() {
     const db = getDb();
     const now = new Date();
 
-    // Rolling 30-day windows from local transactions
-    const thirtyDaysAgo = new Date(now);
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const sixtyDaysAgo = new Date(now);
-    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+    // Calendar month comparison: this month vs last month
+    const thisMonthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthStart = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, "0")}-01`;
+    const lastMonthEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 
-    const fmtDate = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    const todayStr = fmtDate(now);
-    const thirtyStr = fmtDate(thirtyDaysAgo);
-    const sixtyStr = fmtDate(sixtyDaysAgo);
-
-    // Recent 30 days by category
+    // This month by category (actual spending so far)
     const recent = db.prepare(
-      "SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE date > ? AND date <= ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' AND category != 'Uncategorized' AND category != 'Inflow: Ready to Assign' GROUP BY category"
-    ).all(thirtyStr, todayStr) as { category: string; total: number }[];
+      "SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE date >= ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' AND category != 'Uncategorized' AND category != 'Inflow: Ready to Assign' AND category != '' GROUP BY category"
+    ).all(thisMonthStart) as { category: string; total: number }[];
 
-    // Previous 30 days by category
+    // Last month same period (day 1 to same day of month) for fair comparison
+    const dayOfMonth = now.getDate();
+    const lastMonthSameDay = new Date(lastMonth.getFullYear(), lastMonth.getMonth(), dayOfMonth + 1);
+    const lastMonthSameDayStr = `${lastMonthSameDay.getFullYear()}-${String(lastMonthSameDay.getMonth() + 1).padStart(2, "0")}-${String(lastMonthSameDay.getDate()).padStart(2, "0")}`;
+
     const previous = db.prepare(
-      "SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE date > ? AND date <= ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' AND category != 'Uncategorized' AND category != 'Inflow: Ready to Assign' GROUP BY category"
-    ).all(sixtyStr, thirtyStr) as { category: string; total: number }[];
+      "SELECT category, SUM(ABS(amount)) as total FROM transactions WHERE date >= ? AND date < ? AND amount < 0 AND payee NOT LIKE 'Transfer%' AND payee NOT LIKE 'Starting Balance%' AND payee NOT LIKE 'Reconciliation%' AND category != 'Uncategorized' AND category != 'Inflow: Ready to Assign' AND category != '' GROUP BY category"
+    ).all(lastMonthStart, lastMonthSameDayStr) as { category: string; total: number }[];
 
     const recentMap = new Map(recent.map((r) => [r.category, r.total]));
     const prevMap = new Map(previous.map((r) => [r.category, r.total]));
@@ -43,7 +42,7 @@ export async function GET() {
       }))
       .filter((t) => t.thisMonth > 0 || t.lastMonth > 0);
 
-    console.debug("[trends] Loaded", trends.length, "category trends");
+    console.debug("[trends] Loaded", trends.length, "category trends (day", dayOfMonth, "comparison)");
     return NextResponse.json({ trends });
   } catch (error) {
     console.error("[trends] Error:", error);

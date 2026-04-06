@@ -65,10 +65,10 @@ export function SpendingTrends({ trends }: SpendingTrendsProps) {
               {isUp ? "+" : ""}{mask(pctChange)}%
             </span>
             {" "}
-            {locale === "fi" ? "vs edelliskuussa" : "vs last month"}
+            {locale === "fi" ? "vs edelliskuussa tähän aikaan" : "vs same point last month"}
           </p>
           <p className="spending-trends-amounts">
-            {mask(fmt(dailyTrend.thisMonth))} € {locale === "fi" ? "tässä kuussa" : "this month"} · {mask(fmt(dailyTrend.lastMonth))} € {locale === "fi" ? "edelliskuussa" : "last month"}
+            {mask(fmt(dailyTrend.thisMonth))} € {locale === "fi" ? "tässä kuussa" : "this month"} · {mask(fmt(dailyTrend.lastMonth))} € {locale === "fi" ? "edellinen" : "prev"}
           </p>
         </div>
       </div>
