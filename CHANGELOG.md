@@ -1,7 +1,10 @@
-### 2.4.0: 2026-04-06
+### 2.5.0: 2026-04-06
 
 * Spending trends compare same day of month between calendar months
-* Add trends API endpoint for server-side category aggregation
+
+### 2.4.0: 2026-04-05
+
+* Add trends API endpoint with rolling 30-day comparison from local transactions DB
 
 ### 2.3.0: 2026-04-02
 
