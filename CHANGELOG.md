@@ -1,3 +1,7 @@
+### 2.5.1: 2026-04-06
+
+* Add No-IP brand config and traced SVG icon
+
 ### 2.5.0: 2026-04-06
 
 * Spending trends compare same day of month between calendar months
