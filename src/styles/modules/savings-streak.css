@@ -71,24 +71,26 @@
   animation: streak-pulse 1s ease-in-out infinite alternate;
 }
 
-/* Older success days: green checkmark instead of flame */
+/* Older success days: grey flame with green checkmark overlay */
 .savings-streak-dot:not(:last-child) .savings-streak-fire-icon {
-  font-size: 0;
-  width: 0.5rem;
-  height: 0.75rem;
   position: relative;
 }
 
 .savings-streak-dot:not(:last-child) .savings-streak-fire-icon::before {
+  filter: grayscale(1) brightness(0.5);
+}
+
+.savings-streak-dot:not(:last-child) .savings-streak-fire-icon::after {
   content: "";
   position: absolute;
   left: 50%;
-  top: 45%;
+  top: 40%;
   width: 0.25rem;
   height: 0.5rem;
   border: solid var(--positive);
   border-width: 0 2px 2px 0;
   transform: translate(-50%, -50%) rotate(45deg);
+  margin-bottom: -1px;
 }
 
 @keyframes streak-pulse {

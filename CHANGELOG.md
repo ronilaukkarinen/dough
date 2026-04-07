@@ -1,3 +1,7 @@
+### 2.5.2: 2026-04-06
+
+* Green border and checkmark overlay on past success days in savings streak
+
 ### 2.5.1: 2026-04-06
 
 * Add No-IP brand config and traced SVG icon
