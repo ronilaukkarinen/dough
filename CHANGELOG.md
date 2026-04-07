@@ -1,4 +1,4 @@
-### 2.5.2: 2026-04-06
+### 2.5.2: 2026-04-08
 
 * Green border and checkmark overlay on past success days in savings streak
 
