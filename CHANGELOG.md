@@ -1,3 +1,8 @@
+### 2.5.3: 2026-04-11
+
+* Fix 14-day budget window extending past intended range causing 0 budget
+* Add pattern delete buttons to subscriptions and income pages
+
 ### 2.5.2: 2026-04-08
 
 * Green border and checkmark overlay on past success days in savings streak
