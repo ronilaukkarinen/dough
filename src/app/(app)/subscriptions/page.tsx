@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Loader2, Check, AlertCircle } from "lucide-react";
+import { Plus, Loader2, Check, AlertCircle, X } from "lucide-react";
 import { F } from "@/components/ui/f";
 
 // Known brand configs
@@ -144,7 +144,7 @@ interface Subscription {
   is_paid: boolean;
   is_overdue: boolean;
   is_priority: number;
-  patterns: string[];
+  patterns: { id: number; pattern: string }[];
 }
 
 export default function SubscriptionsPage() {
@@ -274,6 +274,17 @@ export default function SubscriptionsPage() {
     } catch (err) { console.error("[subscriptions] Add pattern error:", err); }
   };
 
+  const deletePattern = async (patternId: number) => {
+    try {
+      await fetch("/api/matches", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: patternId }),
+      });
+      loadSubscriptions();
+    } catch (err) { console.error("[subscriptions] Delete pattern error:", err); }
+  };
+
   const active = subscriptions.filter((s) => s.is_active);
   const monthlyTotal = active.reduce((s, sub) => s + sub.amount, 0);
   const yearlyTotal = monthlyTotal * 12;
@@ -353,7 +364,7 @@ export default function SubscriptionsPage() {
                   </div>
                   <p className="subscription-card-meta">
                     {locale === "fi" ? "Veloitus" : "Billing"} {sub.due_day}. {locale === "fi" ? "päivä" : ""}
-                    {sub.patterns.length > 0 && <span className="list-item-patterns"> – {sub.patterns.join(", ")}</span>}
+                    {sub.patterns.length > 0 && <span className="list-item-patterns"> – {sub.patterns.map((p) => p.pattern).join(", ")}</span>}
                   </p>
                 </div>
                 <div className="subscription-card-right">
@@ -406,8 +417,13 @@ export default function SubscriptionsPage() {
                 </div>
                 {editTarget.patterns.length > 0 && (
                   <div className="match-pattern-list">
-                    {editTarget.patterns.map((p, i) => (
-                      <span key={i} className="match-pattern-tag">{p}</span>
+                    {editTarget.patterns.map((p) => (
+                      <div key={p.id} className="match-pattern-item">
+                        <span className="match-pattern-tag">{p.pattern}</span>
+                        <button type="button" className="batch-remove-btn" onClick={() => deletePattern(p.id)}>
+                          <X />
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}

@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Loader2, Check } from "lucide-react";
+import { Plus, Loader2, Check, X } from "lucide-react";
 import { F } from "@/components/ui/f";
 
 interface Income {
@@ -155,6 +155,27 @@ export default function IncomePage() {
         setPatterns(grouped);
       }
     } catch (err) { console.error("[income] Add pattern error:", err); }
+  };
+
+  const deletePattern = async (patternId: number) => {
+    try {
+      await fetch("/api/matches", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: patternId }),
+      });
+      const matchData = await fetch("/api/matches").then((r) => r.json());
+      if (matchData.patterns) {
+        const grouped: Record<number, { id: number; payee_pattern: string }[]> = {};
+        for (const p of matchData.patterns) {
+          if (p.source_type === "income") {
+            if (!grouped[p.source_id]) grouped[p.source_id] = [];
+            grouped[p.source_id].push({ id: p.id, payee_pattern: p.payee_pattern });
+          }
+        }
+        setPatterns(grouped);
+      }
+    } catch (err) { console.error("[income] Delete pattern error:", err); }
   };
 
   const deleteIncome = async (id: number) => {
@@ -306,8 +327,13 @@ export default function IncomePage() {
                 </div>
                 {(patterns[editTarget.id] || []).length > 0 && (
                   <div className="match-pattern-list">
-                    {patterns[editTarget.id].map((p, i) => (
-                      <span key={i} className="match-pattern-tag">{p.payee_pattern}</span>
+                    {patterns[editTarget.id].map((p) => (
+                      <div key={p.id} className="match-pattern-item">
+                        <span className="match-pattern-tag">{p.payee_pattern}</span>
+                        <button type="button" className="batch-remove-btn" onClick={() => deletePattern(p.id)}>
+                          <X />
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}

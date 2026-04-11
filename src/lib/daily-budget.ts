@@ -74,9 +74,8 @@ export function calculateDailyBudget(params: {
   }
   incomeEvents.sort((a, b) => a.absDay - b.absDay);
 
-  // Window end: at least minWindowDays, but extend to cover the next income after that
-  const minEnd = today + minWindowDays;
-  const endAbsDay = Math.max(minEnd, incomeEvents.find((e) => e.absDay >= minEnd)?.absDay || minEnd);
+  // Fixed 14-day window — no extension since we don't count future income
+  const endAbsDay = today + minWindowDays;
 
   const totalDays = endAbsDay - today;
   if (totalDays <= 0) return { dailyBudget: 0, tightestSegment: null, segmentCount: 0 };
@@ -126,7 +125,7 @@ export function calculateDailyBudget(params: {
   const pool = balance + windowIncome - windowObligations - windowSaving;
   const dailyBudget = Math.max(0, Math.round((pool / totalDays) * 100) / 100);
 
-  console.debug("[daily-budget] balance:", Math.round(balance), "windowIncome:", Math.round(windowIncome), "obligations:", Math.round(windowObligations), "saving:", Math.round(windowSaving), "pool:", Math.round(pool), "days:", totalDays, "daily:", dailyBudget);
+  console.info("[daily-budget] balance:", Math.round(balance), "windowIncome:", Math.round(windowIncome), "obligations:", Math.round(windowObligations), "saving:", Math.round(windowSaving), "pool:", Math.round(pool), "days:", totalDays, "daily:", dailyBudget);
 
   const tightestSegment = {
     startDay: today,
