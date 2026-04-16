@@ -53,6 +53,7 @@ const BRANDS: Record<string, { color: string; logo: string; svg?: string }> = {
   nextdns: { color: "#007BFF", logo: "N", svg: "nextdns" },
   oura: { color: "#2F4A73", logo: "O", svg: "oura" },
   "no-ip": { color: "#8fbe00", logo: "N", svg: "noip" },
+  bookbeat: { color: "#CD96FF", logo: "B" },
 };
 
 function getBrandConfig(name: string): { color: string; logo: string; svg?: string } {

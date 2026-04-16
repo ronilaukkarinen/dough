@@ -1,3 +1,7 @@
+### 2.5.4: 2026-04-16
+
+* Add BookBeat brand config with lilac color
+
 ### 2.5.3: 2026-04-11
 
 * Fix 14-day budget window extending past intended range causing 0 budget
