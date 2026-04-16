@@ -53,7 +53,7 @@ const BRANDS: Record<string, { color: string; logo: string; svg?: string }> = {
   nextdns: { color: "#007BFF", logo: "N", svg: "nextdns" },
   oura: { color: "#2F4A73", logo: "O", svg: "oura" },
   "no-ip": { color: "#8fbe00", logo: "N", svg: "noip" },
-  bookbeat: { color: "#CD96FF", logo: "B" },
+  bookbeat: { color: "#CD96FF", logo: "B", svg: "bookbeat" },
 };
 
 function getBrandConfig(name: string): { color: string; logo: string; svg?: string } {
@@ -118,6 +118,13 @@ function BrandIcon({ svg, logo }: { svg?: string; logo: string }) {
       <svg viewBox="0 0 254 310" width="20" height="20" fill="#fff">
         <path d="M63.44 27.39h126.94V0H63.44z"/>
         <path d="M126.94 54.77C56.94 54.78 0 111.72 0 181.71s56.94 126.94 126.94 126.94 126.94-56.94 126.94-126.94S196.94 54.77 126.94 54.77m0 226.5c-54.89 0-99.55-44.66-99.55-99.55s44.66-99.55 99.55-99.55 99.56 44.66 99.56 99.55-44.66 99.55-99.56 99.55"/>
+      </svg>
+    );
+  }
+  if (svg === "bookbeat") {
+    return (
+      <svg viewBox="0 0 115 143" width="20" height="20" fill="#000">
+        <path d="M10.4 127.7V14.1c0-7.4-4.4-9-9.4-9.6V.9h50.4c24.8 0 50.4 7 50.4 27.8 0 14.6-13 25.2-28.8 25.8 27.8 0 47.4 16.8 47.4 41.8 0 28.2-22.6 44.6-62.8 44.6H1v-3.6c4.8-.6 9.4-2.2 9.4-9.6m62.2-98.6C72.6 13.9 62 6.7 51.8 6.7H48v46.8c11.2 0 24.6-6.8 24.6-24.4M53 135.1c8.2 0 27-5.8 27-38.8 0-33.6-25.6-37-32-37v75.8z"/>
       </svg>
     );
   }

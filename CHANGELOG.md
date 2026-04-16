@@ -1,3 +1,7 @@
+### 2.5.5: 2026-04-16
+
+* Use real BookBeat serif B logo from brand wordmark
+
 ### 2.5.4: 2026-04-16
 
 * Add BookBeat brand config with lilac color
