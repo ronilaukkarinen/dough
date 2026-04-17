@@ -1,3 +1,7 @@
+### 2.5.6: 2026-04-17
+
+* Stop reserving obligations from current balance when upcoming income covers them
+
 ### 2.5.5: 2026-04-16
 
 * Use real BookBeat serif B logo from brand wordmark
