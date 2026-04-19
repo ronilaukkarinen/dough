@@ -1,3 +1,7 @@
+### 2.5.7: 2026-04-19
+
+* Clamp due day to last day of month so day 31 incomes/bills work in shorter months
+
 ### 2.5.6: 2026-04-17
 
 * Stop reserving obligations from current balance when upcoming income covers them

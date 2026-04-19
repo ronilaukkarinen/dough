@@ -56,20 +56,23 @@ export function calculateDailyBudget(params: {
   // This prevents spending everything before a small income and starving the next period
   const minWindowDays = 14;
 
+  // Clamp day to last day of month so e.g. expected_day=31 in April resolves to 30
+  const clampToMonth = (day: number) => Math.min(resolveDay(day), daysInMonth);
+
   // Collect all income events with absolute day positions
   const incomeEvents: { absDay: number; amount: number }[] = [];
   for (const i of unreceivedIncomes) {
-    const d = resolveDay(i.expectedDay);
-    if (d > today && d <= daysInMonth) {
+    const d = clampToMonth(i.expectedDay);
+    if (d > today) {
       incomeEvents.push({ absDay: d, amount: i.amount });
     }
   }
 
   // Add next month's income events if window extends past month end
   if (allIncomes) {
-    const allDays = allIncomes.map((i) => resolveDay(i.expectedDay)).sort((a, b) => a - b);
-    for (const d of allDays) {
-      incomeEvents.push({ absDay: daysInMonth + d, amount: allIncomes.find((i) => resolveDay(i.expectedDay) === d)!.amount });
+    for (const i of allIncomes) {
+      const d = clampToMonth(i.expectedDay);
+      incomeEvents.push({ absDay: daysInMonth + d, amount: i.amount });
     }
   }
   incomeEvents.sort((a, b) => a.absDay - b.absDay);
@@ -80,16 +83,18 @@ export function calculateDailyBudget(params: {
   const totalDays = endAbsDay - today;
   if (totalDays <= 0) return { dailyBudget: 0, tightestSegment: null, segmentCount: 0 };
 
-  // Collect obligations in window with absolute due day
+  // Collect obligations in window with absolute due day (clamp to last day of month)
   const obligationEvents: { absDay: number; amount: number }[] = [];
   for (const b of unpaidBills) {
-    if (b.dueDay > today && b.dueDay <= Math.min(daysInMonth, endAbsDay)) {
-      obligationEvents.push({ absDay: b.dueDay, amount: b.amount });
+    const d = clampToMonth(b.dueDay);
+    if (d > today && d <= endAbsDay) {
+      obligationEvents.push({ absDay: d, amount: b.amount });
     }
   }
   for (const d of debts) {
-    if (d.dueDay > today && d.dueDay <= Math.min(daysInMonth, endAbsDay) && d.amount > 0) {
-      obligationEvents.push({ absDay: d.dueDay, amount: d.amount });
+    const day = clampToMonth(d.dueDay);
+    if (day > today && day <= endAbsDay && d.amount > 0) {
+      obligationEvents.push({ absDay: day, amount: d.amount });
     }
   }
   if (endAbsDay > daysInMonth) {
