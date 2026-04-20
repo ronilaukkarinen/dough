@@ -167,7 +167,7 @@ export async function GET(request: Request) {
     // Better projection: separate bills from discretionary spending
     const totalBillsAmount = recurringBills.reduce((s, b) => s + b.amount, 0);
     const paidBillsAmount = recurringBills
-      .filter((b) => matchedBillIds.has(b.id) || b.due_day < now.getDate())
+      .filter((b) => matchedBillIds.has(b.id))
       .reduce((s, b) => s + b.amount, 0);
     const unpaidBillsAmount = totalBillsAmount - paidBillsAmount;
     const discretionarySpending = Math.max(0, monthActivity - paidBillsAmount);

@@ -29,6 +29,7 @@ interface DailyAllowanceProps {
   streakProps?: {
     dailyBudget: number;
     todaySpent: number;
+    discretionaryTarget?: number;
   };
   thresholds?: { tight: number; normal: number; good: number };
   budgetBreakdown?: {

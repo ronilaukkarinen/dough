@@ -160,6 +160,7 @@ function initializeDb(db: Database.Database) {
       date TEXT PRIMARY KEY,
       budget REAL NOT NULL DEFAULT 0,
       spent REAL NOT NULL DEFAULT 0,
+      discretionary_target REAL NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -367,6 +368,13 @@ function initializeDb(db: Database.Database) {
     console.info("[db] Adding min_amount and max_amount columns to payee_matches");
     db.exec("ALTER TABLE payee_matches ADD COLUMN min_amount REAL DEFAULT 0");
     db.exec("ALTER TABLE payee_matches ADD COLUMN max_amount REAL DEFAULT 0");
+  }
+
+  // Add discretionary_target column to daily_budget_history if missing
+  const dbhCols = db.prepare("PRAGMA table_info(daily_budget_history)").all() as { name: string }[];
+  if (dbhCols.length > 0 && !dbhCols.some((c) => c.name === "discretionary_target")) {
+    console.info("[db] Adding discretionary_target column to daily_budget_history");
+    db.exec("ALTER TABLE daily_budget_history ADD COLUMN discretionary_target REAL NOT NULL DEFAULT 0");
   }
 
   // Add image_thumb column to chat_messages if missing

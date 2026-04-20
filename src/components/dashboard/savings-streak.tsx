@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from "react";
 interface SavingsStreakProps {
   dailyBudget: number;
   todaySpent: number;
+  discretionaryTarget?: number;
 }
 
 interface HistoryEntry {
@@ -16,7 +17,7 @@ interface HistoryEntry {
   spent: number;
 }
 
-export function SavingsStreak({ dailyBudget, todaySpent }: SavingsStreakProps) {
+export function SavingsStreak({ dailyBudget, todaySpent, discretionaryTarget }: SavingsStreakProps) {
   const { locale, fmt } = useLocale();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const savedRef = useRef(false);
@@ -41,9 +42,9 @@ export function SavingsStreak({ dailyBudget, todaySpent }: SavingsStreakProps) {
     fetch("/api/daily-budget-history", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: todayDate, budget: dailyBudget, spent: todaySpent }),
+      body: JSON.stringify({ date: todayDate, budget: dailyBudget, spent: todaySpent, discretionary_target: discretionaryTarget || 0 }),
     }).catch(() => {});
-  }, [dailyBudget, todaySpent]);
+  }, [dailyBudget, todaySpent, discretionaryTarget]);
 
   // Last 7 days from history
   const days: { day: number; month: number; status: "fire" | "fail" | "today" | "nodata"; budget: number; spent: number }[] = [];

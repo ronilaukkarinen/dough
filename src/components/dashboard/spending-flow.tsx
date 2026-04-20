@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useLocale } from "@/lib/locale-context";
 import {
   AreaChart,
@@ -19,6 +20,13 @@ interface SpendingFlowProps {
   dailyDiscretionary: number;
   targetPerDay: number;
   dailyBudget: number;
+}
+
+interface SnapshotEntry {
+  date: string;
+  budget: number;
+  spent: number;
+  discretionary_target: number;
 }
 
 function ratioToColor(r: number): string {
@@ -51,8 +59,38 @@ export function SpendingFlow({
   dailyBudget,
 }: SpendingFlowProps) {
   const { locale, fmt } = useLocale();
+  const [snapshots, setSnapshots] = useState<SnapshotEntry[]>([]);
+
+  useEffect(() => {
+    fetch("/api/daily-budget-history")
+      .then((r) => r.json())
+      .then((data) => { if (data.history) setSnapshots(data.history); })
+      .catch(() => {});
+  }, []);
+
+  // Build per-day target lookup from snapshots: day-of-month -> frozen target
+  const now = new Date();
+  const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const snapshotByDay: Record<number, number> = {};
+  for (const s of snapshots) {
+    if (s.date.startsWith(monthPrefix) && s.discretionary_target > 0) {
+      const day = parseInt(s.date.split("-")[2], 10);
+      snapshotByDay[day] = s.discretionary_target;
+    }
+  }
+
   // Target = daily budget (from cash flow simulation) * days in month
   const target = dailyBudget * daysInMonth;
+
+  // Cumulative target by day from frozen snapshots, falling back to live targetPerDay
+  // when a day has no snapshot yet (today and future)
+  const cumulativeTargetByDay: Record<number, number> = {};
+  let runningTarget = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const perDay = snapshotByDay[d] > 0 ? snapshotByDay[d] : targetPerDay;
+    runningTarget += perDay;
+    cumulativeTargetByDay[d] = runningTarget;
+  }
 
   const data: { day: number; label: string; actual?: number; projected?: number; target?: number }[] = [];
   let cumulative = 0;
@@ -66,7 +104,7 @@ export function SpendingFlow({
         day: d,
         label: `${d}.`,
         actual: discretionary,
-        target: targetPerDay > 0 ? Math.round(targetPerDay * d) : undefined,
+        target: cumulativeTargetByDay[d] > 0 ? Math.round(cumulativeTargetByDay[d]) : undefined,
       });
     } else {
       // Projection based on discretionary daily rate (already excludes bills)
@@ -77,7 +115,7 @@ export function SpendingFlow({
         day: d,
         label: `${d}.`,
         projected: Math.round(projected),
-        target: targetPerDay > 0 ? Math.round(targetPerDay * d) : undefined,
+        target: cumulativeTargetByDay[d] > 0 ? Math.round(cumulativeTargetByDay[d]) : undefined,
       });
     }
   }
@@ -89,14 +127,22 @@ export function SpendingFlow({
   const lastActual = data[daysPassed - 1]?.actual || 0;
   const monthEndTarget = target > 0 ? target : 0;
 
-  const todayTarget = targetPerDay > 0 ? Math.round(targetPerDay * daysPassed) : 0;
+  // Use cumulative snapshot for the "today" comparison so past target shifts don't move the bubble
+  const cumulativeToToday = (() => {
+    let sum = 0;
+    for (let d = 1; d <= daysPassed; d++) {
+      sum += snapshotByDay[d] > 0 ? snapshotByDay[d] : targetPerDay;
+    }
+    return sum;
+  })();
+  const todayTarget = cumulativeToToday > 0 ? Math.round(cumulativeToToday) : 0;
   const todayDiff = todayTarget - lastActual;
   const todayRatio = todayTarget > 0 ? lastActual / todayTarget : 0;
   const ballColor = targetPerDay > 0 ? ratioToColor(todayRatio) : "#818cf8";
 
   const gradientStops = data.filter((d) => d.actual !== undefined).map((d, i, arr) => {
     const pos = arr.length > 1 ? i / (arr.length - 1) : 0.5;
-    const dayTarget = targetPerDay > 0 ? targetPerDay * d.day : 0;
+    const dayTarget = cumulativeTargetByDay[d.day] || 0;
     const r = dayTarget > 0 ? (d.actual || 0) / dayTarget : 0;
     return { pos, color: ratioToColor(r) };
   });

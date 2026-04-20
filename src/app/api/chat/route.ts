@@ -93,7 +93,7 @@ export async function POST(request: Request) {
             .filter((a: any) => a.type === "otherDebt" && a.balance < 0)
             .map((a: any) => {
               const override = debtOverrideMap[a.id];
-              return { name: a.name, remaining: Math.abs(a.balance), rate: override?.interest_rate ?? 0, minimumPayment: override?.minimum_payment ?? 0, dueDay: override?.due_day ?? 0 };
+              return { name: a.name, remaining: Math.abs(a.balance), rate: override?.interest_rate ?? 0, minimumPayment: override?.minimum_payment ?? 0, dueDay: override?.due_day ?? 0, isPriority: !!override?.is_priority };
             });
 
           // Get investment accounts with overrides
@@ -224,9 +224,12 @@ export async function POST(request: Request) {
             resolveDay,
           };
 
-          // Apply bills setting: auto, always, or never
+          // Apply bills setting: auto, always, or never. Priority items always reserved.
+          const priorityBills = unpaidBills.filter((b: any) => b.isPriority).map((b: any) => ({ amount: b.amount, dueDay: b.dueDay }));
+          const priorityDebts = allDebtItems.filter((_: unknown, i: number) => debts[i]?.isPriority);
+          const allPriorityBills = enrichedBills.filter((b: any) => b.isPriority).map((b: any) => ({ amount: b.amount, dueDay: b.dueDay }));
           const budgetWithBills = calculateDailyBudget(budgetParams);
-          const budgetWithoutBills = calculateDailyBudget({ ...budgetParams, unpaidBills: [], debts: [] });
+          const budgetWithoutBills = calculateDailyBudget({ ...budgetParams, unpaidBills: priorityBills, debts: priorityDebts, allBills: allPriorityBills, allDebts: priorityDebts });
           let dailyBudget: number;
           if (billsSetting === "auto") {
             const totalUnpaid = budgetParams.unpaidBills.reduce((s: number, b: { amount: number }) => s + b.amount, 0) + budgetParams.debts.reduce((s: number, d: { amount: number }) => s + d.amount, 0);

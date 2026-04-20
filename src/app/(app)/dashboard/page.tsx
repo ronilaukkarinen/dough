@@ -285,7 +285,7 @@ export default function DashboardPage() {
   // Separate bills from discretionary for accurate projection
   const totalBillsAmount = bills.filter((b) => b.is_active).reduce((s, b) => s + b.amount, 0);
   const paidBillsAmount = bills
-    .filter((b) => b.is_active && (matchedBillIds.has(b.id) || b.due_day < today))
+    .filter((b) => b.is_active && b.is_paid)
     .reduce((s, b) => s + b.amount, 0);
   const unpaidBillsAmount = totalBillsAmount - paidBillsAmount;
   const discretionarySpending = Math.max(0, realSpendingTotal - paidBillsAmount);
@@ -539,7 +539,7 @@ export default function DashboardPage() {
         monthExpenses={Math.round((totalBillsAmount + debtMonthly + investmentMonthly + savingRate + (dailyDiscretionary * daysInMonth)) * 100) / 100}
         trendPercent={trendPercent}
         budgetBreakdown={budgetResult.tightestSegment}
-        streakProps={{ dailyBudget, todaySpent: todaySpentAll }}
+        streakProps={{ dailyBudget, todaySpent: todaySpentAll, discretionaryTarget: discretionaryTargetPerDay }}
       />
 
       <div className="page-grid-2">

@@ -1,3 +1,10 @@
+### 2.5.8: 2026-04-20
+
+* Snapshot discretionary target per day so past chart colors stop drifting
+* Count bills as paid only when actually paid, not when due day has passed
+* Dougie uses priority bills and debts in without-bills mode to match dashboard
+* Dougie no longer states the daily budget is 0 euros when reservations compress it to zero
+
 ### 2.5.7: 2026-04-19
 
 * Clamp due day to last day of month so day 31 incomes/bills work in shorter months
