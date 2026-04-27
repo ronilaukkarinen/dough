@@ -1,3 +1,9 @@
+### 2.6.0: 2026-04-27
+
+* Add toggle to reserve next month's saving goal on payday when largest paycheck is at end of month
+* Skip proportional saving deduction in next month when last cycle already reserved it
+* Wire reservation through Dougie so chat advice matches dashboard math
+
 ### 2.5.8: 2026-04-20
 
 * Snapshot discretionary target per day so past chart colors stop drifting

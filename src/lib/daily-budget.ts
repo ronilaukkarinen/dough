@@ -49,8 +49,10 @@ export function calculateDailyBudget(params: {
   allBills?: BudgetBill[];
   allDebts?: BudgetDebt[];
   resolveDay: (day: number) => number;
+  extraSavingReserve?: number;
+  skipCurrentMonthSaving?: boolean;
 }): DailyBudgetResult {
-  const { balance, savingGoal, today, daysInMonth, unpaidBills, debts, unreceivedIncomes, allIncomes, allBills, allDebts, resolveDay } = params;
+  const { balance, savingGoal, today, daysInMonth, unpaidBills, debts, unreceivedIncomes, allIncomes, allBills, allDebts, resolveDay, extraSavingReserve = 0, skipCurrentMonthSaving = false } = params;
 
   // Build a 14-day minimum window, extending to cover at least one significant income
   // This prevents spending everything before a small income and starving the next period
@@ -134,9 +136,20 @@ export function calculateDailyBudget(params: {
   }
   const windowObligations = maxShortfall;
 
-  // Proportional saving goal for the window
+  // Proportional saving goal split between current and next month days within window.
+  // Current-month saving can be skipped if the previous payday already reserved this month's saving.
   const dailySaving = daysInMonth > 0 ? savingGoal / daysInMonth : 0;
-  const windowSaving = Math.round(dailySaving * totalDays * 100) / 100;
+  let currentMonthDays = 0;
+  let nextMonthDays = 0;
+  for (let d = today + 1; d <= endAbsDay; d++) {
+    if (d <= daysInMonth) currentMonthDays++;
+    else nextMonthDays++;
+  }
+  const currentMonthSaving = skipCurrentMonthSaving ? 0 : currentMonthDays * dailySaving;
+  // For next-month days, either the dashboard pre-reserved a full saving goal (extraSavingReserve)
+  // or we deduct the proportional amount as before
+  const nextMonthSaving = extraSavingReserve > 0 ? extraSavingReserve : nextMonthDays * dailySaving;
+  const windowSaving = Math.round((currentMonthSaving + nextMonthSaving) * 100) / 100;
 
   // Pool = current balance - obligations-net-of-coverage - savings
   // Future income is NOT added to raise the pool; it only offsets obligations

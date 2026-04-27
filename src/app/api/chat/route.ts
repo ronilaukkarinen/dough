@@ -207,12 +207,24 @@ export async function POST(request: Request) {
           // Daily budget via shared cash flow simulation — respect bills setting
           const { calculateDailyBudget } = await import("@/lib/daily-budget");
           const billsSetting = getHouseholdSetting("budget_include_bills") || "auto";
+          const reserveSetting = getHouseholdSetting("reserve_next_month_saving") === "1";
+          const lastReservationMonth = getHouseholdSetting("last_reservation_month") || "";
+          const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+          const nextYM = (() => {
+            const d = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          })();
+          const largestInc = [...incomeWithIds].sort((a, b) => b.amount - a.amount)[0];
+          const largestDay = largestInc ? Math.min(resolveDay(largestInc.expected_day), daysInMonth) : 0;
+          const reserveActive = reserveSetting && largestDay >= daysInMonth - 2 && today >= largestDay && lastReservationMonth !== nextYM;
           const allDebtItems = debts.map((d: any) => ({ amount: d.minimumPayment || 0, dueDay: d.dueDay || 0 }));
           const budgetParams = {
             balance: checkingSavings,
             savingGoal: savingRate,
             today,
             daysInMonth,
+            extraSavingReserve: reserveActive ? savingRate : 0,
+            skipCurrentMonthSaving: lastReservationMonth === currentYM,
             unpaidBills: unpaidBills.map((b) => ({ amount: b.amount, dueDay: b.dueDay })),
             debts: allDebtItems,
             unreceivedIncomes: incomeWithIds

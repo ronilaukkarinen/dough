@@ -49,6 +49,8 @@ export default function DashboardPage() {
   const [linkedAccountIds, setLinkedAccountIds] = useState<string[]>([]);
   const [excludedAccountIds, setExcludedAccountIds] = useState<string[]>([]);
   const [budgetIncludeBills, setBudgetIncludeBills] = useState<boolean | "auto">("auto");
+  const [reserveNextMonthSaving, setReserveNextMonthSaving] = useState(false);
+  const [lastReservationMonth, setLastReservationMonth] = useState<string>("");
   const [thresholds, setThresholds] = useState({ tight: 20, normal: 30, good: 50 });
   const [householdSize, setHouseholdSize] = useState(1);
   const [personalBudgetShare, setPersonalBudgetShare] = useState(0);
@@ -80,6 +82,8 @@ export default function DashboardPage() {
         const v = householdData.settings.budget_include_bills;
         setBudgetIncludeBills(v === "auto" ? "auto" : v === "1");
       }
+      if (householdData.settings?.reserve_next_month_saving === "1") setReserveNextMonthSaving(true);
+      if (householdData.settings?.last_reservation_month) setLastReservationMonth(householdData.settings.last_reservation_month);
       setThresholds({
         tight: parseInt(householdData.settings?.budget_threshold_tight) || 20,
         normal: parseInt(householdData.settings?.budget_threshold_normal) || 30,
@@ -125,6 +129,31 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => { loadSideData(); }, [loadSideData]);
+
+  // Persist next-month saving reservation marker when conditions are met
+  useEffect(() => {
+    if (!reserveNextMonthSaving || !sideDataLoaded || incomes.length === 0) return;
+    const now = new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const today = now.getDate();
+    const resolveDay = (day: number) => day === 0 ? daysInMonth : Math.min(day, daysInMonth);
+    const nextMonthYM = (() => {
+      const d = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    })();
+    const largest = [...incomes].filter((i) => i.is_active).sort((a, b) => b.amount - a.amount)[0];
+    if (!largest) return;
+    const largestDay = resolveDay(largest.expected_day);
+    const isAtMonthEnd = largestDay >= daysInMonth - 2;
+    if (isAtMonthEnd && today >= largestDay && lastReservationMonth !== nextMonthYM) {
+      fetch("/api/household", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ last_reservation_month: nextMonthYM }),
+      }).then(() => setLastReservationMonth(nextMonthYM)).catch(() => {});
+    }
+  }, [reserveNextMonthSaving, sideDataLoaded, incomes, lastReservationMonth]);
+
   useEffect(() => {
     fetch("/api/trends").then((r) => r.json()).then((d) => { if (d.trends) setTrendData(d.trends); }).catch(() => {});
   }, []);
@@ -232,6 +261,22 @@ export default function DashboardPage() {
       && (linkedAccountIds.length === 0 || linkedAccountIds.includes(t.account_id || "")))
     .reduce((s, t) => s + Math.abs(t.amount), 0);
 
+  // Detect end-of-month payday reservation
+  // When toggle on AND today is at/after the largest income event AND that event is in last 3 days
+  // of the month, reserve a full saving goal as an extra obligation. Persist last_reservation_month
+  // so the next month skips proportional saving (it's already saved).
+  const currentMonthYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const nextMonthYM = (() => {
+    const d = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  })();
+  const largestIncome = [...incomes].filter((i) => i.is_active).sort((a, b) => b.amount - a.amount)[0];
+  const largestIncomeDay = largestIncome ? resolveDay(largestIncome.expected_day) : 0;
+  const largestIsAtMonthEnd = largestIncomeDay >= daysInMonth - 2;
+  const shouldReserveNow = reserveNextMonthSaving && largestIsAtMonthEnd && today >= largestIncomeDay && lastReservationMonth !== nextMonthYM;
+  const extraSavingReserve = shouldReserveNow ? savingRate : 0;
+  const skipCurrentMonthSaving = lastReservationMonth === currentMonthYM;
+
   // Daily budget via segment-based cash flow simulation
   // Add todaySpentAll back to balance so simulation sees start-of-day balance
   // This makes today's budget "stick" — overspend/underspend carries to future days
@@ -240,6 +285,8 @@ export default function DashboardPage() {
     savingGoal: savingRate,
     today,
     daysInMonth,
+    extraSavingReserve,
+    skipCurrentMonthSaving,
     unpaidBills: bills.filter((b) => b.is_active && !b.is_paid).map((b) => ({ amount: b.amount, dueDay: b.due_day })),
     debts: debtItems,
     unreceivedIncomes: incomes

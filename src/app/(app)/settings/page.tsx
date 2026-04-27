@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -55,6 +56,8 @@ export default function SettingsPage() {
   const [excludedAccounts, setExcludedAccounts] = useState<string[]>([]);
   const [excludedSaved, setExcludedSaved] = useState(false);
   const [budgetBillsMode, setBudgetBillsMode] = useState("auto");
+  const [reserveNextMonthSaving, setReserveNextMonthSaving] = useState(false);
+  const [reserveSaved, setReserveSaved] = useState(false);
   const [billsModeSaved, setBillsModeSaved] = useState(false);
   const [thresholds, setThresholds] = useState({ tight: "20", normal: "30", good: "50" });
   const [thresholdsSaved, setThresholdsSaved] = useState(false);
@@ -121,6 +124,9 @@ export default function SettingsPage() {
           }
           if (householdData.settings?.budget_include_bills !== undefined) {
             setBudgetBillsMode(householdData.settings.budget_include_bills);
+          }
+          if (householdData.settings?.reserve_next_month_saving !== undefined) {
+            setReserveNextMonthSaving(householdData.settings.reserve_next_month_saving === "1");
           }
           if (householdData.settings?.budget_threshold_tight) setThresholds((p) => ({ ...p, tight: householdData.settings.budget_threshold_tight }));
           if (householdData.settings?.budget_threshold_normal) setThresholds((p) => ({ ...p, normal: householdData.settings.budget_threshold_normal }));
@@ -745,6 +751,30 @@ export default function SettingsPage() {
                 {locale === "fi"
                   ? "Automaattinen: laskut mukana jos tili kattaa ne ja budjetti pysyy normaalin yllä. Muuten lasketaan ilman."
                   : "Automatic: bills included if balance covers them and budget stays above normal threshold. Otherwise excluded."}
+              </p>
+            </div>
+            <div className="form-field">
+              <Label>{locale === "fi" ? "Varaa seuraavan kuun säästö palkkapäivänä" : "Reserve next month's saving on payday"}</Label>
+              <div className="settings-row">
+                <Switch
+                  checked={reserveNextMonthSaving}
+                  onCheckedChange={async (v) => {
+                    setReserveNextMonthSaving(v);
+                    await fetch("/api/household", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ reserve_next_month_saving: v ? "1" : "0" }),
+                    });
+                    setReserveSaved(true);
+                    setTimeout(() => setReserveSaved(false), 2000);
+                  }}
+                />
+                {reserveSaved && <span className="settings-saved">{t.common.saved}</span>}
+              </div>
+              <p className="settings-help">
+                {locale === "fi"
+                  ? "Käytä jos suurin palkka tulee kuun viimeisinä päivinä. Varaa palkkapäivänä koko ensi kuun säästötavoitteen, jolloin päiväbudjetti ei näytä liian runsaalta. Ensi kuussa säästötavoite vähennetään automaattisesti, koska se on jo varattu."
+                  : "Use if your largest paycheck arrives in the last days of the month. Reserves next month's full saving goal on payday so the daily budget doesn't look overly generous. Next month skips the proportional saving deduction since it's already reserved."}
               </p>
             </div>
             <div className="form-field">
