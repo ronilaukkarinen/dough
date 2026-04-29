@@ -1,3 +1,7 @@
+### 2.6.1: 2026-04-29
+
+* Lock past day chart colors to earliest known snapshot when no per-day snapshot exists
+
 ### 2.6.0: 2026-04-27
 
 * Add toggle to reserve next month's saving goal on payday when largest paycheck is at end of month

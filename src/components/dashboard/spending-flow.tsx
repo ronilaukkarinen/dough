@@ -82,12 +82,21 @@ export function SpendingFlow({
   // Target = daily budget (from cash flow simulation) * days in month
   const target = dailyBudget * daysInMonth;
 
-  // Cumulative target by day from frozen snapshots, falling back to live targetPerDay
-  // when a day has no snapshot yet (today and future)
+  // Cumulative target by day. Past days lock to their snapshot, falling back to the
+  // earliest known snapshot value when no snapshot exists for that day. Today and future
+  // use live targetPerDay so the in-progress day reflects current state.
+  const earliestSnapshotTarget = (() => {
+    const sorted = Object.keys(snapshotByDay).map(Number).sort((a, b) => a - b);
+    for (const d of sorted) if (snapshotByDay[d] > 0) return snapshotByDay[d];
+    return targetPerDay;
+  })();
   const cumulativeTargetByDay: Record<number, number> = {};
   let runningTarget = 0;
   for (let d = 1; d <= daysInMonth; d++) {
-    const perDay = snapshotByDay[d] > 0 ? snapshotByDay[d] : targetPerDay;
+    let perDay: number;
+    if (snapshotByDay[d] > 0) perDay = snapshotByDay[d];
+    else if (d < daysPassed) perDay = earliestSnapshotTarget;
+    else perDay = targetPerDay;
     runningTarget += perDay;
     cumulativeTargetByDay[d] = runningTarget;
   }
@@ -131,7 +140,9 @@ export function SpendingFlow({
   const cumulativeToToday = (() => {
     let sum = 0;
     for (let d = 1; d <= daysPassed; d++) {
-      sum += snapshotByDay[d] > 0 ? snapshotByDay[d] : targetPerDay;
+      if (snapshotByDay[d] > 0) sum += snapshotByDay[d];
+      else if (d < daysPassed) sum += earliestSnapshotTarget;
+      else sum += targetPerDay;
     }
     return sum;
   })();
