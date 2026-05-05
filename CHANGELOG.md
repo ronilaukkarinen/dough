@@ -1,3 +1,7 @@
+### 2.6.2: 2026-04-29
+
+* Fix month status projection to use spent-so-far plus remaining instead of double counting bills and full month discretionary average
+
 ### 2.6.1: 2026-04-29
 
 * Lock past day chart colors to earliest known snapshot when no per-day snapshot exists

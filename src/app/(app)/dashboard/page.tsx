@@ -583,7 +583,7 @@ export default function DashboardPage() {
         todaySpentAll={todaySpentAll}
         todayRemaining={todayRemaining}
         monthIncome={combinedIncome}
-        monthExpenses={Math.round((totalBillsAmount + debtMonthly + investmentMonthly + savingRate + (dailyDiscretionary * daysInMonth)) * 100) / 100}
+        monthExpenses={Math.round((realSpendingTotal + unpaidBillsAmount + (dailyDiscretionary * daysLeft) + savingRate) * 100) / 100}
         trendPercent={trendPercent}
         budgetBreakdown={budgetResult.tightestSegment}
         streakProps={{ dailyBudget, todaySpent: todaySpentAll, discretionaryTarget: discretionaryTargetPerDay }}
